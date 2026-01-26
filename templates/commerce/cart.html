@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Shopping Cart</h1>
+<div class="card" style="margin-top: 2rem;">
+    {% if items %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 1px solid #ddd; text-align: left;">
+                <th style="padding: 1rem;">Item</th>
+                <th style="padding: 1rem;">Price</th>
+                <th style="padding: 1rem;">Quantity</th>
+                <th style="padding: 1rem;">Total</th>
+                <th style="padding: 1rem;">Action</th>
+            </tr>
+
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 1rem;">
+                    {% if item.medicine %}
+                    {{ item.medicine.name }} (Medicine)
+                    {% else %}
+                    {{ item.lab_test.name }} (Lab)
+                    {% endif %}
+                </td>
+                <td style="padding: 1rem;">
+                    ₹{% if item.medicine %}{{ item.medicine.price }}{% else %}{{ item.lab_test.price }}{% endif %}
+                </td>
+                <td style="padding: 1rem;">{{ item.quantity }}</td>
+                <td style="padding: 1rem;">₹{{ item.get_total_price }}</td>
+                <td style="padding: 1rem;">
+                    <a href="{% url 'remove_from_cart' item.id %}" class="btn"
+                        style="background: #ff4444; color: white; padding: 0.5rem 1rem; font-size: 0.8rem;">Remove</a>
+                </td>
+            </tr>
+
+
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="text-align: right; margin-top: 2rem;">
+        <h3>Total: ₹{{ total }}</h3>
+        <a href="{% url 'checkout_address' %}" class="btn btn-primary" style="margin-top: 1rem;">Place Order</a>
+    </div>
+    {% else %}
+    <p>Your cart is empty.</p>
+    <a href="{% url 'medicine_list' %}" class="btn" style="color: var(--primary);">Browse Medicines</a>
+    {% endif %}
+</div>
+{% endblock %}

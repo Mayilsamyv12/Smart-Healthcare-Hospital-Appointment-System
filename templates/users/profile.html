@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 2rem auto;">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+        <div
+            style="width: 80px; height: 80px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+            {{ user.username|first|upper }}
+        </div>
+        <div>
+            <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+            <p style="color: #666;">{{ user.email }}</p>
+        </div>
+    </div>
+
+    <h3>Account Details</h3>
+    <p><strong>Contact:</strong> {{ user.contact_no }}</p>
+    <p><strong>Age:</strong> {{ user.age }}</p>
+
+    <div style="margin-top: 2rem; text-align: right;">
+        <a href="{% url 'logout' %}" class="btn"
+            style="border: 1px solid var(--accent); color: var(--accent);">Logout</a>
+    </div>
+</div>
+{% endblock %}

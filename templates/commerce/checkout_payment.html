@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 4rem auto;">
+    <div class="card">
+        <h2>Payment</h2>
+        <form method="post">
+            {% csrf_token %}
+
+            <div style="margin-bottom: 1rem;">
+                <label
+                    style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                    <input type="radio" name="payment_method" value="COD" checked onclick="togglePaymentFields('cod')">
+                    Cash on Delivery
+                </label>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label
+                    style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                    <input type="radio" name="payment_method" value="UPI" onclick="togglePaymentFields('upi')">
+                    UPI
+                </label>
+                <div id="upi-field" style="display: none; padding: 1rem; background: #f9f9f9; margin-top: 10px;">
+                    <p style="margin-bottom: 0.5rem;">Send to: <strong>{{ upi_id }}</strong></p>
+                    <input type="text" name="upi_id_input" placeholder="Enter your UPI ID"
+                        style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label
+                    style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                    <input type="radio" name="payment_method" value="Card" onclick="togglePaymentFields('card')">
+                    Debit / Credit Card
+                </label>
+                <div id="card-field" style="display: none; padding: 1rem; background: #f9f9f9; margin-top: 10px;">
+                    <input type="text" name="card_number" placeholder="Card Number"
+                        style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <input type="text" name="expiry" placeholder="MM/YY"
+                            style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+                        <input type="text" name="cvv" placeholder="CVV"
+                            style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 2rem;">Confirm Order</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function togglePaymentFields(method) {
+        document.getElementById('upi-field').style.display = 'none';
+        document.getElementById('card-field').style.display = 'none';
+
+        if (method === 'upi') {
+            document.getElementById('upi-field').style.display = 'block';
+        } else if (method === 'card') {
+            document.getElementById('card-field').style.display = 'block';
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 4rem auto;">
+    <div class="card">
+        <h2>Book Appointment</h2>
+        <p style="margin-bottom: 2rem;">with {{ doctor.name }} ({{ doctor.specialty }})</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="margin-bottom: 1rem;">
+                <label>Date</label>
+                <input type="date" name="date" required
+                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px;">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label>Time</label>
+                <input type="time" name="time" required
+                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px;">
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <p><strong>Consultation Fee:</strong> ₹{{ doctor.consultation_fee }}</p>
+            </div>
+
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 2rem;">Confirm
+                Booking</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 4rem auto;">
+    <div class="card">
+        <h2>Book Lab Test</h2>
+        <p style="margin-bottom: 2rem;">{{ lab_test.name }}</p>
+
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="margin-bottom: 1rem;">
+                <label>Date</label>
+                <input type="date" name="date" required
+                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px;">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label>Time</label>
+                <input type="time" name="time" required
+                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px;">
+            </div>
+
+            <p style="margin-top: 1rem; color: #666;">Location: {{ lab_test.location }}</p>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 2rem;">Confirm
+                Booking</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

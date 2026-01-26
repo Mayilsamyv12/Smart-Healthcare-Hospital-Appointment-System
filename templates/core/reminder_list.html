@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem;">Your Appointments</h1>
+<div class="card" style="margin-bottom: 2rem;">
+    {% if appointments %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 1px solid #ddd; text-align: left;">
+                <th style="padding: 1rem;">Doctor</th>
+                <th style="padding: 1rem;">Date</th>
+                <th style="padding: 1rem;">Time</th>
+                <th style="padding: 1rem;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in appointments %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 1rem;">
+                    <strong>{{ app.doctor.name }}</strong><br>
+                    <span style="font-size: 0.9rem; color: #666;">{{ app.doctor.hospital.name }}</span>
+                </td>
+                <td style="padding: 1rem;">{{ app.date }}</td>
+                <td style="padding: 1rem;">{{ app.time }}</td>
+                <td style="padding: 1rem;">
+                    <span
+                        style="padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.9rem; 
+                        {% if app.status == 'Confirmed' %}background: #e6f4ea; color: #1e8e3e;{% else %}background: #feefc3; color: #f29900;{% endif %}">
+                        {{ app.status }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No upcoming appointments found.</p>
+    <a href="{% url 'hospital_list' %}" class="btn btn-primary" style="margin-top: 1rem;">Book Now</a>
+    {% endif %}
+</div>
+
+<h2 style="margin-bottom: 2rem;">Lab Tests</h2>
+<div class="card" style="margin-bottom: 2rem;">
+    {% if lab_appointments %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 1px solid #ddd; text-align: left;">
+                <th style="padding: 1rem;">Test</th>
+                <th style="padding: 1rem;">Date</th>
+                <th style="padding: 1rem;">Time</th>
+                <th style="padding: 1rem;">Location</th>
+                <th style="padding: 1rem;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in lab_appointments %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 1rem;">
+                    <strong>{{ app.lab_test.name }}</strong>
+                </td>
+                <td style="padding: 1rem;">{{ app.date }}</td>
+                <td style="padding: 1rem;">{{ app.time }}</td>
+                <td style="padding: 1rem;">{{ app.lab_test.location }}</td>
+                <td style="padding: 1rem;">
+                    <span
+                        style="padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.9rem; 
+                        {% if app.status == 'Confirmed' %}background: #e6f4ea; color: #1e8e3e;{% else %}background: #feefc3; color: #f29900;{% endif %}">
+                        {{ app.status }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No upcoming lab tests.</p>
+    <a href="{% url 'lab_test_list' %}" class="btn btn-primary" style="margin-top: 1rem;">Book Test</a>
+    {% endif %}
+</div>
+
+{% endblock %}

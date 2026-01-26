@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem;">Doctors</h1>
+<div class="grid">
+    {% for doctor in doctors %}
+    <div class="card">
+        {% if doctor.image %}
+        <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}"
+            style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+        {% else %}
+        <div
+            style="width: 100%; height: 200px; background: #eee; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: #aaa;">
+            No Image</div>
+        {% endif %}
+        <h3>{{ doctor.name }}</h3>
+        <p style="color: var(--primary); font-weight: 500;">{{ doctor.specialty }}</p>
+        <p><strong>Experience:</strong> {{ doctor.experience }} years</p>
+        <p><strong>Fee:</strong> ₹{{ doctor.consultation_fee }}</p>
+
+        <p><strong>Hospital:</strong> {{ doctor.hospital.name }}</p>
+        <a href="{% url 'book_appointment' doctor.id %}" class="btn btn-primary"
+            style="display: block; text-align: center; margin-top: 1rem;">Book Appointment</a>
+    </div>
+    {% empty %}
+    <p>No doctors available.</p>
+    {% endfor %}
+</div>
+{% endblock %}

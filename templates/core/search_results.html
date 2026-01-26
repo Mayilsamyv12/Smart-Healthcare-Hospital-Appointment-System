@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem;">Search Results for "{{ query }}"</h1>
+
+{% if not hospitals and not doctors and not labs %}
+<p>No results found.</p>
+{% endif %}
+
+{% if hospitals %}
+<h2>Hospitals</h2>
+<div class="grid" style="margin-bottom: 3rem;">
+    {% for hospital in hospitals %}
+    <div class="card">
+        {% if hospital.image %}
+        <img src="{{ hospital.image.url }}" alt="{{ hospital.name }}"
+            style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+        {% else %}
+        <div
+            style="width: 100%; height: 200px; background: #eee; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: #aaa;">
+            No Image</div>
+        {% endif %}
+        <h3>{{ hospital.name }}</h3>
+        <p>{{ hospital.location }}</p>
+        <a href="{% url 'hospital_detail' hospital.id %}" class="btn btn-primary"
+            style="margin-top: 1rem; display: inline-block;">View Details</a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if doctors %}
+<h2>Doctors</h2>
+<div class="grid" style="margin-bottom: 3rem;">
+    {% for doctor in doctors %}
+    <div class="card">
+        {% if doctor.image %}
+        <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}"
+            style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+        {% else %}
+        <div
+            style="width: 100%; height: 200px; background: #eee; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: #aaa;">
+            No Image</div>
+        {% endif %}
+        <h3>{{ doctor.name }}</h3>
+        <p>{{ doctor.specialty }}</p>
+        <p><strong>Fee:</strong> ₹{{ doctor.consultation_fee }}</p>
+        <a href="{% url 'book_appointment' doctor.id %}" class="btn btn-primary"
+            style="margin-top: 1rem; display: inline-block;">Book Appointment</a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if labs %}
+<h2>Lab Tests</h2>
+<div class="grid" style="margin-bottom: 3rem;">
+    {% for test in labs %}
+    <div class="card">
+        {% if test.image %}
+        <img src="{{ test.image.url }}" alt="{{ test.name }}"
+            style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+        {% else %}
+        <div
+            style="width: 100%; height: 150px; background: #eee; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: #aaa;">
+            No Image</div>
+        {% endif %}
+        <h3>{{ test.name }}</h3>
+        <p>{{ test.features }}</p>
+
+        <a href="{% url 'book_lab_test' test.id %}" class="btn btn-primary">Book Appointment</a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

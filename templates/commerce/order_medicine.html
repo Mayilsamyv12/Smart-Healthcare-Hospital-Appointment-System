@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 4rem auto;">
+    <div class="card">
+        <h2>Order Medicines</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div style="margin-bottom: 1rem;">
+                <label>Medicines (List items)</label>
+                <textarea name="items" rows="4"
+                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px;"></textarea>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label>Delivery Address</label>
+                <textarea name="address" rows="3"
+                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px;"></textarea>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label>Upload Prescription</label>
+                <input type="file" name="prescription" style="width: 100%; margin-top: 5px;">
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label>Payment Method</label>
+                <select name="payment_method"
+                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px;">
+                    <option value="COD">Cash on Delivery</option>
+                    <option value="UPI">UPI</option>
+                    <option value="Card">Card</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 2rem;">Place Order</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

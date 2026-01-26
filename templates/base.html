@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div style="display: flex; align-items: center;">
+            <div class="hamburger" onclick="toggleSidebar()">☰</div>
+            <a href="{% url 'home' %}" class="brand">HealthSys</a>
+
+        </div>
+        <div class="nav-links">
+            <div class="location-navbar-trigger" onclick="openLocationModal()">
+                <!-- SVG Location Icon -->
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="color: white; margin-right: 2px;">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+
+                <div style="line-height: 1.2;">
+                    <span style="display: block; font-size: 0.7rem; color: #ccc;">Location</span>
+                    <span style="display: block; font-size: 0.9rem; font-weight: 600; color: #fff;">
+                        {{ request.session.user_location|default:"Select" }}
+                    </span>
+                </div>
+            </div>
+
+            <form action="{% url 'search' %}" method="get"
+                style="display: flex; align-items: center; margin-right: 1rem;">
+
+                <input type="text" name="q" placeholder="Search..."
+                    style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px 0 0 4px; outline: none;">
+                <button type="submit"
+                    style="padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 0 4px 4px 0; cursor: pointer;">Go</button>
+            </form>
+
+            {% if user.is_authenticated %}
+            <a href="{% url 'cart_view' %}" class="nav-item">Cart</a>
+            <a href="{% url 'profile' %}" class="nav-item">Profile</a>
+            <a href="{% url 'logout' %}" class="nav-item">Logout</a>
+
+
+            {% else %}
+            <a href="{% url 'login' %}" class="nav-item">Login</a>
+            <a href="{% url 'register' %}" class="nav-item">Register</a>
+            {% endif %}
+            <a href="{% url 'reminder_list' %}" class="nav-item">Reminder</a>
+
+
+        </div>
+
+
+    </nav>
+
+    <div class="sidebar" id="sidebar">
+
+        <div style="padding: 1rem;">
+            <a href="{% url 'home' %}" class="nav-item" style="display:block; margin-bottom:1rem;">Home</a>
+            <a href="{% url 'hospital_list' %}" class="nav-item"
+                style="display:block; margin-bottom:1rem;">Hospitals</a>
+            <a href="{% url 'doctor_list' %}" class="nav-item" style="display:block; margin-bottom:1rem;">Doctors</a>
+            <a href="{% url 'lab_test_list' %}" class="nav-item" style="display:block; margin-bottom:1rem;">Lab
+                Tests</a>
+            <a href="{% url 'medicine_list' %}" class="nav-item" style="display:block; margin-bottom:1rem;">Medicine
+                Orders</a>
+        </div>
+    </div>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+
+    </div>
+
+    </div>
+
+    <footer style="background: white; border-top: 1px solid #eee; padding: 2rem 0; margin-top: 4rem;">
+        <div class="container"
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
+            <div>
+                <h3 style="color: var(--primary);">HealthSys</h3>
+                <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;">Making healthcare accessible and
+                    efficient for everyone.</p>
+            </div>
+            <div>
+                <h4>Quick Links</h4>
+                <ul style="list-style: none; padding: 0; margin-top: 0.5rem;">
+                    <li><a href="{% url 'about' %}"
+                            style="text-decoration: none; color: #666; display: block; margin-bottom: 0.5rem;">About
+                            Us</a></li>
+                    <li><a href="{% url 'contact' %}"
+                            style="text-decoration: none; color: #666; display: block; margin-bottom: 0.5rem;">Contact
+                            Us</a></li>
+                    <li><a href="{% url 'help' %}"
+                            style="text-decoration: none; color: #666; display: block; margin-bottom: 0.5rem;">Help
+                            Center</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Legal</h4>
+                <ul style="list-style: none; padding: 0; margin-top: 0.5rem;">
+                    <li><a href="{% url 'terms' %}"
+                            style="text-decoration: none; color: #666; display: block; margin-bottom: 0.5rem;">Terms &
+                            Conditions</a></li>
+                    <li><a href="{% url 'privacy' %}"
+                            style="text-decoration: none; color: #666; display: block; margin-bottom: 0.5rem;">Privacy
+                            Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div
+            style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #eee; color: #999; font-size: 0.9rem;">
+            &copy; 2026 HealthSys. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- Load dedicated location script -->
+    <script src="{% static 'js/location.js' %}"></script>
+
+    <!-- Initial State for JS -->
+    <script>
+        window.isLocationMandatory = {% if user.is_authenticated %}true{% else %} false{% endif %};
+        window.hasLocationSet = "{% if request.session.user_location %}true{% endif %}" === "true";
+
+        // Auto-open if needed
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.isLocationMandatory && !window.hasLocationSet) {
+                if (window.openLocationModal) window.openLocationModal();
+            }
+        });
+    </script>
+
+    <!-- Universal Location Modal HTML (Flipkart Style) -->
+    <div id="universalLocationModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Location</h3>
+                <button id="closeModalBtn" onclick="closeLocationModal()" class="modal-close-btn">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <form action="{% url 'set_location' %}" method="post">
+                    {% csrf_token %}
+                    <div class="location-input-group">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" name="location" id="universalLocationInput"
+                            placeholder="Search for city, area..." required autocomplete="off">
+                    </div>
+                </form>
+
+                <div class="detect-location-btn" onclick="detectLocationUniversal()">
+                    <div style="font-size: 1.4rem;">📍</div>
+                    <div>
+                        <div style="line-height: 1.2;">Use Current Location</div>
+                        <div style="font-size: 0.8rem; font-weight: 400; color: #666; margin-top: 2px;">Using GPS</div>
+                    </div>
+                </div>
+
+                {% if request.session.user_location %}
+                <div class="saved-location">
+                    <div style="font-size: 1.2rem; color: #999;">✓</div>
+                    <div>
+                        <div style="font-weight: 500;">{{ request.session.user_location }}</div>
+                        <div style="font-size: 0.8rem; color: #999;">Selected Location</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem;">Diagnostic Labs</h1>
+<div class="grid">
+    {% for test in tests %}
+    <div class="card">
+        {% if test.image %}
+        <img src="{{ test.image.url }}" alt="{{ test.name }}"
+            style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+        {% else %}
+        <div
+            style="width: 100%; height: 150px; background: #eee; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: #aaa;">
+            No Image</div>
+        {% endif %}
+        <h3>{{ test.name }}</h3>
+        <p>{{ test.features }}</p>
+        <p><strong>Location:</strong> {{ test.location }}</p>
+
+        <a href="{% url 'book_lab_test' test.id %}" class="btn btn-primary">Book Appointment</a>
+    </div>
+
+
+    {% empty %}
+    <p>No lab tests available.</p>
+    {% endfor %}
+</div>
+{% endblock %}

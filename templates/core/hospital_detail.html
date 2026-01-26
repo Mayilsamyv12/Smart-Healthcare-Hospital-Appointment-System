@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 2rem;">
+    {% if hospital.image %}
+    <img src="{{ hospital.image.url }}" alt="{{ hospital.name }}"
+        style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 2rem;">
+    {% endif %}
+    <h1>{{ hospital.name }}</h1>
+    <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 1rem;"><i style="margin-right: 8px;">📍</i>{{
+        hospital.location }}</p>
+
+    <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+        <div>
+            <strong>Contact:</strong>
+            <p>{{ hospital.contact_no }}</p>
+        </div>
+        <div>
+            <strong>Specialties:</strong>
+            <p>{{ hospital.specialties }}</p>
+        </div>
+    </div>
+
+    {% if hospital.latitude and hospital.longitude %}
+    <a href="https://www.google.com/maps/dir/?api=1&destination={{ hospital.latitude }},{{ hospital.longitude }}"
+        target="_blank" class="btn btn-primary" style="margin-bottom: 2rem;">Get Directions on Map</a>
+    {% endif %}
+</div>
+
+<h2 style="margin-bottom: 1.5rem;">Doctors at {{ hospital.name }}</h2>
+<div class="grid">
+    {% for doctor in hospital.doctors.all %}
+    <div class="card">
+        {% if doctor.image %}
+        <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}"
+            style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+        {% else %}
+        <div
+            style="width: 100%; height: 200px; background: #eee; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: #aaa;">
+            No Image</div>
+        {% endif %}
+        <h3>{{ doctor.name }}</h3>
+        <p style="color: var(--primary); font-weight: 500;">{{ doctor.specialty }}</p>
+        <p><strong>Experience:</strong> {{ doctor.experience }} years</p>
+        <p><strong>Fee:</strong> ₹{{ doctor.consultation_fee }}</p>
+
+
+        <a href="{% url 'book_appointment' doctor.id %}" class="btn btn-primary"
+            style="display: block; text-align: center; margin-top: 1rem;">Book Appointment</a>
+    </div>
+    {% empty %}
+    <p>No doctors listed for this hospital yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

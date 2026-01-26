@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero">
+    <h1>Your Health, Our Priority</h1>
+    <p>Find doctors, hospitals, and medicines instantly.</p>
+    <div style="margin-top: 2rem;">
+        <form action="{% url 'hospital_list' %}" method="get" style="display: inline-flex; gap: 10px;">
+            <input type="text" name="q" placeholder="Search doctors, hospitals..."
+                style="padding: 1rem; border-radius: 50px; border: 1px solid #ddd; width: 300px;">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <h3>Find Doctors</h3>
+        <p>Expert consultations at your fingertips.</p>
+        <a href="{% url 'doctor_list' %}" style="color: var(--primary);">Browse Doctors &rarr;</a>
+    </div>
+    <div class="card">
+        <h3>Hospitals</h3>
+        <p>Locate top-rated hospitals near you.</p>
+        <a href="{% url 'hospital_list' %}" style="color: var(--primary);">Find Hospitals &rarr;</a>
+    </div>
+    <div class="card">
+        <h3>Pharmacy</h3>
+        <p>Order medicines and get them delivered.</p>
+        <a href="{% url 'medicine_list' %}" style="color: var(--primary);">Order Now &rarr;</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 4rem auto;">
+    <div class="card">
+        <h2>Delivery Address</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="margin-bottom: 1rem;">
+                    <label>House No</label>
+                    <input type="text" name="house_no" required
+                        style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label>Street</label>
+                    <input type="text" name="street" required
+                        style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label>Landmark</label>
+                <input type="text" name="landmark"
+                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="margin-bottom: 1rem;">
+                    <label>City</label>
+                    <input type="text" name="city" required
+                        style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label>Pincode</label>
+                    <input type="text" name="pincode" required
+                        style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 2rem;">Proceed to
+                Payment</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

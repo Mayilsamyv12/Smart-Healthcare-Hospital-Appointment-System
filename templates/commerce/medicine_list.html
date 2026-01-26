@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem;">Pharmacy</h1>
+
+<div class="grid">
+    {% for medicine in medicines %}
+    <div class="card">
+        {% if medicine.image %}
+        <img src="{{ medicine.image.url }}" alt="{{ medicine.name }}"
+            style="width: 100%; height: 150px; object-fit: contain; margin-bottom: 1rem;">
+        {% else %}
+        <div
+            style="width: 100%; height: 150px; background: #eee; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: #aaa;">
+            No Image</div>
+        {% endif %}
+        <h3>{{ medicine.name }}</h3>
+        <p>{{ medicine.description|truncatechars:50 }}</p>
+        <h4 style="margin: 1rem 0;">₹{{ medicine.price }}</h4>
+        <a href="{% url 'add_to_cart' 'medicine' medicine.id %}" class="btn btn-primary">Add to Cart</a>
+    </div>
+
+    {% empty %}
+    <p>No medicines listed.</p>
+    {% endfor %}
+</div>
+{% endblock %}

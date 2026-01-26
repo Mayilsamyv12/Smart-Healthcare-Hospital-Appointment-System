@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 4rem auto;">
+    <div class="card">
+        <h2 style="text-align: center; margin-bottom: 2rem;">Register</h2>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">{{ field.label }}</label>
+                {% if field.field.widget.input_type == 'password' %}
+                <div style="position: relative;">
+                    <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}"
+                        id="{{ field.id_for_label }}"
+                        style="width: 100%; padding: 0.8rem; padding-right: 2.5rem; border: 1px solid #ddd; border-radius: 8px;">
+                    <span onclick="togglePassword('{{ field.id_for_label }}', this)"
+                        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888;">
+                        👁️
+                    </span>
+                </div>
+                {% else %}
+                {{ field }}
+                {% endif %}
+                {% if field.errors %}
+                <div style="color: red; font-size: 0.875rem; margin-top: 0.25rem;">
+                    {% for error in field.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            {% endfor %}
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Register</button>
+        </form>
+        <p style="text-align: center; margin-top: 1rem;">
+            Already have an account? <a href="{% url 'login' %}" style="color: var(--primary);">Login</a>
+        </p>
+    </div>
+</div>
+
+<style>
+    /* Quick fix for form fields rendered by Django */
+    input,
+    select {
+        width: 100%;
+        padding: 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-top: 5px;
+    }
+</style>
+<script>
+    function togglePassword(fieldId, icon) {
+        const input = document.getElementById(fieldId);
+        if (input.type === "password") {
+            input.type = "text";
+            icon.textContent = "🙈";
+        } else {
+            input.type = "password";
+            icon.textContent = "👁️";
+        }
+    }
+</script>
+{% endblock %}
