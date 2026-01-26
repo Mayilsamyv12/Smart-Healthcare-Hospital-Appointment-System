@@ -14,7 +14,7 @@
     <nav class="navbar">
         <div style="display: flex; align-items: center;">
             <div class="hamburger" onclick="toggleSidebar()">☰</div>
-            <a href="{% url 'home' %}" class="brand">HealthSys</a>
+            <a href="{% url 'home' %}" class="brand">OneMeds</a>
 
         </div>
         <div class="nav-links">
@@ -38,15 +38,14 @@
                 style="display: flex; align-items: center; margin-right: 1rem;">
 
                 <input type="text" name="q" placeholder="Search..."
-                    style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px 0 0 4px; outline: none;">
+                    style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; outline: none; margin: 0; margin-right: 8px;">
                 <button type="submit"
-                    style="padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 0 4px 4px 0; cursor: pointer;">Go</button>
+                    style="padding: 0.5rem 1rem; background: #fff; color: var(--primary); font-weight: bold; border: none; border-radius: 4px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">Go</button>
             </form>
 
             {% if user.is_authenticated %}
             <a href="{% url 'cart_view' %}" class="nav-item">Cart</a>
             <a href="{% url 'profile' %}" class="nav-item">Profile</a>
-            <a href="{% url 'logout' %}" class="nav-item">Logout</a>
 
 
             {% else %}
@@ -62,6 +61,10 @@
     </nav>
 
     <div class="sidebar" id="sidebar">
+        <div style="position: absolute; top: 20px; right: 20px; padding: 5px; cursor: pointer;"
+            onclick="toggleSidebar()">
+            <span style="font-size: 2rem; color: #000; line-height: 1;">&times;</span>
+        </div>
 
         <div style="padding: 1rem;">
             <a href="{% url 'home' %}" class="nav-item" style="display:block; margin-bottom:1rem;">Home</a>
@@ -86,7 +89,7 @@
         <div class="container"
             style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
             <div>
-                <h3 style="color: var(--primary);">HealthSys</h3>
+                <h3 style="color: var(--primary);">OneMeds</h3>
                 <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;">Making healthcare accessible and
                     efficient for everyone.</p>
             </div>
@@ -118,7 +121,7 @@
         </div>
         <div
             style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #eee; color: #999; font-size: 0.9rem;">
-            &copy; 2026 HealthSys. All rights reserved.
+            &copy; 2026 OneMeds. All rights reserved.
         </div>
     </footer>
 
@@ -127,6 +130,10 @@
 
     <!-- Initial State for JS -->
     <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
         window.isLocationMandatory = {% if user.is_authenticated %}true{% else %} false{% endif %};
         window.hasLocationSet = "{% if request.session.user_location %}true{% endif %}" === "true";
 

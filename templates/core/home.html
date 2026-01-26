@@ -1,14 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="hero">
-    <h1>Your Health, Our Priority</h1>
-    <p>Find doctors, hospitals, and medicines instantly.</p>
-    <div style="margin-top: 2rem;">
-        <form action="{% url 'hospital_list' %}" method="get" style="display: inline-flex; gap: 10px;">
+<div class="hero" style="text-align: center; padding: 4rem 0;">
+    <h1 style="color: var(--primary); font-size: 2.5rem; margin-bottom: 1rem;">Your Health, Our Priority</h1>
+    <p style="color: #666; font-size: 1.1rem; margin-bottom: 2rem;">Find doctors, hospitals, medicines, and labs
+        instantly.</p>
+    <div style="display: flex; justify-content: center;">
+        <form action="{% url 'hospital_list' %}" method="get"
+            style="display: flex; align-items: center; gap: 8px; width: 100%; max-width: 480px;">
             <input type="text" name="q" placeholder="Search doctors, hospitals..."
-                style="padding: 1rem; border-radius: 50px; border: 1px solid #ddd; width: 300px;">
-            <button type="submit" class="btn btn-primary">Search</button>
+                style="height: 40px; padding: 0 1rem; font-size: 0.9rem; border-radius: 20px; border: 1px solid #ddd; width: 100%; flex: 1; outline: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin: 0;">
+            <button type="submit" class="btn btn-primary"
+                style="height: 40px; border-radius: 20px; padding: 0 1.5rem; font-size: 0.9rem; white-space: nowrap; display: flex; align-items: center; justify-content: center;">Search</button>
         </form>
     </div>
 </div>
@@ -28,6 +31,11 @@
         <h3>Pharmacy</h3>
         <p>Order medicines and get them delivered.</p>
         <a href="{% url 'medicine_list' %}" style="color: var(--primary);">Order Now &rarr;</a>
+    </div>
+    <div class="card">
+        <h3>Lab Tests</h3>
+        <p>Book diagnostic tests from top labs.</p>
+        <a href="{% url 'lab_test_list' %}" style="color: var(--primary);">Book Tests &rarr;</a>
     </div>
 </div>
 {% endblock %}

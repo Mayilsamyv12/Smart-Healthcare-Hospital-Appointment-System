@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="text-align: center; padding: 4rem 0;">
+    <h2 style="color: var(--primary);">Email Verified!</h2>
+    <p>Your account has been successfully activated.</p>
+    <a href="{% url 'login' %}" class="btn btn-primary" style="margin-top: 1rem;">Login Now</a>
+</div>
+{% endblock %}

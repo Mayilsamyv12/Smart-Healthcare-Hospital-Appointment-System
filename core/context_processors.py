@@ -17,3 +17,18 @@ def notification_counts(request):
         counts['reminder_count'] = doc_appts + lab_appts
         
     return counts
+
+def sidebar_categories(request):
+    from core.models import Doctor
+    from commerce.models import LabTest
+    
+    # Fetch distinct specialties for Doctors/Hospitals
+    specialties = Doctor.objects.values_list('specialty', flat=True).distinct().order_by('specialty')
+    
+    # Fetch distinct Lab Test names
+    lab_tests = LabTest.objects.values_list('name', flat=True).distinct().order_by('name')[:8] # Limit to 8
+    
+    return {
+        'sidebar_specialties': specialties,
+        'sidebar_lab_tests': lab_tests
+    }

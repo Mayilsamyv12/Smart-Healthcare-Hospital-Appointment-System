@@ -71,6 +71,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.notification_counts',
+                'core.context_processors.sidebar_categories',
             ],
 
         },
@@ -144,6 +145,12 @@ LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = 'login'
 
+
+
+
+# Email Configuration (Dev Mode: Prints to Console)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# For particular security, we are enforcing email verification
 
 
 # Default primary key field type

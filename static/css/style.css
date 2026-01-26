@@ -139,6 +139,22 @@ img {
     left: 0;
 }
 
+.sidebar .nav-item {
+    color: #000 !important;
+    /* Force Black */
+    /* Dark text for white sidebar */
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    display: block;
+    /* Ensure block display for links */
+}
+
+.sidebar .nav-item:hover {
+    background: #f1f3f6;
+    /* Light gray hover */
+    color: var(--primary) !important;
+}
+
 .hamburger {
     cursor: pointer;
     font-size: 1.5rem;
@@ -187,7 +203,8 @@ img {
 /* Grid */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    /* Reduced min-width to fit 4 items */
     gap: 1.5rem;
 }
 
