@@ -1,41 +1,84 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="hero" style="text-align: center; padding: 4rem 0;">
-    <h1 style="color: var(--primary); font-size: 2.5rem; margin-bottom: 1rem;">Your Health, Our Priority</h1>
-    <p style="color: #666; font-size: 1.1rem; margin-bottom: 2rem;">Find doctors, hospitals, medicines, and labs
+<style>
+    /* Override container to be full width for Home Page only */
+    .container {
+        max-width: 100% !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+
+    .grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    @media (max-width: 1200px) {
+        .grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+<div class="hero"
+    style="text-align: center; padding: 8rem 0; background-image: linear-gradient(to right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7)), url('{% static 'img/hero_bg.png' %}'); background-size: cover; background-position: center; border-bottom: 5px solid rgba(255,255,255,0.5);">
+    <h1 style="color: var(--primary); font-size: 4rem; margin-bottom: 1.5rem; font-weight: 800;">Your Health, Our
+        Priority</h1>
+    <p style="color: #666; font-size: 1.5rem; margin-bottom: 3rem;">Find doctors, hospitals, medicines, and labs
         instantly.</p>
     <div style="display: flex; justify-content: center;">
-        <form action="{% url 'hospital_list' %}" method="get"
-            style="display: flex; align-items: center; gap: 8px; width: 100%; max-width: 480px;">
+        <form action="{% url 'search' %}" method="get"
+            style="display: flex; align-items: center; gap: 12px; width: 100%; max-width: 700px;">
             <input type="text" name="q" placeholder="Search doctors, hospitals..."
-                style="height: 40px; padding: 0 1rem; font-size: 0.9rem; border-radius: 20px; border: 1px solid #ddd; width: 100%; flex: 1; outline: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin: 0;">
+                style="height: 60px; padding: 0 1.5rem; font-size: 1.2rem; border-radius: 30px; border: 1px solid #ddd; width: 100%; flex: 1; outline: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 0;">
             <button type="submit" class="btn btn-primary"
-                style="height: 40px; border-radius: 20px; padding: 0 1.5rem; font-size: 0.9rem; white-space: nowrap; display: flex; align-items: center; justify-content: center;">Search</button>
+                style="height: 60px; border-radius: 30px; padding: 0 3rem; font-size: 1.2rem; font-weight: 700; white-space: nowrap; display: flex; align-items: center; justify-content: center;">Search</button>
         </form>
     </div>
 </div>
 
-<div class="grid">
-    <div class="card">
-        <h3>Find Doctors</h3>
-        <p>Expert consultations at your fingertips.</p>
-        <a href="{% url 'doctor_list' %}" style="color: var(--primary);">Browse Doctors &rarr;</a>
+<div class="grid" style="gap: 2.5rem;">
+    <div class="card" style="padding: 4rem; text-align: center;">
+        <img src="{% static 'img/doctor_icon.png' %}" alt="Doctors"
+            style="width: 120px; height: 120px; margin: 0 auto 1.5rem auto; object-fit: contain;">
+        <h3 style="font-size: 2rem; margin-bottom: 1.5rem;">Find Doctors</h3>
+        <p style="font-size: 1.3rem; line-height: 1.6; margin-bottom: 1.5rem;">Expert consultations at your fingertips.
+        </p>
+        <a href="{% url 'doctor_list' %}" style="color: var(--primary); font-size: 1.3rem; font-weight: 700;">Browse
+            Doctors &rarr;</a>
     </div>
-    <div class="card">
-        <h3>Hospitals</h3>
-        <p>Locate top-rated hospitals near you.</p>
-        <a href="{% url 'hospital_list' %}" style="color: var(--primary);">Find Hospitals &rarr;</a>
+    <div class="card" style="padding: 4rem; text-align: center;">
+        <img src="{% static 'img/hospital_icon.png' %}" alt="Hospitals"
+            style="width: 120px; height: 120px; margin: 0 auto 1.5rem auto; object-fit: contain;">
+        <h3 style="font-size: 2rem; margin-bottom: 1.5rem;">Hospitals</h3>
+        <p style="font-size: 1.3rem; line-height: 1.6; margin-bottom: 1.5rem;">Locate top-rated hospitals near you.</p>
+        <a href="{% url 'hospital_list' %}" style="color: var(--primary); font-size: 1.3rem; font-weight: 700;">Find
+            Hospitals &rarr;</a>
     </div>
-    <div class="card">
-        <h3>Pharmacy</h3>
-        <p>Order medicines and get them delivered.</p>
-        <a href="{% url 'medicine_list' %}" style="color: var(--primary);">Order Now &rarr;</a>
+    <div class="card" style="padding: 4rem; text-align: center;">
+        <img src="{% static 'img/medicine_icon.png' %}" alt="Pharmacy"
+            style="width: 120px; height: 120px; margin: 0 auto 1.5rem auto; object-fit: contain;">
+        <h3 style="font-size: 2rem; margin-bottom: 1.5rem;">Pharmacy</h3>
+        <p style="font-size: 1.3rem; line-height: 1.6; margin-bottom: 1.5rem;">Order medicines and get them delivered.
+        </p>
+        <a href="{% url 'medicine_list' %}" style="color: var(--primary); font-size: 1.3rem; font-weight: 700;">Order
+            Now &rarr;</a>
     </div>
-    <div class="card">
-        <h3>Lab Tests</h3>
-        <p>Book diagnostic tests from top labs.</p>
-        <a href="{% url 'lab_test_list' %}" style="color: var(--primary);">Book Tests &rarr;</a>
+    <div class="card" style="padding: 4rem; text-align: center;">
+        <img src="{% static 'img/lab_icon.png' %}" alt="Labs"
+            style="width: 120px; height: 120px; margin: 0 auto 1.5rem auto; object-fit: contain;">
+        <h3 style="font-size: 2rem; margin-bottom: 1.5rem;">Lab Tests</h3>
+        <p style="font-size: 1.3rem; line-height: 1.6; margin-bottom: 1.5rem;">Book diagnostic tests from top labs.</p>
+        <a href="{% url 'lab_test_list' %}" style="color: var(--primary); font-size: 1.3rem; font-weight: 700;">Book
+            Tests &rarr;</a>
     </div>
 </div>
 {% endblock %}

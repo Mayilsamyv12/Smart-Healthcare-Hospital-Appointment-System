@@ -44,7 +44,12 @@
             </form>
 
             {% if user.is_authenticated %}
-            <a href="{% url 'cart_view' %}" class="nav-item">Cart</a>
+            <a href="{% url 'cart_view' %}" class="nav-item" style="position: relative;">
+                Cart
+                {% if cart_count > 0 %}
+                <span class="notification-badge">{{ cart_count }}</span>
+                {% endif %}
+            </a>
             <a href="{% url 'profile' %}" class="nav-item">Profile</a>
 
 
@@ -52,7 +57,12 @@
             <a href="{% url 'login' %}" class="nav-item">Login</a>
             <a href="{% url 'register' %}" class="nav-item">Register</a>
             {% endif %}
-            <a href="{% url 'reminder_list' %}" class="nav-item">Reminder</a>
+            <a href="{% url 'reminder_list' %}" class="nav-item" style="position: relative;">
+                Reminder
+                {% if reminder_count > 0 %}
+                <span class="notification-badge">{{ reminder_count }}</span>
+                {% endif %}
+            </a>
 
 
         </div>
@@ -67,14 +77,67 @@
         </div>
 
         <div style="padding: 1rem;">
-            <a href="{% url 'home' %}" class="nav-item" style="display:block; margin-bottom:1rem;">Home</a>
-            <a href="{% url 'hospital_list' %}" class="nav-item"
-                style="display:block; margin-bottom:1rem;">Hospitals</a>
-            <a href="{% url 'doctor_list' %}" class="nav-item" style="display:block; margin-bottom:1rem;">Doctors</a>
-            <a href="{% url 'lab_test_list' %}" class="nav-item" style="display:block; margin-bottom:1rem;">Lab
-                Tests</a>
-            <a href="{% url 'medicine_list' %}" class="nav-item" style="display:block; margin-bottom:1rem;">Medicine
-                Orders</a>
+            <a href="{% url 'home' %}" class="nav-item" style="display:block; margin-bottom:0.5rem;">Home</a>
+
+            <!-- Hospitals Dropdown -->
+            <div class="nav-item-dropdown" onclick="toggleDropdown('hospitalsDropdown')">
+                <span>Hospitals</span>
+                <span style="font-size: 0.8rem;">▼</span>
+            </div>
+            <div id="hospitalsDropdown" class="sidebar-dropdown-content">
+                <a href="{% url 'hospital_list' %}" class="sidebar-subitem">All Hospitals</a>
+                {% for specialty in sidebar_hospital_specialties %}
+                <a href="{% url 'hospital_list' %}?specialty={{ specialty.name }}" class="sidebar-subitem"
+                    style="display:flex; align-items:center;">
+                    {% if specialty.icon %}
+                    <img src="{{ specialty.icon.url }}" alt=""
+                        style="width:20px; height:20px; margin-right:8px; object-fit:contain;">
+                    {% endif %}
+                    {{ specialty.name }}
+                </a>
+                {% endfor %}
+            </div>
+
+            <!-- Doctors Dropdown -->
+            <div class="nav-item-dropdown" onclick="toggleDropdown('doctorsDropdown')">
+                <span>Doctors</span>
+                <span style="font-size: 0.8rem;">▼</span>
+            </div>
+            <div id="doctorsDropdown" class="sidebar-dropdown-content">
+                <a href="{% url 'doctor_list' %}" class="sidebar-subitem">All Doctors</a>
+                {% for specialty in sidebar_doctor_specialties %}
+                <a href="{% url 'doctor_list' %}?specialty={{ specialty.name }}" class="sidebar-subitem"
+                    style="display:flex; align-items:center;">
+                    {% if specialty.icon %}
+                    <img src="{{ specialty.icon.url }}" alt=""
+                        style="width:20px; height:20px; margin-right:8px; object-fit:contain;">
+                    {% endif %}
+                    {{ specialty.name }}
+                </a>
+                {% endfor %}
+            </div>
+
+            <!-- Lab Tests Dropdown -->
+            <div class="nav-item-dropdown" onclick="toggleDropdown('labTestsDropdown')">
+                <span>Lab Tests</span>
+                <span style="font-size: 0.8rem;">▼</span>
+            </div>
+            <div id="labTestsDropdown" class="sidebar-dropdown-content">
+                <a href="{% url 'lab_test_list' %}" class="sidebar-subitem">All Lab Tests</a>
+                {% for category in sidebar_lab_categories %}
+                <a href="{% url 'lab_test_list' %}?category={{ category.name }}" class="sidebar-subitem"
+                    style="display:flex; align-items:center;">
+                    {% if category.icon %}
+                    <img src="{{ category.icon.url }}" alt=""
+                        style="width:20px; height:20px; margin-right:8px; object-fit:contain;">
+                    {% endif %}
+                    {{ category.name }}
+                </a>
+                {% endfor %}
+            </div>
+
+            <a href="{% url 'medicine_list' %}" class="nav-item"
+                style="display:block; margin-bottom:0.5rem; margin-top: 0.5rem;">Medicine Orders</a>
         </div>
     </div>
 
@@ -132,6 +195,13 @@
     <script>
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function toggleDropdown(id) {
+            var content = document.getElementById(id);
+            content.classList.toggle('active');
+
+            // Optional: Rotate arrow if we add one (handled via CSS sibling selector usually or add logic here)
         }
 
         window.isLocationMandatory = {% if user.is_authenticated %}true{% else %} false{% endif %};

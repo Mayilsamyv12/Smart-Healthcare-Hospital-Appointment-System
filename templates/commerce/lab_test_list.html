@@ -22,7 +22,13 @@
 
 
     {% empty %}
-    <p>No lab tests available.</p>
+    <p>
+        {% if current_location %}
+        No lab tests available in "<strong>{{ current_location }}</strong>".
+        {% else %}
+        No lab tests available.
+        {% endif %}
+    </p>
     {% endfor %}
 </div>
 {% endblock %}

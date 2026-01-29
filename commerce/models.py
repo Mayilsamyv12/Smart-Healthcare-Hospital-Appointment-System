@@ -1,10 +1,24 @@
 from django.db import models
 from django.conf import settings
 
+class LabCategory(models.Model):
+    name = models.CharField(max_length=100)
+    icon = models.ImageField(upload_to='lab_categories/', null=True, blank=True)
+    slug = models.SlugField(unique=True, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Lab Categories"
+
+
 class LabTest(models.Model):
     name = models.CharField(max_length=255)
     features = models.TextField(help_text="Description of the test")
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    # Changed from CharField to ForeignKey
+    category = models.ForeignKey(LabCategory, on_delete=models.SET_NULL, null=True, related_name='lab_tests')
     location = models.CharField(max_length=255)
     image = models.ImageField(upload_to='labs/', null=True, blank=True)
 

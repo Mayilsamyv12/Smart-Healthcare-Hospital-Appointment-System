@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Medicine, LabTest, Order
+from .models import Medicine, LabTest, Order, LabCategory
 
 @admin.register(Medicine)
 class MedicineAdmin(admin.ModelAdmin):
@@ -8,8 +8,14 @@ class MedicineAdmin(admin.ModelAdmin):
 
 @admin.register(LabTest)
 class LabTestAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price', 'location')
+    list_display = ('name', 'price', 'location', 'category')
     search_fields = ('name', 'location')
+    list_filter = ('category',)
+
+@admin.register(LabCategory)
+class LabCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):

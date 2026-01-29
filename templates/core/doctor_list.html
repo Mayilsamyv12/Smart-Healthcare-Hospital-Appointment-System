@@ -23,7 +23,19 @@
             style="display: block; text-align: center; margin-top: 1rem;">Book Appointment</a>
     </div>
     {% empty %}
-    <p>No doctors available.</p>
+    <p>
+        {% if current_location %}
+        No doctors available in "<strong>{{ current_location }}</strong>". <a href="#"
+            onclick="document.forms['clearLocationForm'].submit(); return false;">Clear Location</a>
+        <!-- Hidden form for clearing location -->
+    <form id="clearLocationForm" action="{% url 'set_location' %}" method="post" style="display:none;">
+        {% csrf_token %}
+        <input type="hidden" name="location" value="">
+    </form>
+    {% else %}
+    No doctors available.
+    {% endif %}
+    </p>
     {% endfor %}
 </div>
 {% endblock %}

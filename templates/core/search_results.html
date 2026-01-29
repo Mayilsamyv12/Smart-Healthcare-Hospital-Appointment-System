@@ -3,7 +3,7 @@
 {% block content %}
 <h1 style="margin-bottom: 2rem;">Search Results for "{{ query }}"</h1>
 
-{% if not hospitals and not doctors and not labs %}
+{% if not hospitals and not doctors and not labs and not medicines %}
 <p>No results found.</p>
 {% endif %}
 
@@ -69,6 +69,29 @@
         <p>{{ test.features }}</p>
 
         <a href="{% url 'book_lab_test' test.id %}" class="btn btn-primary">Book Appointment</a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if medicines %}
+<h2>Medicines</h2>
+<div class="grid" style="margin-bottom: 3rem;">
+    {% for medicine in medicines %}
+    <div class="card">
+        {% if medicine.image %}
+        <img src="{{ medicine.image.url }}" alt="{{ medicine.name }}"
+            style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+        {% else %}
+        <div
+            style="width: 100%; height: 150px; background: #eee; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: #aaa;">
+            No Image</div>
+        {% endif %}
+        <h3>{{ medicine.name }}</h3>
+        <p>{{ medicine.description|truncatewords:20 }}</p>
+        <p><strong>Price:</strong> ₹{{ medicine.price }}</p>
+
+        <a href="{% url 'add_to_cart' 'medicine' medicine.id %}" class="btn btn-primary">Add to Cart</a>
     </div>
     {% endfor %}
 </div>

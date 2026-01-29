@@ -19,16 +19,18 @@ def notification_counts(request):
     return counts
 
 def sidebar_categories(request):
-    from core.models import Doctor
-    from commerce.models import LabTest
+    from core.models import Specialty
+    from commerce.models import LabCategory
+
+    # Fetch Specialties and LabCategories
+    doctor_specialties = Specialty.objects.all().order_by('name')
+    lab_categories = LabCategory.objects.all().order_by('name')
     
-    # Fetch distinct specialties for Doctors/Hospitals
-    specialties = Doctor.objects.values_list('specialty', flat=True).distinct().order_by('specialty')
-    
-    # Fetch distinct Lab Test names
-    lab_tests = LabTest.objects.values_list('name', flat=True).distinct().order_by('name')[:8] # Limit to 8
-    
+    # Hospital specialties are shared with Doctor specialties for now
+    hospital_specialties = doctor_specialties
+
     return {
-        'sidebar_specialties': specialties,
-        'sidebar_lab_tests': lab_tests
+        'sidebar_doctor_specialties': doctor_specialties,
+        'sidebar_lab_categories': lab_categories,
+        'sidebar_hospital_specialties': hospital_specialties,
     }

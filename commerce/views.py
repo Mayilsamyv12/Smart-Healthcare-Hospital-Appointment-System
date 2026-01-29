@@ -14,6 +14,11 @@ def lab_test_list(request):
     user_location = request.session.get('user_location')
     if user_location:
         tests = tests.filter(location__icontains=user_location)
+        
+    category = request.GET.get('category')
+    if category:
+        tests = tests.filter(category__name__icontains=category)
+        
     return render(request, 'commerce/lab_test_list.html', {'tests': tests, 'current_location': user_location})
 
 
