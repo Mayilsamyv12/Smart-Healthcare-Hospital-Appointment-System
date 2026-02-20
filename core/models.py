@@ -32,6 +32,7 @@ class Doctor(models.Model):
     specialty = models.ForeignKey(Specialty, on_delete=models.SET_NULL, null=True, related_name='doctors')
     experience = models.PositiveIntegerField(help_text="Years of experience")
     consultation_fee = models.DecimalField(max_digits=10, decimal_places=2)
+    shift_start_time = models.TimeField(default="09:00:00", help_text="Start time of 3-hour shift")
     image = models.ImageField(upload_to='doctors/', null=True, blank=True)
 
     def __str__(self):

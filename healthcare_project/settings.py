@@ -148,9 +148,14 @@ LOGIN_URL = 'login'
 
 
 
-# Email Configuration (Dev Mode: Prints to Console)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-# For particular security, we are enforcing email verification
+# Email Configuration (SMTP)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'onmeds001@gmail.com'
+EMAIL_HOST_PASSWORD = 'OneMeds@2004'  # Note: Gmail usually requires an App Password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # Default primary key field type

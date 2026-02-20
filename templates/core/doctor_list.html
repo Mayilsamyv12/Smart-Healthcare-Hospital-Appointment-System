@@ -1,41 +1,55 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<h1 style="margin-bottom: 2rem;">Doctors</h1>
-<div class="grid">
-    {% for doctor in doctors %}
-    <div class="card">
-        {% if doctor.image %}
-        <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}"
-            style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
-        {% else %}
-        <div
-            style="width: 100%; height: 200px; background: #eee; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: #aaa;">
-            No Image</div>
-        {% endif %}
-        <h3>{{ doctor.name }}</h3>
-        <p style="color: var(--primary); font-weight: 500;">{{ doctor.specialty }}</p>
-        <p><strong>Experience:</strong> {{ doctor.experience }} years</p>
-        <p><strong>Fee:</strong> ₹{{ doctor.consultation_fee }}</p>
+<div class="page-header" style="text-align: center; margin-bottom: 3rem;">
+    <h1 style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;">Doctors</h1>
+    <p style="color: #666; font-size: 1.2rem;">Expert consultation from top professionals.</p>
+</div>
 
-        <p><strong>Hospital:</strong> {{ doctor.hospital.name }}</p>
-        <a href="{% url 'book_appointment' doctor.id %}" class="btn btn-primary"
-            style="display: block; text-align: center; margin-top: 1rem;">Book Appointment</a>
+<div class="grid hospital-grid">
+    {% for doctor in doctors %}
+    <div class="card doctor-card">
+        <div class="card-image-wrapper">
+            {% if doctor.image %}
+            <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}">
+            {% else %}
+            <div class="placeholder-image">
+                <img src="{% static 'img/doctor_icon.png' %}" alt="Doctor"
+                    style="width: 80px; height: 80px; object-fit: contain; opacity: 0.8; margin-bottom: 0;">
+                <span style="font-size: 0.9rem; margin-top: 0.5rem;">No Image</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card-content">
+            <h3 class="doctor-name">Dr. {{ doctor.name }}</h3>
+            <p class="doctor-hospital" style="color: #444; font-weight: 600; margin-bottom: 0.2rem;">{{
+                doctor.hospital.name }}</p>
+            <p class="doctor-specialty">{{ doctor.specialty|default:"General Physician" }}</p>
+
+            <div class="doctor-meta">
+                <span><strong>Experience:</strong> {{ doctor.experience }} years</span>
+                <span><strong>Fee:</strong> ₹{{ doctor.consultation_fee }}</span>
+            </div>
+
+            <a href="{% url 'book_appointment' doctor.id %}" class="btn btn-primary btn-block">Book Appointment</a>
+        </div>
     </div>
     {% empty %}
-    <p>
+    <div style="grid-column: 1 / -1; text-align: center; padding: 4rem;">
+        <img src="{% static 'img/doctor_icon.png' %}" style="width: 100px; opacity: 0.5; margin-bottom: 1rem;">
+        <p style="font-size: 1.2rem; color: #888;">
+            {% if current_location %}
+            No doctors available in "<strong>{{ current_location }}</strong>".
+            {% else %}
+            No doctors available at the moment.
+            {% endif %}
+        </p>
         {% if current_location %}
-        No doctors available in "<strong>{{ current_location }}</strong>". <a href="#"
-            onclick="document.forms['clearLocationForm'].submit(); return false;">Clear Location</a>
-        <!-- Hidden form for clearing location -->
-    <form id="clearLocationForm" action="{% url 'set_location' %}" method="post" style="display:none;">
-        {% csrf_token %}
-        <input type="hidden" name="location" value="">
-    </form>
-    {% else %}
-    No doctors available.
-    {% endif %}
-    </p>
+        <a href="?clear_location=true" style="color: var(--primary); font-weight: 600;">Clear Location Filter</a>
+        {% endif %}
+    </div>
     {% endfor %}
 </div>
 {% endblock %}

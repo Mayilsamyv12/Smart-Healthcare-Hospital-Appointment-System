@@ -46,14 +46,66 @@ def doctor_list(request):
 @login_required
 def book_appointment(request, doctor_id):
     doctor = get_object_or_404(Doctor, id=doctor_id)
+    
+    # Get selected date from GET or default to today
+    selected_date_str = request.GET.get('date')
+    if selected_date_str:
+        try:
+            from datetime import datetime
+            selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            from datetime import date
+            selected_date = date.today()
+    else:
+        from datetime import date
+        selected_date = date.today()
+
     if request.method == 'POST':
-        date = request.POST.get('date')
-        time = request.POST.get('time')
-        # Logic to check availability could be added here
-        Appointment.objects.create(user=request.user, doctor=doctor, date=date, time=time)
+        date_str = request.POST.get('date')
+        time_str = request.POST.get('time')
+        
+        # Check if already booked
+        if Appointment.objects.filter(doctor=doctor, date=date_str, time=time_str).exists():
+            messages.error(request, 'This slot is already booked. Please choose another.')
+            return redirect('book_appointment', doctor_id=doctor.id)
+            
+        Appointment.objects.create(user=request.user, doctor=doctor, date=date_str, time=time_str)
+        
+        # Send email confirmation (Placeholder for next step)
+        # send_confirmation_email(request.user, doctor, date_str, time_str)
+        
         messages.success(request, 'Appointment booked successfully!')
-        return redirect('profile') # Or reminder page
-    return render(request, 'core/book_appointment.html', {'doctor': doctor})
+        return redirect('reminder_list')
+
+    # Generate Slots
+    from datetime import datetime, timedelta, time
+    
+    shift_start = doctor.shift_start_time or time(9, 0)
+    current_dt = datetime.combine(selected_date, shift_start)
+    end_dt = current_dt + timedelta(hours=3) # 3 Hours Shift logic
+    
+    booked_times = Appointment.objects.filter(doctor=doctor, date=selected_date).values_list('time', flat=True)
+    
+    slots = []
+    while current_dt < end_dt:
+        slot_time = current_dt.time()
+        is_booked = False
+        # Simple check: if slot_time is exactly in booked_times
+        if slot_time in booked_times:
+            is_booked = True
+            
+        slots.append({
+            'time': slot_time.strftime('%H:%M'), 
+            'label': current_dt.strftime('%I:%M %p'),
+            'is_booked': is_booked
+        })
+        current_dt += timedelta(minutes=30) # 30 min interval
+
+    return render(request, 'core/book_appointment.html', {
+        'doctor': doctor, 
+        'slots': slots, 
+        'selected_date': selected_date.strftime('%Y-%m-%d')
+    })
 
 @login_required
 def reminder_list(request):

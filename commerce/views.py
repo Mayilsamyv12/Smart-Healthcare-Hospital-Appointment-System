@@ -52,10 +52,7 @@ def add_to_cart(request, type, id):
         print(f"ERROR in add_to_cart: {str(e)}")
         messages.error(request, 'An error occurred while adding to cart.')
 
-            
-    except Exception as e:
-        print(f"ERROR in add_to_cart: {str(e)}")
-        messages.error(request, 'An error occurred while adding to cart.')
+
             
     return redirect('cart_view')
 

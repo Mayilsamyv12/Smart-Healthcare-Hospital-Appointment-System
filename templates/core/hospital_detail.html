@@ -1,55 +1,117 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="card" style="margin-bottom: 2rem;">
-    {% if hospital.image %}
-    <img src="{{ hospital.image.url }}" alt="{{ hospital.name }}"
-        style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 2rem;">
-    {% endif %}
-    <h1>{{ hospital.name }}</h1>
-    <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 1rem;"><i style="margin-right: 8px;">📍</i>{{
-        hospital.location }}</p>
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding-top: 2rem;">
 
-    <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
-        <div>
-            <strong>Contact:</strong>
-            <p>{{ hospital.contact_no }}</p>
+    <!-- Hospital Header / Hero -->
+    <div class="card"
+        style="border: none; border-radius: 20px; overflow: hidden; margin-bottom: 3rem; padding: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+        <div class="hospital-hero-container">
+            {% if hospital.image %}
+            <img src="{{ hospital.image.url }}" alt="{{ hospital.name }}" class="hospital-hero-img">
+            {% else %}
+            <div
+                style="width: 100%; height: 100%; background: linear-gradient(135deg, #e0eafc, #cfdef3); display: flex; align-items: center; justify-content: center;">
+                <img src="{% static 'img/hospital_icon.png' %}" style="width: 120px; opacity: 0.5;">
+            </div>
+            {% endif %}
         </div>
-        <div>
-            <strong>Specialties:</strong>
-            <p>{{ hospital.specialties }}</p>
+
+        <div class="card-content" style="padding: 2rem;">
+            <!-- Title & Location Section -->
+            <div style="margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 2rem;">
+                <h1 style="font-size: 3rem; margin-bottom: 0.5rem; color: var(--text-main);">{{ hospital.name }}</h1>
+                <p
+                    style="font-size: 1.1rem; color: #444; display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                    <span style="font-size: 1.3rem;">📍</span>
+                    <span>{{ hospital.location|default:"Location info unavailable" }}</span>
+                </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: offset;">
+
+                <!-- Left: Specialties -->
+                <div>
+                    <h3
+                        style="font-size: 1.5rem; color: var(--primary); margin-bottom: 1rem; border-bottom: 2px solid #eee; padding-bottom: 0.5rem;">
+                        Medical Specialties
+                    </h3>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.8rem;">
+                        {% for specialty in hospital.specialties.all %}
+                        {% if "core.Specialty" not in specialty.name %}
+                        <span class="badge"
+                            style="font-size: 1rem; padding: 0.6rem 1rem; background: #eef2ff; color: var(--primary); border: 1px solid #dbeafe;">
+                            {{ specialty.name }}
+                        </span>
+                        {% endif %}
+                        {% empty %}
+                        <p class="text-muted">General Healthcare Services</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Right: Contact & Actions -->
+                <div>
+                    <h3
+                        style="font-size: 1.5rem; color: var(--primary); margin-bottom: 1rem; border-bottom: 2px solid #eee; padding-bottom: 0.5rem;">
+                        Contact Information
+                    </h3>
+                    <div style="font-size: 1.2rem; color: #444; margin-bottom: 2rem;">
+                        <p style="margin-bottom: 1rem;"><strong>📞 Phone:</strong> {{ hospital.contact_no }}</p>
+                        {% if hospital.latitude and hospital.longitude %}
+                        <p style="margin-bottom: 1rem;"><strong>🧭 Directions:</strong></p>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ hospital.latitude }},{{ hospital.longitude }}"
+                            target="_blank" class="btn btn-primary"
+                            style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.5rem;">
+                            <span>🗺️</span> Open in Google Maps
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    {% if hospital.latitude and hospital.longitude %}
-    <a href="https://www.google.com/maps/dir/?api=1&destination={{ hospital.latitude }},{{ hospital.longitude }}"
-        target="_blank" class="btn btn-primary" style="margin-bottom: 2rem;">Get Directions on Map</a>
-    {% endif %}
-</div>
+    <!-- Doctors Section -->
+    <div class="section-header" style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 2.5rem; color: var(--text-main);">Doctors at {{ hospital.name }}</h2>
+        <div style="width: 80px; height: 4px; background: var(--primary); margin: 1rem auto; border-radius: 2px;"></div>
+    </div>
 
-<h2 style="margin-bottom: 1.5rem;">Doctors at {{ hospital.name }}</h2>
-<div class="grid">
-    {% for doctor in hospital.doctors.all %}
-    <div class="card">
-        {% if doctor.image %}
-        <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}"
-            style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
-        {% else %}
+    <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">
+        {% for doctor in hospital.doctors.all %}
+        <div class="card" style="border: 12px solid white; display: flex; flex-direction: column; text-align: left;">
+            <div class="card-image-wrapper"
+                style="height: 250px; overflow: hidden; border-radius: 12px; margin-bottom: 1rem;">
+                {% if doctor.image %}
+                <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}"
+                    style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;">
+                {% else %}
+                <div
+                    style="width: 100%; height: 100%; background: #f0f0f0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <img src="{% static 'img/doctor_icon.png' %}" style="width: 80px; opacity: 0.5;">
+                </div>
+                {% endif %}
+            </div>
+
+            <h3 style="font-size: 1.4rem; margin-bottom: 0.2rem;">Dr. {{ doctor.name }}</h3>
+            <p style="color: var(--primary); font-weight: 600; margin-bottom: 0.5rem;">{{ doctor.specialty }}</p>
+
+            <!-- Line by Line Details -->
+            <p style="margin-bottom: 0.3rem;"><strong>Experience:</strong> {{ doctor.experience }} years</p>
+            <p style="margin-bottom: 1rem;"><strong>Fee:</strong> ₹{{ doctor.consultation_fee }}</p>
+
+            <a href="{% url 'book_appointment' doctor.id %}" class="btn btn-primary"
+                style="margin-top: auto; text-align: center;">Book Appointment</a>
+        </div>
+        {% empty %}
         <div
-            style="width: 100%; height: 200px; background: #eee; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: #aaa;">
-            No Image</div>
-        {% endif %}
-        <h3>{{ doctor.name }}</h3>
-        <p style="color: var(--primary); font-weight: 500;">{{ doctor.specialty }}</p>
-        <p><strong>Experience:</strong> {{ doctor.experience }} years</p>
-        <p><strong>Fee:</strong> ₹{{ doctor.consultation_fee }}</p>
-
-
-        <a href="{% url 'book_appointment' doctor.id %}" class="btn btn-primary"
-            style="display: block; text-align: center; margin-top: 1rem;">Book Appointment</a>
+            style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: white; border-radius: 20px; border: 12px solid white;">
+            <p style="font-size: 1.2rem; color: #888;">No doctors listed for this hospital yet.</p>
+        </div>
+        {% endfor %}
     </div>
-    {% empty %}
-    <p>No doctors listed for this hospital yet.</p>
-    {% endfor %}
+
 </div>
 {% endblock %}

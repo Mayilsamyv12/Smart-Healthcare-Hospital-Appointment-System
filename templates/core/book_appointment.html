@@ -2,31 +2,89 @@
 
 {% block content %}
 <div style="max-width: 600px; margin: 4rem auto;">
-    <div class="card">
+    <div class="form-card" style="max-width: 700px; margin: 0 auto;">
         <h2>Book Appointment</h2>
-        <p style="margin-bottom: 2rem;">with {{ doctor.name }} ({{ doctor.specialty }})</p>
+        <p style="text-align: center; color: #64748b; margin-bottom: 2rem;">with <strong
+                style="color: var(--text-main);">Dr. {{ doctor.name }}</strong> ({{ doctor.specialty }})</p>
 
-        <form method="post">
-            {% csrf_token %}
-            <div style="margin-bottom: 1rem;">
-                <label>Date</label>
-                <input type="date" name="date" required
-                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px;">
-            </div>
-            <div style="margin-bottom: 1rem;">
-                <label>Time</label>
-                <input type="time" name="time" required
-                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px;">
-            </div>
-
-            <div style="margin-top: 2rem;">
-                <p><strong>Consultation Fee:</strong> ₹{{ doctor.consultation_fee }}</p>
-            </div>
-
-
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 2rem;">Confirm
-                Booking</button>
+        <!-- Date Selection (Reloads page) -->
+        <form method="get" action="" class="form-group"
+            style="background: #f8fafc; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <label class="form-label">Select Date:</label>
+            <input type="date" name="date" value="{{ selected_date }}" onchange="this.form.submit()" class="form-input">
+            <p
+                style="font-size: 0.9rem; color: #94a3b8; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span>📅</span> Select a date to see available time slots
+            </p>
         </form>
+
+        <!-- Booking Form -->
+        {% if slots %}
+        <form method="post" id="bookingForm">
+            {% csrf_token %}
+            <input type="hidden" name="date" value="{{ selected_date }}">
+            <input type="hidden" name="time" id="selectedTime" required>
+
+            <label class="form-label" style="margin-top: 2rem;">Select Time Slot:</label>
+
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-bottom: 2.5rem;">
+                {% for slot in slots %}
+                {% if slot.is_booked %}
+                <button type="button" disabled
+                    style="padding: 12px; border: 1px solid #e2e8f0; background: #f1f5f9; color: #cbd5e1; border-radius: 8px; cursor: not-allowed; font-weight: 500;">
+                    {{ slot.label }}
+                </button>
+                {% else %}
+                <button type="button" onclick="selectSlot('{{ slot.time }}', this)" class="slot-btn"
+                    style="padding: 12px; border: 1px solid #e2e8f0; background: white; color: var(--text-main); border-radius: 8px; cursor: pointer; transition: all 0.2s; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    {{ slot.label }}
+                </button>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            <div
+                style="margin-top: 1rem; margin-bottom: 2rem; padding: 1.5rem; background: #f0f9ff; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #0c4a6e; font-weight: 600;">Consultation Fee</span>
+                <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">₹{{ doctor.consultation_fee
+                    }}</span>
+            </div>
+
+            <button type="submit" id="confirmBtn" class="btn btn-primary"
+                style="width: 100%; padding: 1rem; font-size: 1.1rem; opacity: 0.5; pointer-events: none; transition: all 0.3s;">
+                Confirm Booking
+            </button>
+        </form>
+        {% else %}
+        <div
+            style="text-align: center; padding: 3rem; background: #fff1f2; border-radius: 12px; color: #be123c; border: 1px solid #fecdd3;">
+            <p style="font-size: 1.1rem; font-weight: 500;">No slots available for this date.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.95rem;">Please try selecting another date.</p>
+        </div>
+        {% endif %}
     </div>
 </div>
+
+<script>
+    function selectSlot(time, btn) {
+        // Reset all buttons
+        document.querySelectorAll('.slot-btn').forEach(b => {
+            b.style.background = 'white';
+            b.style.color = 'var(--primary)';
+        });
+
+        // Highlight selected
+        btn.style.background = 'var(--primary)';
+        btn.style.color = 'white';
+
+        // Set value
+        document.getElementById('selectedTime').value = time;
+
+        // Enable submit
+        const submitBtn = document.getElementById('confirmBtn');
+        submitBtn.style.opacity = '1';
+        submitBtn.style.pointerEvents = 'auto';
+    }
+</script>
 {% endblock %}

@@ -2,44 +2,40 @@
 
 {% block content %}
 <div style="max-width: 600px; margin: 4rem auto;">
-    <div class="card">
+    <div class="form-card">
         <h2>Delivery Address</h2>
         <form method="post">
             {% csrf_token %}
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div style="margin-bottom: 1rem;">
-                    <label>House No</label>
-                    <input type="text" name="house_no" required
-                        style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">House No</label>
+                    <input type="text" name="house_no" required class="form-input" placeholder="e.g. 12/B">
                 </div>
-                <div style="margin-bottom: 1rem;">
-                    <label>Street</label>
-                    <input type="text" name="street" required
-                        style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+                <div class="form-group">
+                    <label class="form-label">Street</label>
+                    <input type="text" name="street" required class="form-input" placeholder="e.g. MG Road">
                 </div>
             </div>
 
-            <div style="margin-bottom: 1rem;">
-                <label>Landmark</label>
-                <input type="text" name="landmark"
-                    style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+            <div class="form-group">
+                <label class="form-label">Landmark</label>
+                <input type="text" name="landmark" class="form-input" placeholder="e.g. Near City Mall">
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div style="margin-bottom: 1rem;">
-                    <label>City</label>
-                    <input type="text" name="city" required
-                        style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">City</label>
+                    <input type="text" name="city" required class="form-input">
                 </div>
-                <div style="margin-bottom: 1rem;">
-                    <label>Pincode</label>
-                    <input type="text" name="pincode" required
-                        style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;">
+                <div class="form-group">
+                    <label class="form-label">Pincode</label>
+                    <input type="text" name="pincode" required class="form-input">
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 2rem;">Proceed to
-                Payment</button>
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; padding: 1rem; font-size: 1.1rem; margin-top: 1rem;">Proceed to Payment
+                &rarr;</button>
         </form>
     </div>
 </div>

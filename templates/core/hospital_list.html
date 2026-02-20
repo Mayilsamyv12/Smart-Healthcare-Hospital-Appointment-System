@@ -26,9 +26,21 @@
             <h3 style="font-size: 1.4rem; margin-bottom: 0.5rem;">{{ hospital.name }}</h3>
 
             <div class="card-meta">
-                <!-- Location removed -->
+                <p class="location"
+                    style="display: flex; align-items: center; gap: 0.5rem; width: 100%; margin-bottom: 0.5rem;">
+                    <span style="font-size: 1.2rem;">📍</span> {{ hospital.location|default:"Location not available" }}
+                </p>
 
-                <!-- Specialties removed -->
+                <div class="specialties"
+                    style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; justify-content: flex-start;">
+                    {% for specialty in hospital.specialties.all %}
+                    {% if "core.Specialty" not in specialty.name %}
+                    <span class="badge">{{ specialty.name }}</span>
+                    {% endif %}
+                    {% empty %}
+                    <span class="text-muted" style="font-size: 0.9rem; font-style: italic;">General Hospital</span>
+                    {% endfor %}
+                </div>
 
                 <p class="contact" style="margin-top: 0.5rem;"><strong>📞</strong> {{ hospital.contact_no }}</p>
             </div>
