@@ -3,84 +3,106 @@
 
 
 {% block content %}
-<div class="hero-section">
-    <div class="hero-graphic-cross"></div> <!-- CSS generated cross graphic -->
-    <div class="hero-content">
-        <h1 class="hero-title">Your Health,<br>Our Priority</h1>
-        <p class="hero-subtitle">Find doctors, hospitals, medicines, and labs instantly with our premium verified
-            network.</p>
+<div style="background: url('{% static 'img/hero_bg.png' %}') center/cover no-repeat; padding: 4rem 1rem 6rem 1rem; margin-top: 60px; min-height: calc(100vh - 60px);">
+    <!-- Large Glass wrapper -->
+    <div style="max-width: 1200px; margin: 0 auto; background: rgba(255, 255, 255, 0.35); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1.5px solid rgba(255, 255, 255, 0.6); border-radius: 24px; padding: 2rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);">
+        
+        <!-- Dark Blue Inner Banner -->
+        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); border-radius: 16px; padding: 5rem 2rem; text-align: center; color: white; position: relative; overflow: hidden;">
+            <div class="hero-graphic-cross"></div> <!-- CSS generated cross graphic -->
+            <div style="position: relative; z-index: 2;">
+                <h1 class="hero-title" style="font-size: 4rem; margin-bottom: 1.5rem; color: white;">Your Health,<br>Our Priority</h1>
+                <p class="hero-subtitle" style="margin: 0 auto 3rem auto; font-size: 1.25rem; color: #e2e8f0; max-width: 800px;">Find doctors, hospitals, medicines, and labs instantly with our premium verified network.</p>
 
-        <div class="hero-search-wrapper">
-            <form action="{% url 'search' %}" method="get" class="hero-search-inner">
-                <!-- Main Search -->
-                <div class="search-input-group">
-                    <span class="search-icon-hero">🔍</span>
-                    <input type="text" name="q" class="hero-input"
-                        placeholder="Search for doctors, hospitals, specialties...">
+                <!-- Plain HTML Search Bar -->
+                <div style="margin: 0 auto; max-width: 700px; width: 100%; box-sizing: border-box;">
+                    <form id="home-search-form" action="{% url 'search' %}" method="get" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.95); border-radius: 50px; padding: 10px 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); width: 100%; box-sizing: border-box; height: 55px;">
+                        <span style="font-size: 1.3rem; color: #3b82f6; margin-right: 0.6rem;">🔍</span>
+                        <input type="text" name="q" placeholder="Search doctors, hospitals, medicines..." style="flex: 1; border: none; outline: none; box-shadow: none; -webkit-appearance: none; appearance: none; font-size: 1.05rem; padding: 0; margin: 0; background: transparent; color: #1e293b;" />
+                        <button type="button" onclick="handleVoiceSearch()" style="background: none; border: none; outline: none; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; color: #64748b; margin-left: 0.6rem;" title="Search by voice">
+                            <svg fill="currentColor" viewBox="0 0 24 24" width="22" height="22">
+                                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"></path>
+                                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"></path>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function handleVoiceSearch() {
+                if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                    alert("Your browser does not support voice search.");
+                    return;
+                }
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'en-US';
+                recognition.start();
+                
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    const form = document.getElementById('home-search-form');
+                    if(form) {
+                        const input = form.querySelector('input[name="q"]');
+                        if(input) input.value = transcript;
+                        form.submit();
+                    }
+                };
+                
+                recognition.onerror = (event) => {
+                    console.error("Speech recognition error", event.error);
+                };
+            }
+        </script>
+
+        <!-- Cards Container -->
+        <div style="margin-top: 2rem;">
+            <h3 style="font-size: 1.6rem; color: #1e293b; margin-bottom: 1.5rem; font-weight: 700; padding-left: 0.5rem;">Quick Services</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
+                
+                <!-- Card 1 -->
+                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem auto; background: #e0f2fe; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <img src="{% static 'img/doctor_icon.png' %}" alt="Find Doctors" style="width: 35px; height: 35px; object-fit: contain;" />
+                    </div>
+                    <h3 style="font-size: 1.4rem; color: #1f2937; margin-bottom: 1rem; font-weight: 700;">Find Doctors</h3>
+                    <p style="color: #475569; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">Expert consultations at your fingertips. Book appointments with top specialists.</p>
+                    <a href="{% url 'doctor_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239, 246, 255, 0.9);">Browse Doctors →</a>
                 </div>
 
-                <!-- Location Search (Optional integration) -->
-                <div class="search-input-group">
-                    <span class="search-icon-hero">📍</span>
-                    <input type="text" name="location" class="hero-input" placeholder="Location">
+                <!-- Card 2 -->
+                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem auto; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <img src="{% static 'img/hospital_icon.png' %}" alt="Hospitals" style="width: 35px; height: 35px; object-fit: contain;" />
+                    </div>
+                    <h3 style="font-size: 1.4rem; color: #1f2937; margin-bottom: 1rem; font-weight: 700;">Hospitals</h3>
+                    <p style="color: #475569; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">Locate top-rated hospitals near you with world-class facilities and premium verified network.</p>
+                    <a href="{% url 'hospital_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239, 246, 255, 0.9);">Find Hospitals →</a>
                 </div>
 
-                <!-- Action Icons (Visual only for now matching design) -->
-                <div class="hero-action-icons">
-                    <button type="button" class="hero-icon-btn">
-                        <span style="font-size: 1.2rem;">⊞</span>
-                    </button>
-                    <button type="button" class="hero-icon-btn">
-                        <span style="font-size: 1.2rem;">🔔</span>
-                    </button>
+                <!-- Card 3 -->
+                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem auto; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <img src="{% static 'img/medicine_icon.png' %}" alt="Pharmacy" style="width: 35px; height: 35px; object-fit: contain;" />
+                    </div>
+                    <h3 style="font-size: 1.4rem; color: #1f2937; margin-bottom: 1rem; font-weight: 700;">Pharmacy</h3>
+                    <p style="color: #475569; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">Order medicines and get them delivered to your doorstep quickly safely and securely.</p>
+                    <a href="{% url 'medicine_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239, 246, 255, 0.9);">Order Now →</a>
                 </div>
 
-                <button type="submit" class="hero-search-btn">Search</button>
-            </form>
-        </div>
-    </div>
-</div>
+                <!-- Card 4 -->
+                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem auto; background: #f3e8ff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <img src="{% static 'img/lab_icon.png' %}" alt="Lab Tests" style="width: 35px; height: 35px; object-fit: contain;" />
+                    </div>
+                    <h3 style="font-size: 1.4rem; color: #1f2937; margin-bottom: 1rem; font-weight: 700;">Lab Tests</h3>
+                    <p style="color: #475569; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">Book diagnostic tests from certified labs with home sample collection options today.</p>
+                    <a href="{% url 'lab_test_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239, 246, 255, 0.9);">Book Tests →</a>
+                </div>
 
-<div class="container" style="padding-top: 0;">
-    <div class="grid" style="grid-template-columns: repeat(4, 1fr);">
-        <div class="feature-card">
-            <div class="feature-icon-wrapper">
-                <img src="{% static 'img/doctor_icon.png' %}" alt="Doctors"
-                    style="width: 40px; height: 40px; object-fit: contain;">
             </div>
-            <h3 class="feature-title">Find Doctors</h3>
-            <p class="feature-desc">Expert consultations at your fingertips. Book appointments with top specialists.</p>
-            <a href="{% url 'doctor_list' %}" class="feature-link">Browse Doctors &rarr;</a>
-        </div>
-
-        <div class="feature-card">
-            <div class="feature-icon-wrapper">
-                <img src="{% static 'img/hospital_icon.png' %}" alt="Hospitals"
-                    style="width: 40px; height: 40px; object-fit: contain;">
-            </div>
-            <h3 class="feature-title">Hospitals</h3>
-            <p class="feature-desc">Locate top-rated hospitals near you with world-class facilities.</p>
-            <a href="{% url 'hospital_list' %}" class="feature-link">Find Hospitals &rarr;</a>
-        </div>
-
-        <div class="feature-card">
-            <div class="feature-icon-wrapper">
-                <img src="{% static 'img/medicine_icon.png' %}" alt="Pharmacy"
-                    style="width: 40px; height: 40px; object-fit: contain;">
-            </div>
-            <h3 class="feature-title">Pharmacy</h3>
-            <p class="feature-desc">Order medicines and get them delivered to your doorstep.</p>
-            <a href="{% url 'medicine_list' %}" class="feature-link">Order Now &rarr;</a>
-        </div>
-
-        <div class="feature-card">
-            <div class="feature-icon-wrapper">
-                <img src="{% static 'img/lab_icon.png' %}" alt="Labs"
-                    style="width: 40px; height: 40px; object-fit: contain;">
-            </div>
-            <h3 class="feature-title">Lab Tests</h3>
-            <p class="feature-desc">Book diagnostic tests from certified labs with home sample collection.</p>
-            <a href="{% url 'lab_test_list' %}" class="feature-link">Book Tests &rarr;</a>
         </div>
     </div>
 </div>

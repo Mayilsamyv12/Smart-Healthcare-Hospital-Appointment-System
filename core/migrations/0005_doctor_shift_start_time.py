@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0004_fix_doctor_schema'),
+        ("core", "0004_fix_doctor_schema"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='doctor',
-            name='shift_start_time',
-            field=models.TimeField(default='09:00:00', help_text='Start time of 3-hour shift'),
+            model_name="doctor",
+            name="shift_start_time",
+            field=models.TimeField(
+                default="09:00:00", help_text="Start time of 3-hour shift"
+            ),
         ),
     ]

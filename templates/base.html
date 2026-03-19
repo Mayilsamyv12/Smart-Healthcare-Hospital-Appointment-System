@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Health System</title>
+    <title>OneMeds</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.0">
@@ -19,40 +19,68 @@
             </a>
         </div>
 
-        <div class="nav-links" style="gap: 1.5rem;">
+        <div class="nav-links" style="gap: 1.5rem; position: relative; align-items: center;">
+            <form id="nav-search-form" action="{% url 'search' %}" method="get" style="display: flex; align-items: center; background: #fff; border-radius: 6px; padding: 4px 10px; border: 2px solid #94a3b8; width: 220px; height: 36px; box-sizing: border-box;">
+                <span style="color: #64748b; margin-right: 0.3rem; font-size: 0.9rem;">🔍</span>
+                <input id="nav-search-input" type="text" name="q" placeholder="Location, doctors..."
+                    style="flex: 1; border: none; outline: none; box-shadow: none; -webkit-appearance: none; appearance: none; background: transparent; width: 100%; font-size: 0.9rem; color: #334155; padding: 0; margin: 0;">
+                <button type="button" onclick="startNavVoiceSearch()" style="background: none; border: none; outline: none; cursor: pointer; margin-left: 0.3rem; padding: 0; display: flex; align-items: center; justify-content: center; color: #64748b;" title="Search by voice">
+                    <svg fill="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"></path>
+                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"></path>
+                    </svg>
+                </button>
+            </form>
+
+            <div onclick="openLocationModal()" style="color: #475569; font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; cursor: pointer; gap: 0.3rem;">
+                <!-- <span class="nav-icon"></span> -->
+                <span>Location</span>
+                <span style="font-size: 0.8rem; margin-left: 2px;">▼</span>
+            </div>
+
             {% if user.is_authenticated %}
-            <a href="{% url 'profile' %}" class="nav-item">Profile</a>
-            <a href="{% url 'cart_view' %}" class="nav-item">
+            <!-- Profile Link -->
+            <a href="{% url 'profile' %}" style="color: #475569; font-weight: 500; font-size: 0.95rem; text-decoration: none; display: flex; align-items: center; cursor: pointer; gap: 0.3rem;">
+                <span style="font-size: 1.1rem; color: var(--primary);"></span>
+                Profile
+            </a>
+
+            <a href="{% url 'cart_view' %}" style="color: #475569; font-weight: 500; font-size: 0.95rem; text-decoration: none; display: flex; align-items: center; cursor: pointer; gap: 0.3rem;">
+                <span style="font-size: 1.1rem; color: var(--primary);"></span>
                 Cart
                 {% if cart_count > 0 %}
                 ({{ cart_count }})
                 {% endif %}
             </a>
-            {% else %}
+            {% endif %}
+
+            <!-- Reminder Dropdown -->
+            <div class="nav-icon-link" onclick="toggleNavbarDropdown('reminderDropdownNav', true)"
+                style="color: #475569; font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; cursor: pointer; position:relative; gap: 0.3rem;">
+                <span style="font-size: 1.1rem; color: var(--primary);"></span>
+                <span>Reminder</span>
+                <div id="reminderDropdownNav" class="navbar-dropdown-content" style="width: 280px; right: -50px; text-transform: none; text-align: left;">
+                    <div
+                        style="padding: 10px 15px; border-bottom: 1px solid #eee; font-weight: bold; display: flex; justify-content: space-between;">
+                        <span>Live Reminders</span>
+                        <span style="font-size: 0.8rem; font-weight: normal;"><a href="{% url 'reminder_list' %}"
+                                style="text-decoration:none;">View All</a></span>
+                    </div>
+                    <div id="liveReminderContent"
+                        style="padding: 10px 15px; font-size: 0.9rem; color: #555; max-height: 300px; overflow-y: auto;">
+                        Loading live reminders...
+                    </div>
+                </div>
+            </div>
+
+            {% if not user.is_authenticated %}
             <a href="{% url 'login' %}" class="btn-nav-outline">Login</a>
             <a href="{% url 'register' %}" class="btn-nav-solid">Register</a>
             {% endif %}
-
-            <a href="{% url 'reminder_list' %}" class="nav-icon-link">
-                <span class="nav-icon">🔔</span>
-                <span>Reminder</span>
-            </a>
-
-            <div class="nav-location-trigger" onclick="openLocationModal()">
-                <span class="nav-icon">📍</span>
-                <span>Location Select</span>
-                <span style="font-size: 0.8rem; margin-left: 2px;">▼</span>
-            </div>
-
-            <form action="{% url 'search' %}" method="get" class="nav-search-pill">
-                <span style="color: #9ca3af; margin-right: 0.5rem;">🔍</span>
-                <input type="text" name="q" placeholder="Search"
-                    style="border: none; outline: none; background: transparent; width: 180px;">
-            </form>
         </div>
     </nav>
 
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar" id="sidebar" style="overflow-y: auto;">
         <div style="position: absolute; top: 20px; right: 20px; padding: 5px; cursor: pointer;"
             onclick="toggleSidebar()">
             <span style="font-size: 2rem; color: #000; line-height: 1;">&times;</span>
@@ -175,6 +203,102 @@
 
     <!-- Initial State for JS -->
     <script>
+        // Custom CSS for Navbar dropdowns
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .navbar-dropdown-content {
+                display: none; position: absolute; top: 100%; right: 0;
+                background-color: #fff; min-width: 200px;
+                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+                z-index: 1001; border-radius: 8px; overflow: hidden;
+                margin-top: 10px;
+            }
+            .navbar-dropdown-content.show {
+                display: block;
+            }
+            .navbar-dropdown-content .dropdown-item {
+                color: black; padding: 12px 16px; 
+                text-decoration: none; display: block;
+            }
+            .navbar-dropdown-content .dropdown-item:hover {
+                background-color: #f1f1f1;
+            }
+            .text-danger { color: #dc3545 !important; }
+        `;
+        document.head.appendChild(style);
+
+        function toggleNavbarDropdown(id, fetchLive = false) {
+            document.querySelectorAll('.navbar-dropdown-content').forEach(d => {
+                if (d.id !== id) d.classList.remove('show');
+            });
+            const d = document.getElementById(id);
+            d.classList.toggle('show');
+
+            if (d.classList.contains('show') && fetchLive) {
+                fetch('/api/profile-data/')
+                    .then(res => {
+                        if (res.status === 401) {
+                            if (id === 'reminderDropdownNav') {
+                                document.getElementById('liveReminderContent').innerHTML = '<div style="color:var(--accent);">Please <a href="{% url "login" %}">login</a> to see live reminders.</div>';
+                            }
+                            return null;
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (!data) return;
+
+                        if (id === 'profileDropdownNav') {
+                            document.getElementById('liveProfileName').innerText = data.username;
+                            document.getElementById('liveProfileEmail').innerText = data.email || 'Registered via App';
+
+                            const appts = data.appointments.length;
+                            document.getElementById('liveProfileAppointments').innerHTML = `<strong>${appts}</strong> upcoming appointment${appts !== 1 ? 's' : ''}`;
+
+                            const ords = data.orders.length;
+                            document.getElementById('liveProfileOrders').innerHTML = `<strong>${ords}</strong> active order${ords !== 1 ? 's' : ''}`;
+                        }
+
+                        if (id === 'reminderDropdownNav') {
+                            let content = '';
+                            if (data.appointments.length > 0) {
+                                content += '<strong style="color:var(--primary);">🩺 Next Appointments</strong><ul style="padding-left:15px; margin-bottom:10px;">';
+                                data.appointments.slice(0, 3).forEach(a => {
+                                    content += `<li>${a.doctor} on ${a.date} at ${a.time}</li>`;
+                                });
+                                content += '</ul>';
+                            } else {
+                                content += '<div style="margin-bottom:10px;">No upcoming appointments.</div>';
+                            }
+
+                            if (data.orders.length > 0) {
+                                content += '<strong style="color:var(--secondary);">📦 Recent Orders</strong><ul style="padding-left:15px;">';
+                                data.orders.slice(0, 3).forEach(o => {
+                                    content += `<li>Order #${o.id} - ${o.status}</li>`;
+                                });
+                                content += '</ul>';
+                            } else {
+                                content += '<div>No active medicine orders.</div>';
+                            }
+
+                            document.getElementById('liveReminderContent').innerHTML = content;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Failed to fetch live data', err);
+                    });
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('.nav-item-dropdown') && !event.target.closest('.nav-icon-link')) {
+                document.querySelectorAll('.navbar-dropdown-content').forEach(d => {
+                    d.classList.remove('show');
+                });
+            }
+        });
+
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
         }
@@ -195,6 +319,30 @@
                 if (window.openLocationModal) window.openLocationModal();
             }
         });
+
+        // Voice Search for Navbar
+        function startNavVoiceSearch() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert("Your browser does not support voice search.");
+                return;
+            }
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.start();
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                const form = document.getElementById('nav-search-form');
+                const input = form.querySelector('input[name="q"]');
+                input.value = transcript;
+                form.submit();
+            };
+            
+            recognition.onerror = function(event) {
+                console.error("Speech recognition error", event.error);
+            };
+        }
     </script>
 
     <!-- Universal Location Modal HTML (Flipkart Style) -->

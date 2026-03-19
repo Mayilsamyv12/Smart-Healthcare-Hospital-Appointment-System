@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('commerce', '0005_labappointment'),
+        ("commerce", "0005_labappointment"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='labtest',
-            name='category',
-            field=models.CharField(default='General', help_text='Category of the test (e.g., Blood Test, Scan)', max_length=100),
+            model_name="labtest",
+            name="category",
+            field=models.CharField(
+                default="General",
+                help_text="Category of the test (e.g., Blood Test, Scan)",
+                max_length=100,
+            ),
         ),
     ]

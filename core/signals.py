@@ -1,18 +1,21 @@
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.core.mail import send_mail
-from django.conf import settings
-from .models import Appointment
+
 from commerce.models import Order
+
 from .integrations import GoogleIntegration
+from .models import Appointment
 
 # Initialize Integration (Singleton-ish)
 google_integration = GoogleIntegration()
 
+
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def send_welcome_email(sender, instance, created, **kwargs):
     if created:
-        subject = 'Welcome to OneMeds!'
+        subject = "Welcome to OneMeds!"
         message = f"""
         Hi {instance.username},
 
@@ -31,11 +34,12 @@ def send_welcome_email(sender, instance, created, **kwargs):
         except Exception as e:
             print(f"Failed to send welcome email: {e}")
 
+
 @receiver(post_save, sender=Appointment)
 def send_appointment_confirmation(sender, instance, created, **kwargs):
     if created:
         # 1. Send Email
-        subject = f'Appointment Confirmation - Dr. {instance.doctor.name}'
+        subject = f"Appointment Confirmation - Dr. {instance.doctor.name}"
         message = f"""
         Dear {instance.user.username},
 
@@ -53,7 +57,9 @@ def send_appointment_confirmation(sender, instance, created, **kwargs):
         The OneMeds Team
         """
         try:
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [instance.user.email])
+            send_mail(
+                subject, message, settings.DEFAULT_FROM_EMAIL, [instance.user.email]
+            )
         except Exception as e:
             print(f"Failed to send appointment confirmation: {e}")
 
@@ -61,11 +67,12 @@ def send_appointment_confirmation(sender, instance, created, **kwargs):
         google_integration.add_appointment_to_sheet(instance)
         google_integration.create_calendar_event(instance)
 
+
 @receiver(post_save, sender=Order)
 def send_order_confirmation(sender, instance, created, **kwargs):
     if created:
         # 1. Send Email
-        subject = f'Order Confirmation - #{instance.id}'
+        subject = f"Order Confirmation - #{instance.id}"
         message = f"""
         Dear {instance.user.username},
 
@@ -81,9 +88,11 @@ def send_order_confirmation(sender, instance, created, **kwargs):
         The OneMeds Team
         """
         try:
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [instance.user.email])
+            send_mail(
+                subject, message, settings.DEFAULT_FROM_EMAIL, [instance.user.email]
+            )
         except Exception as e:
             print(f"Failed to send order confirmation: {e}")
-            
+
         # 2. Google Integration (Sheet)
         google_integration.add_order_to_sheet(instance)

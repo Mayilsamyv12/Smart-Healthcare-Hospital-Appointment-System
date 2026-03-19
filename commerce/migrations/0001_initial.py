@@ -7,41 +7,96 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='LabTest',
+            name="LabTest",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('features', models.TextField(help_text='Description of the test')),
-                ('price', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('location', models.CharField(max_length=255)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("features", models.TextField(help_text="Description of the test")),
+                ("price", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("location", models.CharField(max_length=255)),
             ],
         ),
         migrations.CreateModel(
-            name='Medicine',
+            name="Medicine",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('description', models.TextField()),
-                ('price', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('image', models.ImageField(blank=True, null=True, upload_to='medicines/')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("description", models.TextField()),
+                ("price", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "image",
+                    models.ImageField(blank=True, null=True, upload_to="medicines/"),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Order',
+            name="Order",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('items', models.TextField(help_text='JSON list of items or text summary')),
-                ('total_amount', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('address', models.TextField()),
-                ('prescription', models.ImageField(blank=True, null=True, upload_to='prescriptions/')),
-                ('payment_method', models.CharField(choices=[('COD', 'Cash on Delivery'), ('UPI', 'UPI'), ('Card', 'Card')], max_length=10)),
-                ('status', models.CharField(choices=[('Ordered', 'Ordered'), ('Shipped', 'Shipped'), ('Delivered', 'Delivered')], default='Ordered', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "items",
+                    models.TextField(help_text="JSON list of items or text summary"),
+                ),
+                ("total_amount", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("address", models.TextField()),
+                (
+                    "prescription",
+                    models.ImageField(
+                        blank=True, null=True, upload_to="prescriptions/"
+                    ),
+                ),
+                (
+                    "payment_method",
+                    models.CharField(
+                        choices=[
+                            ("COD", "Cash on Delivery"),
+                            ("UPI", "UPI"),
+                            ("Card", "Card"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("Ordered", "Ordered"),
+                            ("Shipped", "Shipped"),
+                            ("Delivered", "Delivered"),
+                        ],
+                        default="Ordered",
+                        max_length=20,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
     ]
