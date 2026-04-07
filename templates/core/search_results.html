@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <h1 style="margin-bottom: 2rem;">Search Results for "{{ query }}"</h1>
@@ -9,21 +10,105 @@
 
 {% if hospitals %}
 <h2>Hospitals</h2>
-<div class="grid" style="margin-bottom: 3rem;">
+<div style="display: flex; flex-direction: column; gap: 2rem; margin: 0 auto 3rem auto; max-width: 800px;">
     {% for hospital in hospitals %}
-    <div class="card">
-        {% if hospital.image %}
-        <img src="{{ hospital.image.url }}" alt="{{ hospital.name }}"
-            style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
-        {% else %}
-        <div
-            style="width: 100%; height: 200px; background: #eee; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: #aaa;">
-            No Image</div>
-        {% endif %}
-        <h3>{{ hospital.name }}</h3>
-        <p>{{ hospital.location }}</p>
-        <a href="{% url 'hospital_detail' hospital.id %}" class="btn btn-primary"
-            style="margin-top: 1rem; display: inline-block;">View Details</a>
+    <div class="hospital-card-modern" style="background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; padding: 1.5rem; margin-bottom: 0;">
+        <!-- Top Section: Image + Info -->
+        <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
+            <!-- Image -->
+            <div style="flex: 0 0 280px; position: relative; border-radius: 12px; overflow: hidden; height: 280px;">
+                {% if hospital.image %}
+                <img src="{{ hospital.image.url }}" alt="{{ hospital.name }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                {% else %}
+                <div style="width: 100%; height: 100%; background: #f3f4f6; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                    <img src="{% static 'img/hospital_icon.png' %}" alt="Hospital" style="width: 60px; opacity: 0.5;">
+                </div>
+                {% endif %}
+                <!-- Overlay -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%); padding: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white; font-size: 0.85rem; font-weight: 500;">
+                    Verified Facility &bull; ⭐ 4.7 (1,230 Reviews)
+                </div>
+            </div>
+            
+            <!-- Info -->
+            <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column;">
+                <h2 style="margin: 0 0 0.5rem 0; font-size: 1.7rem; color: #111; line-height: 1.25;">{{ hospital.name }}</h2>
+                {% if hospital.about %}
+                <p style="color: #4b5563; font-size: 1.05rem; margin-bottom: 0.8rem; line-height: 1.4;">{{ hospital.about|truncatechars:50 }}</p>
+                {% endif %}
+                
+                <div style="color: #16a34a; font-weight: 600; font-size: 0.95rem; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 6px;">
+                    <span style="display: inline-block; width: 10px; height: 10px; background: #16a34a; border-radius: 50%;"></span> Open Now
+                </div>
+                
+                <h4 style="margin: 0 0 0.8rem 0; font-size: 1rem; color: #111; font-weight: 500;">Specialties</h4>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        {% for specialty in hospital.specialties.all %}
+                        {% if "core.Specialty" not in specialty.name %}
+                        <span style="{% if forloop.first %}background: #2563eb; color: white; border: 1px solid #2563eb;{% else %}background: white; color: #374151; border: 1px solid #d1d5db;{% endif %} padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; text-transform: uppercase;">
+                            {{ specialty.name }}
+                        </span>
+                        {% endif %}
+                        {% empty %}
+                        <span style="background: white; color: #374151; border: 1px solid #d1d5db; padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; text-transform: uppercase;">General</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Details Section -->
+        <div style="display: flex; flex-direction: column; gap: 1.2rem; margin-bottom: 1.5rem;">
+            <!-- Location -->
+            <div style="display: flex; gap: 1rem; align-items: flex-start; justify-content: space-between;">
+                <div style="display: flex; gap: 1rem; align-items: flex-start; flex: 1;">
+                    <div style="width: 48px; height: 48px; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.85rem; color: #374151; text-transform: uppercase; margin-bottom: 0.2rem;">LOCATION:</div>
+                        <div style="font-size: 1.1rem; color: #111; line-height: 1.4;">{{ hospital.location }}</div>
+                    </div>
+                </div>
+                <a href="https://www.google.com/maps/dir/?api=1&destination={{ hospital.latitude|default:'' }},{{ hospital.longitude|default:'' }}" target="_blank" style="color: #2563eb; font-weight: 600; text-decoration: none; font-size: 1.05rem; white-space: nowrap; padding-top: 0.2rem;">
+                    Get Directions
+                </a>
+            </div>
+
+            <!-- Contact -->
+            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                <div style="width: 48px; height: 48px; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: #374151; text-transform: uppercase; margin-bottom: 0.2rem;">CONTACT:</div>
+                    <div style="font-size: 1.1rem; color: #111; margin-bottom: 0.3rem;">{{ hospital.contact_no }}</div>
+                </div>
+            </div>
+            
+            <!-- Email -->
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div style="width: 48px; height: 48px; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                </div>
+                <div>
+                    <div style="font-size: 1.1rem; color: #374151; font-weight: 600;">EMAIL</div>
+                </div>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 1.5rem 0 1.2rem 0;">
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 0.8rem; align-items: stretch; flex-wrap: wrap;">
+            <a href="{% url 'hospital_detail' hospital.id %}#doctors" class="btn btn-primary" style="flex: 1; min-width: 200px; display: flex; align-items: center; justify-content: center; background: #2563eb; color: white; padding: 0.8rem; border-radius: 6px; font-weight: 600; font-size: 1rem; text-decoration: none; border: 1px solid #2563eb; transition: 0.3s;">
+                BOOK APPOINTMENT
+            </a>
+            <a href="{% url 'hospital_detail' hospital.id %}" style="flex: 1; min-width: 200px; display: flex; align-items: center; justify-content: center; background: white; color: #4b5563; padding: 0.8rem; border-radius: 6px; font-weight: 600; font-size: 1rem; text-decoration: none; border: 1px solid #d1d5db; transition: 0.3s;">
+                VIEW FULL PROFILE
+            </a>
+        </div>
     </div>
     {% endfor %}
 </div>
@@ -31,22 +116,79 @@
 
 {% if doctors %}
 <h2>Doctors</h2>
-<div class="grid" style="margin-bottom: 3rem;">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2.5rem; margin-bottom: 3rem;">
     {% for doctor in doctors %}
-    <div class="card">
-        {% if doctor.image %}
-        <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}"
-            style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
-        {% else %}
-        <div
-            style="width: 100%; height: 200px; background: #eee; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: #aaa;">
-            No Image</div>
-        {% endif %}
-        <h3>{{ doctor.name }}</h3>
-        <p>{{ doctor.specialty }}</p>
-        <p><strong>Fee:</strong> ₹{{ doctor.consultation_fee }}</p>
-        <a href="{% url 'book_appointment' doctor.id %}" class="btn btn-primary"
-            style="margin-top: 1rem; display: inline-block;">Book Appointment</a>
+    <div class="doctor-card-modern" style="background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; overflow: hidden; position: relative; transition: transform 0.3s; display: flex; flex-direction: column;">
+        <!-- Top Gray Banner -->
+        <div style="height: 100px; background: #f8fafc;"></div>
+        
+        <!-- Avatar -->
+        <div style="width: 130px; height: 130px; margin: -65px auto 0 auto; position: relative; z-index: 2; border-radius: 50%; border: 4px solid #45b0a3; padding: 4px; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); flex-shrink: 0;">
+            {% if doctor.image %}
+            <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+            {% else %}
+            <div style="width: 100%; height: 100%; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <img src="{% static 'img/doctor_icon.png' %}" style="width: 50px; opacity: 0.5;">
+            </div>
+            {% endif %}
+            <!-- Verified Badge -->
+            <div style="position: absolute; bottom: 0; right: 8px; background: #2563eb; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+        </div>
+        
+        <!-- Title & Meta -->
+        <div style="text-align: center; margin-top: 1.2rem; padding: 0 1.5rem;">
+            <h3 style="color: #0f4a56; font-size: 1.6rem; font-weight: 700; margin: 0 0 0.5rem 0;">Dr. {{ doctor.name }}</h3>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 0.6rem; color: #64748b; font-size: 0.95rem; flex-wrap: wrap;">
+                <span style="display: flex; align-items: center; gap: 4px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    {{ doctor.hospital.name|truncatechars:20 }}
+                </span>
+                <span style="color: #cbd5e1;">|</span>
+                <span style="display: flex; align-items: center; gap: 4px;">
+                    <span style="color: #fbbf24; font-size: 1.1rem;">⭐</span> 4.9 <span style="font-size: 0.85rem;">(240 Reviews)</span>
+                </span>
+            </div>
+        </div>
+        
+        <!-- Left-aligned info -->
+        <div style="padding: 1.5rem 1.5rem 0.5rem 1.5rem; flex: 1;">
+            <!-- Specialty -->
+            <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem;">
+                <span style="background: #eef2ff; color: #4338ca; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                    {% if doctor.specialty %}{{ doctor.specialty.name|truncatechars:18 }}{% else %}GENERAL{% endif %}
+                </span>
+                <span style="border: 1px solid #c7d2fe; border-radius: 50%; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; color: #4338ca; flex-shrink: 0;">
+                    <!-- simple stethoscope/medical icon fallback instead of custom tooth -->
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                </span>
+            </div>
+            
+            <!-- Details List -->
+            <div style="display: flex; flex-direction: column; gap: 1.2rem; color: #1e293b; font-size: 1.05rem;">
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                    <span>{{ doctor.experience }}+ years of Experience</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+                    <span>Consultation Fee: ₹{{ doctor.consultation_fee }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>Available: Mon, Wed, Fri</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; margin-top: auto;">
+            <a href="{% url 'book_appointment' doctor.id %}" style="background: #2563eb; color: white; border-radius: 8px; padding: 0.9rem; text-align: center; font-weight: 600; font-size: 1.05rem; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                Book Appointment
+            </a>
+        </div>
     </div>
     {% endfor %}
 </div>

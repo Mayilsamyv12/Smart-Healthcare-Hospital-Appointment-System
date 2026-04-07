@@ -1,81 +1,270 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<h1 style="margin-bottom: 2rem;">Your Appointments</h1>
-<div class="card" style="margin-bottom: 2rem;">
-    {% if appointments %}
-    <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="border-bottom: 1px solid #ddd; text-align: left;">
-                <th style="padding: 1rem;">Doctor</th>
-                <th style="padding: 1rem;">Date</th>
-                <th style="padding: 1rem;">Time</th>
-                <th style="padding: 1rem;">Status</th>
-            </tr>
-        </thead>
-        <tbody>
+<style>
+:root {
+    --primary: #0f4a56;
+    --primary-light: #1a7a8a;
+    --accent: #45b0a3;
+    --bg-light: #f8fafc;
+}
+
+.appt-card {
+    background: white;
+    border-radius: 20px;
+    padding: 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.appt-card:hover {
+    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+    transform: translateY(-4px);
+    border-color: rgba(15, 74, 86, 0.2);
+}
+
+.appt-avatar {
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+    flex-shrink: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.appt-info-title { 
+    font-size: 1.15rem; 
+    font-weight: 800; 
+    color: #0f172a; 
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+}
+
+.appt-pill {
+    padding: 0.4rem 1.2rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.status-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0.5rem 1.5rem;
+    border-bottom-left-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.tab-btn {
+    padding: 0.8rem 1.8rem; 
+    border-radius: 14px;
+    font-size: 0.95rem; 
+    font-weight: 700;
+    border: 2px solid transparent; 
+    cursor: pointer; 
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.tab-btn.active { 
+    background: white; 
+    color: var(--primary); 
+    border-color: var(--primary);
+    box-shadow: 0 4px 15px rgba(15,74,86,0.1);
+}
+
+.tab-btn:not(.active) { 
+    background: transparent; 
+    color: #64748b; 
+}
+
+.tab-btn:not(.active):hover { 
+    background: rgba(15, 74, 86, 0.05);
+    color: var(--primary); 
+}
+
+.date-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 0.8rem 1.2rem;
+    min-width: 100px;
+    border: 1px solid #edf2f7;
+}
+
+.time-box {
+    font-weight: 700;
+    color: var(--primary);
+    background: rgba(15, 74, 86, 0.08);
+    padding: 0.3rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+</style>
+
+<div style="max-width: 1000px; margin: 0 auto; padding: 4rem 1.5rem;">
+
+    <!-- ===== PREMIUM HEADER ===== -->
+    <div style="margin-bottom: 4rem; text-align: left;">
+        <h1 style="font-size: 3rem; font-weight: 900; color: #0f172a; margin: 0; letter-spacing: -0.04em;">Your Schedule</h1>
+        <p style="color: #64748b; font-size: 1.1rem; margin-top: 0.5rem; font-weight: 500;">
+            Manage and track your upcoming healthcare journey.
+        </p>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 2.5rem; background: #f1f5f9; border-radius: 18px; padding: 0.4rem; width: fit-content;">
+            <button class="tab-btn active" id="tab-doctor" onclick="switchTab('doctor')">
+                Doctor Visits
+                <span style="background: var(--primary); color: white; border-radius: 8px; padding: 2px 8px; font-size: 0.75rem;">{{ appointments.count }}</span>
+            </button>
+            <button class="tab-btn" id="tab-lab" onclick="switchTab('lab')">
+                Lab Diagnostics
+                <span style="background: #7c3aed; color: white; border-radius: 8px; padding: 2px 8px; font-size: 0.75rem;">{{ lab_appointments.count }}</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== DOCTOR PANEL ===== -->
+    <div id="panel-doctor">
+        {% if appointments %}
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
             {% for app in appointments %}
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 1rem;">
-                    <strong>{{ app.doctor.name }}</strong><br>
-                    <span style="font-size: 0.9rem; color: #666;">{{ app.doctor.hospital.name }}</span>
-                </td>
-                <td style="padding: 1rem;">{{ app.date }}</td>
-                <td style="padding: 1rem;">{{ app.time }}</td>
-                <td style="padding: 1rem;">
-                    <span
-                        style="padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.9rem; 
-                        {% if app.status == 'Booked' %}background: #e6f4ea; color: #1e8e3e;{% else %}background: #feefc3; color: #f29900;{% endif %}">
-                        {{ app.status }}
-                    </span>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No upcoming appointments found.</p>
-    <a href="{% url 'hospital_list' %}" class="btn btn-primary" style="margin-top: 1rem;">Book Now</a>
-    {% endif %}
-</div>
+            <div class="appt-card" style="animation: slideUp 0.5s ease-out calc({{ forloop.counter0 }} * 0.1s + 0.1s) backwards;">
+                <div class="status-badge" style="background: {% if app.status == 'Booked' %}#16a34a{% elif app.status == 'Cancelled' %}#dc2626{% else %}#ea580c{% endif %};">
+                    {{ app.status|upper }}
+                </div>
+                
+                <div style="display: flex; align-items: center; padding: 2.5rem; flex-wrap: wrap; gap: 2rem;">
+                    <!-- Date -->
+                    <div class="date-box">
+                        <span style="font-size: 0.8rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">{{ app.date|date:"M" }}</span>
+                        <span style="font-size: 2rem; font-weight: 900; color: #0f172a; line-height: 1;">{{ app.date|date:"d" }}</span>
+                        <div class="time-box">{{ app.time|time:"g:i A" }}</div>
+                    </div>
 
-<h2 style="margin-bottom: 2rem;">Lab Tests</h2>
-<div class="card" style="margin-bottom: 2rem;">
-    {% if lab_appointments %}
-    <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="border-bottom: 1px solid #ddd; text-align: left;">
-                <th style="padding: 1rem;">Test</th>
-                <th style="padding: 1rem;">Date</th>
-                <th style="padding: 1rem;">Time</th>
-                <th style="padding: 1rem;">Location</th>
-                <th style="padding: 1rem;">Status</th>
-            </tr>
-        </thead>
-        <tbody>
+                    <!-- Details -->
+                    <div style="flex: 1; min-width: 250px; display: flex; align-items: center; gap: 1.5rem;">
+                        <div class="appt-avatar">
+                            {% if app.doctor.image %}
+                            <img src="{{ app.doctor.image.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                            <span style="font-size: 2rem;"></span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="appt-info-title">Dr. {{ app.doctor.name }}</div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #64748b; font-size: 0.95rem; font-weight: 600;">
+                                <span>{{ app.doctor.specialty.name }}</span>
+                                <span style="opacity: 0.3;">•</span>
+                                <span>{{ app.doctor.hospital.name }}</span>
+                            </div>
+                            <div style="margin-top: 0.8rem; display: flex; gap: 1rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: #475569; background: #f8fafc; padding: 0.3rem 0.8rem; border-radius: 8px;">
+                                    <span style="opacity: 0.7;">Patient:</span> {{ app.patient_name }}
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: #475569; background: #f8fafc; padding: 0.3rem 0.8rem; border-radius: 8px;">
+                                    <span style="opacity: 0.7;">Payment:</span> {{ app.payment_mode }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action -->
+                    <div>
+                        <a href="{% url 'hospital_detail' app.doctor.hospital.id %}" style="padding: 0.8rem 1.5rem; border-radius: 12px; background: white; border: 2px solid #e2e8f0; color: #0f172a; font-weight: 700; text-decoration: none; font-size: 0.9rem; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#0f172a'">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 6rem 2rem; background: white; border-radius: 30px; border: 2px dashed #e2e8f0;">
+            <div style="font-size: 6rem; margin-bottom: 2rem;"></div>
+            <h2 style="font-size: 2rem; color: #0f172a; font-weight: 900; margin: 0;">No Appointments</h2>
+            <p style="color: #64748b; font-size: 1.1rem; margin: 1rem 0 2.5rem 0;">You haven't scheduled any doctor visits yet.</p>
+            <a href="{% url 'hospital_list' %}" style="background: var(--primary); color: white; border-radius: 16px; padding: 1.2rem 3rem; font-size: 1.1rem; font-weight: 800; text-decoration: none; display: inline-block; box-shadow: 0 10px 30px rgba(15,74,86,0.2);">
+                Schedule Now
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ===== LAB PANEL ===== -->
+    <div id="panel-lab" style="display: none;">
+        {% if lab_appointments %}
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
             {% for app in lab_appointments %}
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 1rem;">
-                    <strong>{{ app.lab_test.name }}</strong>
-                </td>
-                <td style="padding: 1rem;">{{ app.date }}</td>
-                <td style="padding: 1rem;">{{ app.time }}</td>
-                <td style="padding: 1rem;">{{ app.lab_test.location }}</td>
-                <td style="padding: 1rem;">
-                    <span
-                        style="padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.9rem; 
-                        {% if app.status == 'Booked' %}background: #e6f4ea; color: #1e8e3e;{% else %}background: #feefc3; color: #f29900;{% endif %}">
-                        {{ app.status }}
-                    </span>
-                </td>
-            </tr>
+            <div class="appt-card" style="animation: slideUp 0.5s ease-out calc({{ forloop.counter0 }} * 0.1s + 0.1s) backwards;">
+                <div class="status-badge" style="background: {% if app.status == 'Booked' %}#7c3aed{% elif app.status == 'Cancelled' %}#dc2626{% else %}#ea580c{% endif %};">
+                    {{ app.status|upper }}
+                </div>
+                
+                <div style="display: flex; align-items: center; padding: 2.5rem; flex-wrap: wrap; gap: 2rem;">
+                    <div class="date-box">
+                        <span style="font-size: 0.8rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">{{ app.date|date:"M" }}</span>
+                        <span style="font-size: 2rem; font-weight: 900; color: #0f172a; line-height: 1;">{{ app.date|date:"d" }}</span>
+                        <div class="time-box" style="color: #7c3aed; background: rgba(124, 58, 237, 0.08);">{{ app.time|time:"g:i A" }}</div>
+                    </div>
+
+                    <div style="flex: 1; min-width: 250px; display: flex; align-items: center; gap: 1.5rem;">
+                        <div class="appt-avatar" style="background: linear-gradient(135deg, #f5f3ff, #ede9fe);">
+                            <span style="font-size: 2rem;"></span>
+                        </div>
+                        <div>
+                            <div class="appt-info-title">{{ app.lab_test.name }}</div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #64748b; font-size: 0.95rem; font-weight: 600;">
+                                <span>📍 {{ app.lab_test.location }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No upcoming lab tests.</p>
-    <a href="{% url 'lab_test_list' %}" class="btn btn-primary" style="margin-top: 1rem;">Book Test</a>
-    {% endif %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 6rem 2rem; background: white; border-radius: 30px; border: 2px dashed #e2e8f0;">
+            <div style="font-size: 6rem; margin-bottom: 2rem;"></div>
+            <h2 style="font-size: 2rem; color: #0f172a; font-weight: 900; margin: 0;">No Diagnostics</h2>
+            <p style="color: #64748b; font-size: 1.1rem; margin: 1rem 0 2.5rem 0;">Ready for a checkup? Book a lab test today.</p>
+            <a href="{% url 'lab_test_list' %}" style="background: #7c3aed; color: white; border-radius: 16px; padding: 1.2rem 3rem; font-size: 1.1rem; font-weight: 800; text-decoration: none; display: inline-block; box-shadow: 0 10px 30px rgba(124,58,237,0.2);">
+                Book Lab Test
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
 </div>
 
+<!-- Tab logic moved to React Vite Setup -->
+
+<style>
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+</style>
 {% endblock %}

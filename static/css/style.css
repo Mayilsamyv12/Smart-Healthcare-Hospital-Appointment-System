@@ -361,7 +361,7 @@ img {
     position: fixed;
     top: 0;
     width: 100%;
-    background: rgba(255, 255, 255, 0.9);
+    background: #ffffff;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
@@ -371,7 +371,7 @@ img {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    z-index: 1000;
+    z-index: 9999;
     min-height: 70px;
     height: 70px;
     transition: all 0.3s ease;
@@ -602,7 +602,7 @@ img {
 
 /* Container */
 .container {
-    padding: 100px 1rem 2rem;
+    padding: 120px 20px 40px;
     max-width: 1200px;
     margin: 0 auto;
     animation: fadeIn 0.5s ease-out;
@@ -730,9 +730,6 @@ img {
     transition: transform 0.3s ease;
 }
 
-.hospital-card:hover .card-image-wrapper img {
-    transform: scale(1.05);
-}
 
 .placeholder-image {
     display: flex;

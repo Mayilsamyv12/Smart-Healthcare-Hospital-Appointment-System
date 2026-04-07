@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
 
-
 {% block content %}
 <div style="background: url('{% static 'img/hero_bg.png' %}') center/cover no-repeat; padding: 4rem 1rem 6rem 1rem; margin-top: 60px; min-height: calc(100vh - 60px);">
     <!-- Large Glass wrapper -->
@@ -9,17 +8,17 @@
         
         <!-- Dark Blue Inner Banner -->
         <div style="background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); border-radius: 16px; padding: 5rem 2rem; text-align: center; color: white; position: relative; overflow: hidden;">
-            <div class="hero-graphic-cross"></div> <!-- CSS generated cross graphic -->
+            <div class="hero-graphic-cross"></div>
             <div style="position: relative; z-index: 2;">
                 <h1 class="hero-title" style="font-size: 4rem; margin-bottom: 1.5rem; color: white;">Your Health,<br>Our Priority</h1>
                 <p class="hero-subtitle" style="margin: 0 auto 3rem auto; font-size: 1.25rem; color: #e2e8f0; max-width: 800px;">Find doctors, hospitals, medicines, and labs instantly with our premium verified network.</p>
 
-                <!-- Plain HTML Search Bar -->
+                <!-- Search Bar -->
                 <div style="margin: 0 auto; max-width: 700px; width: 100%; box-sizing: border-box;">
-                    <form id="home-search-form" action="{% url 'search' %}" method="get" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.95); border-radius: 50px; padding: 10px 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); width: 100%; box-sizing: border-box; height: 55px;">
-                        <span style="font-size: 1.3rem; color: #3b82f6; margin-right: 0.6rem;">🔍</span>
-                        <input type="text" name="q" placeholder="Search doctors, hospitals, medicines..." style="flex: 1; border: none; outline: none; box-shadow: none; -webkit-appearance: none; appearance: none; font-size: 1.05rem; padding: 0; margin: 0; background: transparent; color: #1e293b;" />
-                        <button type="button" onclick="handleVoiceSearch()" style="background: none; border: none; outline: none; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; color: #64748b; margin-left: 0.6rem;" title="Search by voice">
+                    <form id="home-search-form" action="{% url 'search' %}" method="get" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.95); border-radius: 50px; padding: 10px 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); width: 100%; box-sizing: border-box; height: 55px;">
+                        <span style="font-size: 1.3rem; color: #3b82f6; margin-right: 0.6rem;"></span>
+                        <input type="text" name="q" placeholder="Search doctors, hospitals, medicines..." style="flex: 1; border: none; outline: none; font-size: 1.05rem; padding: 0; margin: 0; background: transparent; color: #1e293b;" />
+                        <button type="button" onclick="handleVoiceSearch()" style="background: none; border: none; cursor: pointer; padding: 0; color: #64748b; margin-left: 0.6rem;" title="Search by voice">
                             <svg fill="currentColor" viewBox="0 0 24 24" width="22" height="22">
                                 <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"></path>
                                 <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"></path>
@@ -30,80 +29,210 @@
             </div>
         </div>
 
-        <script>
-            function handleVoiceSearch() {
-                if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                    alert("Your browser does not support voice search.");
-                    return;
-                }
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                const recognition = new SpeechRecognition();
-                recognition.lang = 'en-US';
-                recognition.start();
-                
-                recognition.onresult = (event) => {
-                    const transcript = event.results[0][0].transcript;
-                    const form = document.getElementById('home-search-form');
-                    if(form) {
-                        const input = form.querySelector('input[name="q"]');
-                        if(input) input.value = transcript;
-                        form.submit();
-                    }
-                };
-                
-                recognition.onerror = (event) => {
-                    console.error("Speech recognition error", event.error);
-                };
-            }
-        </script>
+        <!-- Voice search moved to React Vite Setup -->
 
-        <!-- Cards Container -->
+        <!-- Quick Service Cards -->
         <div style="margin-top: 2rem;">
             <h3 style="font-size: 1.6rem; color: #1e293b; margin-bottom: 1.5rem; font-weight: 700; padding-left: 0.5rem;">Quick Services</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
                 
-                <!-- Card 1 -->
-                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
                     <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem auto; background: #e0f2fe; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                         <img src="{% static 'img/doctor_icon.png' %}" alt="Find Doctors" style="width: 35px; height: 35px; object-fit: contain;" />
                     </div>
                     <h3 style="font-size: 1.4rem; color: #1f2937; margin-bottom: 1rem; font-weight: 700;">Find Doctors</h3>
                     <p style="color: #475569; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">Expert consultations at your fingertips. Book appointments with top specialists.</p>
-                    <a href="{% url 'doctor_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239, 246, 255, 0.9);">Browse Doctors →</a>
+                    <a href="{% url 'doctor_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239,246,255,0.9);">Browse Doctors</a>
                 </div>
 
-                <!-- Card 2 -->
-                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
                     <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem auto; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                         <img src="{% static 'img/hospital_icon.png' %}" alt="Hospitals" style="width: 35px; height: 35px; object-fit: contain;" />
                     </div>
                     <h3 style="font-size: 1.4rem; color: #1f2937; margin-bottom: 1rem; font-weight: 700;">Hospitals</h3>
                     <p style="color: #475569; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">Locate top-rated hospitals near you with world-class facilities and premium verified network.</p>
-                    <a href="{% url 'hospital_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239, 246, 255, 0.9);">Find Hospitals →</a>
+                    <a href="{% url 'hospital_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239,246,255,0.9);">Find Hospitals</a>
                 </div>
 
-                <!-- Card 3 -->
-                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
                     <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem auto; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                         <img src="{% static 'img/medicine_icon.png' %}" alt="Pharmacy" style="width: 35px; height: 35px; object-fit: contain;" />
                     </div>
                     <h3 style="font-size: 1.4rem; color: #1f2937; margin-bottom: 1rem; font-weight: 700;">Pharmacy</h3>
                     <p style="color: #475569; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">Order medicines and get them delivered to your doorstep quickly safely and securely.</p>
-                    <a href="{% url 'medicine_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239, 246, 255, 0.9);">Order Now →</a>
+                    <a href="{% url 'medicine_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239,246,255,0.9);">Order Now</a>
                 </div>
 
-                <!-- Card 4 -->
-                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
                     <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem auto; background: #f3e8ff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                         <img src="{% static 'img/lab_icon.png' %}" alt="Lab Tests" style="width: 35px; height: 35px; object-fit: contain;" />
                     </div>
                     <h3 style="font-size: 1.4rem; color: #1f2937; margin-bottom: 1rem; font-weight: 700;">Lab Tests</h3>
                     <p style="color: #475569; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">Book diagnostic tests from certified labs with home sample collection options today.</p>
-                    <a href="{% url 'lab_test_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239, 246, 255, 0.9);">Book Tests →</a>
+                    <a href="{% url 'lab_test_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239,246,255,0.9);">Book Tests</a>
                 </div>
 
             </div>
         </div>
     </div>
+</div>
+
+<!-- ===== NEARBY SECTION ===== -->
+<div style="max-width: 1200px; margin: 0 auto; padding: 3rem 1.5rem 5rem 1.5rem;">
+
+    <!-- Location Banner -->
+    <div style="background: linear-gradient(135deg, #0f4a56, #0ea5e9); border-radius: 20px; padding: 1.5rem 2rem; margin-bottom: 3rem; display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; color: white;">
+        <div style="font-size: 2rem; flex-shrink: 0;"></div>
+        <div style="flex: 1; min-width: 200px;">
+            {% if user_location %}
+            <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.2rem;">Showing results near <span style="color: #bae6fd;">{{ user_location }}</span></div>
+            <div style="font-size: 0.9rem; opacity: 0.85;">Hospitals, doctors and labs available in your area</div>
+            {% else %}
+            <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.2rem;">Set your location for personalised results</div>
+            <div style="font-size: 0.9rem; opacity: 0.85;">Showing all available hospitals, doctors &amp; labs</div>
+            {% endif %}
+        </div>
+        <form method="post" action="{% url 'set_location' %}" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            {% csrf_token %}
+            <input type="text" name="location" placeholder="Enter your city..." value="{{ user_location|default:'' }}"
+                style="padding: 0.6rem 1rem; border-radius: 8px; border: none; font-size: 0.95rem; outline: none; min-width: 180px; color: #0f172a;">
+            <button type="submit" style="background: white; color: #0f4a56; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 0.95rem; cursor: pointer;">
+                Set Location
+            </button>
+            {% if user_location %}
+            <button type="submit" name="location" value="" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.85rem; cursor: pointer;">
+                Clear
+            </button>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- ===== NEARBY HOSPITALS ===== -->
+    {% if nearby_hospitals %}
+    <div style="margin-bottom: 4rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.8rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+                <h2 style="font-size: 1.8rem; font-weight: 800; color: #0f172a; margin: 0 0 0.2rem 0;">Nearby Hospitals</h2>
+                <p style="color: #64748b; margin: 0; font-size: 0.95rem;">{% if user_location %}Near {{ user_location }}{% else %}All hospitals{% endif %}</p>
+            </div>
+            <a href="{% url 'hospital_list' %}" style="color: #0ea5e9; font-weight: 700; text-decoration: none; font-size: 0.95rem;">View All</a>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+            {% for hospital in nearby_hospitals %}
+            <a href="{% url 'hospital_detail' hospital.id %}" style="text-decoration: none; color: inherit;">
+                <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; transition: all 0.25s; cursor: pointer;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.12)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.06)'">
+                    <!-- Hospital Image -->
+                    <div style="height: 160px; background: linear-gradient(135deg, #e0eafc, #cfdef3); position: relative; overflow: hidden;">
+                        {% if hospital.image %}
+                        <img src="{{ hospital.image.url }}" alt="{{ hospital.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 4rem; opacity: 0.4;"></span>
+                        </div>
+                        {% endif %}
+                        {% with avg=hospital.avg_rating count=hospital.review_count %}
+                        {% if avg %}
+                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border-radius: 20px; padding: 4px 10px; font-size: 0.82rem; font-weight: 700; backdrop-filter: blur(4px);">
+                            Rating: {{ avg }}
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                    <div style="padding: 1.2rem;">
+                        <div style="font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 0.4rem;">{{ hospital.name }}</div>
+                        <div style="color: #64748b; font-size: 0.88rem; display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.6rem;">
+                            <span></span> {{ hospital.location }}
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem;">
+                            {% for spec in hospital.specialties.all|slice:":2" %}
+                            <span style="background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;">{{ spec.name }}</span>
+                            {% empty %}
+                            <span style="background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;">General</span>
+                            {% endfor %}
+                            <span style="color: #0ea5e9; font-size: 0.82rem; font-weight: 600;">View</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== NEARBY DOCTORS ===== -->
+    {% if nearby_doctors %}
+    <div style="margin-bottom: 4rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.8rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+                <h2 style="font-size: 1.8rem; font-weight: 800; color: #0f172a; margin: 0 0 0.2rem 0;">Nearby Doctors</h2>
+                <p style="color: #64748b; margin: 0; font-size: 0.95rem;">{% if user_location %}Doctors near {{ user_location }}{% else %}Top doctors{% endif %}</p>
+            </div>
+            <a href="{% url 'doctor_list' %}" style="color: #2563eb; font-weight: 700; text-decoration: none; font-size: 0.95rem;">View All</a>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem;">
+            {% for doctor in nearby_doctors %}
+            <a href="{% url 'doctor_profile' doctor.id %}" style="text-decoration: none; color: inherit;">
+                <div style="background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; text-align: center; transition: all 0.25s; cursor: pointer;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.12)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.06)'">
+                    <!-- Avatar -->
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #e0f2fe, #bfdbfe); margin: 0 auto 1rem auto; overflow: hidden; border: 3px solid #bae6fd;">
+                        {% if doctor.image %}
+                        <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2rem;"></div>
+                        {% endif %}
+                    </div>
+                    <div style="font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem;">Dr. {{ doctor.name }}</div>
+                    {% if doctor.specialty %}
+                    <div style="background: #eef2ff; color: #4338ca; padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; display: inline-block; margin-bottom: 0.6rem; text-transform: uppercase;">{{ doctor.specialty.name }}</div>
+                    {% endif %}
+                    <div style="color: #64748b; font-size: 0.82rem; margin-bottom: 0.8rem;">{{ doctor.hospital.name|truncatechars:22 }}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
+                        <span style="color: #64748b;">{{ doctor.experience }}+ yrs</span>
+                        {% with avg=doctor.avg_rating %}
+                        {% if avg %}<span style="color: #fbbf24; font-weight: 700;">Rating: {{ avg }}</span>{% endif %}
+                        {% endwith %}
+                        <span style="color: #0f172a; font-weight: 700;">₹{{ doctor.consultation_fee }}</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== NEARBY LABS ===== -->
+    {% if nearby_labs %}
+    <div style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.8rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+                <h2 style="font-size: 1.8rem; font-weight: 800; color: #0f172a; margin: 0 0 0.2rem 0;">Nearby Labs</h2>
+                <p style="color: #64748b; margin: 0; font-size: 0.95rem;">{% if user_location %}Labs near {{ user_location }}{% else %}Available lab tests{% endif %}</p>
+            </div>
+            <a href="{% url 'lab_test_list' %}" style="color: #7c3aed; font-weight: 700; text-decoration: none; font-size: 0.95rem;">View All</a>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem;">
+            {% for lab in nearby_labs %}
+            <div style="background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; transition: all 0.25s;"
+                onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.12)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.06)'">
+                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #f3e8ff, #ede9fe); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 1.5rem;"></div>
+                <div style="font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem;">{{ lab.name }}</div>
+                {% if lab.location %}
+                <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 0.6rem;">📍 {{ lab.location }}</div>
+                {% endif %}
+                {% if lab.price %}
+                <div style="font-size: 0.9rem; font-weight: 700; color: #7c3aed; margin-bottom: 1rem;">₹{{ lab.price }}</div>
+                {% endif %}
+                <a href="{% url 'lab_test_list' %}" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.88rem; font-weight: 600; text-decoration: none; display: inline-block;">Book Now</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 {% endblock %}

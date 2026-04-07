@@ -4,8 +4,11 @@
 <div style="max-width: 600px; margin: 4rem auto;">
     <div class="form-card" style="max-width: 700px; margin: 0 auto;">
         <h2>Book Appointment</h2>
-        <p style="text-align: center; color: #64748b; margin-bottom: 2rem;">with <strong
+        <p style="text-align: center; color: #64748b; margin-bottom: 0.5rem;">with <strong
                 style="color: var(--text-main);">Dr. {{ doctor.name }}</strong> ({{ doctor.specialty }})</p>
+        <p style="text-align: center; color: var(--primary); font-weight: 500; margin-bottom: 2rem;">
+            at <strong>{{ doctor.hospital.name }}</strong>, {{ doctor.hospital.location }}
+        </p>
 
         <!-- Date Selection (Reloads page) -->
         <form method="get" action="" class="form-group"
@@ -18,44 +21,23 @@
             </p>
         </form>
 
-        <!-- Booking Form -->
+        <!-- React Booking Component Root -->
         {% if slots %}
-        <form method="post" id="bookingForm">
-            {% csrf_token %}
-            <input type="hidden" name="date" value="{{ selected_date }}">
-            <input type="hidden" name="time" id="selectedTime" required>
-
-            <label class="form-label" style="margin-top: 2rem;">Select Time Slot:</label>
-
-            <div
-                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-bottom: 2.5rem;">
+        <div id="react-booking-root"
+             data-slots='[
                 {% for slot in slots %}
-                {% if slot.is_booked %}
-                <button type="button" disabled
-                    style="padding: 12px; border: 1px solid #e2e8f0; background: #f1f5f9; color: #cbd5e1; border-radius: 8px; cursor: not-allowed; font-weight: 500;">
-                    {{ slot.label }}
-                </button>
-                {% else %}
-                <button type="button" onclick="selectSlot('{{ slot.time }}', this)" class="slot-btn"
-                    style="padding: 12px; border: 1px solid #e2e8f0; background: white; color: var(--text-main); border-radius: 8px; cursor: pointer; transition: all 0.2s; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                    {{ slot.label }}
-                </button>
-                {% endif %}
+                  {"time": "{{ slot.time|escapejs }}", "label": "{{ slot.label|escapejs }}", "is_booked": {{ slot.is_booked|yesno:"true,false" }}}{% if not forloop.last %},{% endif %}
                 {% endfor %}
-            </div>
-
-            <div
-                style="margin-top: 1rem; margin-bottom: 2rem; padding: 1.5rem; background: #f0f9ff; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #0c4a6e; font-weight: 600;">Consultation Fee</span>
-                <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">₹{{ doctor.consultation_fee
-                    }}</span>
-            </div>
-
-            <button type="submit" id="confirmBtn" class="btn btn-primary"
-                style="width: 100%; padding: 1rem; font-size: 1.1rem; opacity: 0.5; pointer-events: none; transition: all 0.3s;">
-                Confirm Booking
-            </button>
-        </form>
+             ]'
+             data-selected-date="{{ selected_date }}"
+             data-doctor-fee="{{ doctor.consultation_fee|default:'0' }}"
+             data-csrf-token="{{ csrf_token }}"
+             data-user-details='{
+                "name": "{{ request.user.get_full_name|default:request.user.username|escapejs }}",
+                "age": "{{ request.user.age|default:''|escapejs }}",
+                "contact": "{{ request.user.contact_no|default:''|escapejs }}",
+                "location": "{{ request.user.location|default:''|escapejs }}"
+             }'></div>
         {% else %}
         <div
             style="text-align: center; padding: 3rem; background: #fff1f2; border-radius: 12px; color: #be123c; border: 1px solid #fecdd3;">
@@ -63,28 +45,4 @@
             <p style="margin-top: 0.5rem; font-size: 0.95rem;">Please try selecting another date.</p>
         </div>
         {% endif %}
-    </div>
-</div>
-
-<script>
-    function selectSlot(time, btn) {
-        // Reset all buttons
-        document.querySelectorAll('.slot-btn').forEach(b => {
-            b.style.background = 'white';
-            b.style.color = 'var(--primary)';
-        });
-
-        // Highlight selected
-        btn.style.background = 'var(--primary)';
-        btn.style.color = 'white';
-
-        // Set value
-        document.getElementById('selectedTime').value = time;
-
-        // Enable submit
-        const submitBtn = document.getElementById('confirmBtn');
-        submitBtn.style.opacity = '1';
-        submitBtn.style.pointerEvents = 'auto';
-    }
-</script>
 {% endblock %}

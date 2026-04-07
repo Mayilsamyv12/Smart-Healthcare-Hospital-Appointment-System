@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 0 auto; padding-top: 2rem;">
+
+    <!-- Doctor Profile Card -->
+    <div style="background: white; border-radius: 20px; overflow: hidden; margin-bottom: 3rem; box-shadow: 0 10px 40px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
+        <!-- Banner -->
+        <div style="height: 220px; background: linear-gradient(135deg, #0f4a56 0%, #1a7a8a 50%, #45b0a3 100%); position: relative;">
+            <div style="position: absolute; inset: 0; opacity: 0.15; background-image: radial-gradient(circle at 20% 50%, white 1px, transparent 1px); background-size: 30px 30px;"></div>
+        </div>
+
+        <!-- Profile Header -->
+        <div style="padding: 0 2.5rem 2.5rem 2.5rem; position: relative;">
+            <!-- Avatar -->
+            <div style="width: 150px; height: 150px; border-radius: 50%; border: 5px solid white; background: white; margin-top: -75px; box-shadow: 0 8px 25px rgba(0,0,0,0.12); overflow: hidden; position: relative;">
+                {% if doctor.image %}
+                <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #e0f2fe, #bfdbfe); display: flex; align-items: center; justify-content: center;">
+                    <img src="{% static 'img/doctor_icon.png' %}" style="width: 70px; opacity: 0.6;">
+                </div>
+                {% endif %}
+                <!-- Verified Badge -->
+                <div style="position: absolute; bottom: 8px; right: 8px; background: #2563eb; width: 36px; height: 36px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 1.5rem; margin-top: 1.5rem;">
+                <div>
+                    <h1 style="font-size: 2.2rem; color: #0f4a56; font-weight: 800; margin: 0 0 0.4rem 0;">Dr. {{ doctor.name }}</h1>
+                    <div style="color: #64748b; font-size: 1.05rem; margin-bottom: 0.8rem;">
+                        {% if doctor.specialty %}
+                        <span style="background: #eef2ff; color: #4338ca; padding: 4px 14px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; margin-right: 0.6rem; text-transform: uppercase;">{{ doctor.specialty.name }}</span>
+                        {% endif %}
+                        at <a href="{% url 'hospital_detail' doctor.hospital.id %}" style="color: #0ea5e9; font-weight: 600; text-decoration: none;">{{ doctor.hospital.name }}</a>
+                    </div>
+                    <!-- Rating display -->
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                        {% with avg=doctor.avg_rating count=doctor.review_count %}
+                        {% if avg %}
+                        <span style="font-size: 1.4rem; color: #fbbf24;">
+                            {% for i in "1234567890"|slice:avg %}⭐{% endfor %}
+                        </span>
+                        <span style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">{{ avg }}</span>
+                        <span style="color: #94a3b8; font-size: 0.95rem;">({{ count }} review{{ count|pluralize }})</span>
+                        {% else %}
+                        <span style="color: #94a3b8; font-size: 0.95rem;">No reviews yet</span>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+
+                <a href="{% url 'book_appointment' doctor.id %}"
+                    style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; border-radius: 10px; padding: 0.9rem 2rem; font-weight: 700; font-size: 1rem; text-decoration: none; display: flex; align-items: center; gap: 0.6rem; white-space: nowrap; box-shadow: 0 4px 15px rgba(37,99,235,0.3); transition: opacity 0.2s;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    Book Appointment
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div style="display: flex; flex-wrap: wrap; border-top: 1px solid #f1f5f9; background: #f8fafc;">
+            <div style="flex: 1; min-width: 180px; padding: 1.5rem; text-align: center; border-right: 1px solid #e2e8f0;">
+                <div style="font-size: 1.8rem; font-weight: 800; color: #0f4a56;">{{ doctor.experience }}+</div>
+                <div style="color: #64748b; font-size: 0.9rem; margin-top: 0.2rem;">Years Experience</div>
+            </div>
+            <div style="flex: 1; min-width: 180px; padding: 1.5rem; text-align: center; border-right: 1px solid #e2e8f0;">
+                <div style="font-size: 1.8rem; font-weight: 800; color: #0f4a56;">₹{{ doctor.consultation_fee }}</div>
+                <div style="color: #64748b; font-size: 0.9rem; margin-top: 0.2rem;">Consultation Fee</div>
+            </div>
+            <div style="flex: 1; min-width: 180px; padding: 1.5rem; text-align: center; border-right: 1px solid #e2e8f0;">
+                <div style="font-size: 1.8rem; font-weight: 800; color: #0f4a56;">
+                    {% with avg=doctor.avg_rating %}{% if avg %}{{ avg }}{% else %}—{% endif %}{% endwith %}
+                </div>
+                <div style="color: #64748b; font-size: 0.9rem; margin-top: 0.2rem;">Avg. Rating</div>
+            </div>
+            <div style="flex: 1; min-width: 180px; padding: 1.5rem; text-align: center;">
+                <div style="font-size: 1.8rem; font-weight: 800; color: #0f4a56;">{{ doctor.review_count }}</div>
+                <div style="color: #64748b; font-size: 0.9rem; margin-top: 0.2rem;">Total Reviews</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== REVIEWS SECTION ===== -->
+    <div style="margin-bottom: 4rem;">
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+            <h2 style="font-size: 2rem; color: var(--text-main);">Patient Reviews</h2>
+            <div style="width: 60px; height: 4px; background: var(--primary); margin: 0.8rem auto; border-radius: 2px;"></div>
+        </div>
+
+        <!-- Write a Review -->
+        {% if user.is_authenticated %}
+        {% if not user_has_reviewed %}
+        <div style="background: white; border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+            <h3 style="font-size: 1.3rem; color: #0f172a; margin-bottom: 1.5rem; font-weight: 700;">Write a Review</h3>
+            <form method="post" action="{% url 'submit_review' %}">
+                {% csrf_token %}
+                <input type="hidden" name="doctor_id" value="{{ doctor.id }}">
+                
+                <!-- Star Rating -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="font-weight: 600; color: #334155; display: block; margin-bottom: 0.8rem;">Your Rating *</label>
+                    <div class="star-rating" style="display: flex; gap: 0.5rem; font-size: 2rem; cursor: pointer;">
+                        {% for i in "12345" %}
+                        <label style="cursor: pointer;">
+                            <input type="radio" name="rating" value="{{ forloop.counter }}" style="display: none;" required>
+                            <span class="star" data-value="{{ forloop.counter }}" style="color: #d1d5db; transition: color 0.2s; user-select: none;">★</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Comment -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="font-weight: 600; color: #334155; display: block; margin-bottom: 0.5rem;">Your Comment</label>
+                    <textarea name="comment" rows="4" placeholder="Share your experience with Dr. {{ doctor.name }}..."
+                        style="width: 100%; padding: 0.9rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; resize: vertical; font-family: inherit; outline: none; box-sizing: border-box;"></textarea>
+                </div>
+                
+                <button type="submit" style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; border: none; border-radius: 8px; padding: 0.9rem 2rem; font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;">
+                    Submit Review
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 1.2rem 1.5rem; margin-bottom: 2rem; color: #166534; font-weight: 500;">
+            You have already submitted a review for Dr. {{ doctor.name }}. Thank you!
+        </div>
+        {% endif %}
+        {% else %}
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 1.2rem 1.5rem; margin-bottom: 2rem; color: #1e40af; font-weight: 500;">
+            <a href="{% url 'login' %}?next={{ request.path }}" style="color: #2563eb; font-weight: 700;">Login</a> to write a review for Dr. {{ doctor.name }}.
+        </div>
+        {% endif %}
+
+        <!-- Reviews List -->
+        {% if reviews %}
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            {% for review in reviews %}
+            <div style="background: white; border-radius: 14px; padding: 1.8rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; position: relative;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.8rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #0ea5e9, #2563eb); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; font-weight: 700; flex-shrink: 0;">
+                            {{ review.user.username|first|upper }}
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; color: #0f172a; font-size: 1rem;">{{ review.user.get_full_name|default:review.user.username }}</div>
+                            <div style="color: #94a3b8; font-size: 0.85rem;">{{ review.created_at|date:"M d, Y" }}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 2px;">
+                            {% for i in "12345" %}
+                            <span style="color: {% if forloop.counter <= review.rating %}#fbbf24{% else %}#d1d5db{% endif %}; font-size: 1.1rem;">★</span>
+                            {% endfor %}
+                        </div>
+                        {% if user == review.user %}
+                        <div class="kebab-wrap" style="position: relative;">
+                            <button class="kebab-btn" onclick="toggleKebab(this)" style="background: #f1f5f9; border: none; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; font-size: 1.3rem; color: #64748b; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">⋮</button>
+                            <div class="kebab-menu" style="display: none; position: absolute; right: 0; top: 40px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 100; min-width: 150px; overflow: hidden;">
+                                <button onclick="closeKebabs(); openEditModal('{{ review.id }}', {{ review.rating }}, '{{ review.comment|escapejs }}')"
+                                    style="width: 100%; background: none; border: none; padding: 0.75rem 1.2rem; text-align: left; font-size: 0.9rem; font-weight: 600; color: #0369a1; cursor: pointer; display: flex; align-items: center; gap: 0.6rem; transition: background 0.15s;"
+                                    onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background='none'">
+                                    Edit Review
+                                </button>
+                                <div style="height: 1px; background: #f1f5f9;"></div>
+                                <form method="post" action="{% url 'delete_review' review.id %}" onsubmit="return confirm('Are you sure you want to delete this review?')">
+                                    {% csrf_token %}
+                                    <button type="submit" style="width: 100%; background: none; border: none; padding: 0.75rem 1.2rem; text-align: left; font-size: 0.9rem; font-weight: 600; color: #be123c; cursor: pointer; display: flex; align-items: center; gap: 0.6rem; transition: background 0.15s;"
+                                        onmouseover="this.style.background='#fff1f2'" onmouseout="this.style.background='none'">
+                                        Delete Review
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if review.comment %}
+                <p style="color: #475569; line-height: 1.7; margin: 0; font-size: 1rem;">{{ review.comment }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 3rem; background: white; border-radius: 16px; border: 1px solid #f1f5f9; color: #94a3b8;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;"></div>
+            <p style="font-size: 1.1rem;">No reviews yet. Be the first to share your experience with Dr. {{ doctor.name }}!</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- ===== EDIT REVIEW MODAL ===== -->
+<div id="editReviewModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: white; border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 480px; margin: 1rem; box-shadow: 0 25px 60px rgba(0,0,0,0.3); position: relative; animation: slideUp 0.3s ease;">
+        <button onclick="document.getElementById('editReviewModal').style.display='none'"
+            style="position: absolute; top: 1.2rem; right: 1.2rem; background: #f1f5f9; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.2rem; cursor: pointer; color: #64748b;">✕</button>
+        <div style="text-align: center; margin-bottom: 1.8rem;">
+            <div style="font-size: 2rem; margin-bottom: 0.4rem;"></div>
+            <h2 style="font-size: 1.5rem; color: #0f172a; font-weight: 800; margin: 0;">Edit Your Review</h2>
+        </div>
+        <form method="post" action="">
+            {% csrf_token %}
+            <input type="hidden" name="doctor_id" value="{{ doctor.id }}">
+            <input type="hidden" id="editReviewId" name="review_id" value="">
+            <div style="margin-bottom: 1.2rem;">
+                <label style="font-weight: 600; color: #334155; font-size: 0.9rem; display: block; margin-bottom: 0.6rem;">Your Rating *</label>
+                <div class="edit-star-container" style="display: flex; gap: 0.4rem; font-size: 2rem;">
+                    {% for i in "12345" %}
+                    <label style="cursor: pointer;">
+                        <input type="radio" name="rating" value="{{ forloop.counter }}" style="display: none;" required>
+                        <span class="edit-star" style="color: #d1d5db; transition: color 0.15s; user-select: none;">★</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="font-weight: 600; color: #334155; font-size: 0.9rem; display: block; margin-bottom: 0.5rem;">Comment</label>
+                <textarea id="editComment" name="comment" rows="4"
+                    style="width: 100%; padding: 0.85rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 1rem; outline: none; resize: vertical; font-family: inherit; box-sizing: border-box;"></textarea>
+            </div>
+            <button type="submit" style="width: 100%; background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; border: none; border-radius: 10px; padding: 0.9rem; font-size: 1rem; font-weight: 700; cursor: pointer;">
+                Update Review
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+</style>
+
+<!-- JS moved to React Vite Setup -->
+{% endblock %}

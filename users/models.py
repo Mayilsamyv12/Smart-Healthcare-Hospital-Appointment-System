@@ -9,6 +9,7 @@ class CustomUser(AbstractUser):
         max_length=1, choices=GENDER_CHOICES, null=True, blank=True
     )
     contact_no = models.CharField(max_length=15, null=True, blank=True)
+    location = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return self.username

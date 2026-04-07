@@ -11,378 +11,61 @@
 </head>
 
 <body>
-    <nav class="navbar">
-        <div style="display: flex; align-items: center;">
-            <div class="hamburger" onclick="toggleSidebar()">☰</div>
-            <a href="{% url 'home' %}" class="navbar-brand">
-                <span class="brand-highlight">One</span>Meds
-            </a>
-        </div>
-
-        <div class="nav-links" style="gap: 1.5rem; position: relative; align-items: center;">
-            <form id="nav-search-form" action="{% url 'search' %}" method="get" style="display: flex; align-items: center; background: #fff; border-radius: 6px; padding: 4px 10px; border: 2px solid #94a3b8; width: 220px; height: 36px; box-sizing: border-box;">
-                <span style="color: #64748b; margin-right: 0.3rem; font-size: 0.9rem;">🔍</span>
-                <input id="nav-search-input" type="text" name="q" placeholder="Location, doctors..."
-                    style="flex: 1; border: none; outline: none; box-shadow: none; -webkit-appearance: none; appearance: none; background: transparent; width: 100%; font-size: 0.9rem; color: #334155; padding: 0; margin: 0;">
-                <button type="button" onclick="startNavVoiceSearch()" style="background: none; border: none; outline: none; cursor: pointer; margin-left: 0.3rem; padding: 0; display: flex; align-items: center; justify-content: center; color: #64748b;" title="Search by voice">
-                    <svg fill="currentColor" viewBox="0 0 24 24" width="16" height="16">
-                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"></path>
-                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"></path>
-                    </svg>
-                </button>
-            </form>
-
-            <div onclick="openLocationModal()" style="color: #475569; font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; cursor: pointer; gap: 0.3rem;">
-                <!-- <span class="nav-icon"></span> -->
-                <span>Location</span>
-                <span style="font-size: 0.8rem; margin-left: 2px;">▼</span>
-            </div>
-
-            {% if user.is_authenticated %}
-            <!-- Profile Link -->
-            <a href="{% url 'profile' %}" style="color: #475569; font-weight: 500; font-size: 0.95rem; text-decoration: none; display: flex; align-items: center; cursor: pointer; gap: 0.3rem;">
-                <span style="font-size: 1.1rem; color: var(--primary);"></span>
-                Profile
-            </a>
-
-            <a href="{% url 'cart_view' %}" style="color: #475569; font-weight: 500; font-size: 0.95rem; text-decoration: none; display: flex; align-items: center; cursor: pointer; gap: 0.3rem;">
-                <span style="font-size: 1.1rem; color: var(--primary);"></span>
-                Cart
-                {% if cart_count > 0 %}
-                ({{ cart_count }})
-                {% endif %}
-            </a>
-            {% endif %}
-
-            <!-- Reminder Dropdown -->
-            <div class="nav-icon-link" onclick="toggleNavbarDropdown('reminderDropdownNav', true)"
-                style="color: #475569; font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; cursor: pointer; position:relative; gap: 0.3rem;">
-                <span style="font-size: 1.1rem; color: var(--primary);"></span>
-                <span>Reminder</span>
-                <div id="reminderDropdownNav" class="navbar-dropdown-content" style="width: 280px; right: -50px; text-transform: none; text-align: left;">
-                    <div
-                        style="padding: 10px 15px; border-bottom: 1px solid #eee; font-weight: bold; display: flex; justify-content: space-between;">
-                        <span>Live Reminders</span>
-                        <span style="font-size: 0.8rem; font-weight: normal;"><a href="{% url 'reminder_list' %}"
-                                style="text-decoration:none;">View All</a></span>
-                    </div>
-                    <div id="liveReminderContent"
-                        style="padding: 10px 15px; font-size: 0.9rem; color: #555; max-height: 300px; overflow-y: auto;">
-                        Loading live reminders...
-                    </div>
-                </div>
-            </div>
-
-            {% if not user.is_authenticated %}
-            <a href="{% url 'login' %}" class="btn-nav-outline">Login</a>
-            <a href="{% url 'register' %}" class="btn-nav-solid">Register</a>
-            {% endif %}
-        </div>
-    </nav>
-
-    <div class="sidebar" id="sidebar" style="overflow-y: auto;">
-        <div style="position: absolute; top: 20px; right: 20px; padding: 5px; cursor: pointer;"
-            onclick="toggleSidebar()">
-            <span style="font-size: 2rem; color: #000; line-height: 1;">&times;</span>
-        </div>
-
-        <div style="padding: 1rem;">
-            <a href="{% url 'home' %}" class="nav-item" style="display:block; margin-bottom:0.5rem;">Home</a>
-
-            <!-- Hospitals Dropdown -->
-            <div class="nav-item-dropdown" onclick="toggleDropdown('hospitalsDropdown')">
-                <span>Hospitals</span>
-                <span style="font-size: 0.8rem;">&#9660;</span>
-            </div>
-            <div id="hospitalsDropdown" class="sidebar-dropdown-content">
-                <a href="{% url 'hospital_list' %}" class="sidebar-subitem">All Hospitals</a>
-                {% for specialty in sidebar_hospital_specialties %}
-                <a href="{% url 'hospital_list' %}?specialty={{ specialty.name }}" class="sidebar-subitem"
-                    style="display:flex; align-items:center;">
-                    {% if specialty.icon %}
-                    <img src="{{ specialty.icon.url }}" alt=""
-                        style="width:20px; height:20px; margin-right:8px; object-fit:contain;">
-                    {% endif %}
-                    {{ specialty.name }}
-                </a>
-                {% endfor %}
-            </div>
-
-            <!-- Doctors Dropdown -->
-            <div class="nav-item-dropdown" onclick="toggleDropdown('doctorsDropdown')">
-                <span>Doctors</span>
-                <span style="font-size: 0.8rem;">&#9660;</span>
-            </div>
-            <div id="doctorsDropdown" class="sidebar-dropdown-content">
-                <a href="{% url 'doctor_list' %}" class="sidebar-subitem">All Doctors</a>
-                {% for specialty in sidebar_doctor_specialties %}
-                <a href="{% url 'doctor_list' %}?specialty={{ specialty.name }}" class="sidebar-subitem"
-                    style="display:flex; align-items:center;">
-                    {% if specialty.icon %}
-                    <img src="{{ specialty.icon.url }}" alt=""
-                        style="width:20px; height:20px; margin-right:8px; object-fit:contain;">
-                    {% endif %}
-                    {{ specialty.name }}
-                </a>
-                {% endfor %}
-            </div>
-
-            <!-- Lab Tests Dropdown -->
-            <div class="nav-item-dropdown" onclick="toggleDropdown('labTestsDropdown')">
-                <span>Lab Tests</span>
-                <span style="font-size: 0.8rem;">&#9660;</span>
-            </div>
-            <div id="labTestsDropdown" class="sidebar-dropdown-content">
-                <a href="{% url 'lab_test_list' %}" class="sidebar-subitem">All Lab Tests</a>
-                {% for category in sidebar_lab_categories %}
-                <a href="{% url 'lab_test_list' %}?category={{ category.name }}" class="sidebar-subitem"
-                    style="display:flex; align-items:center;">
-                    {% if category.icon %}
-                    <img src="{{ category.icon.url }}" alt=""
-                        style="width:20px; height:20px; margin-right:8px; object-fit:contain;">
-                    {% endif %}
-                    {{ category.name }}
-                </a>
-                {% endfor %}
-            </div>
-
-            <a href="{% url 'medicine_list' %}" class="nav-item"
-                style="display:block; margin-bottom:0.5rem; margin-top: 0.5rem;">Medicine Orders</a>
-        </div>
-    </div>
-
-    <div class="container">
-        {% block content %}{% endblock %}
-
-    </div>
-
-    </div>
-
-    <footer style="background: white; border-top: 1px solid #eee; padding: 2rem 0; margin-top: 4rem;">
-        <div class="container"
-            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
-            <div>
-                <h3 style="color: var(--primary);">OneMeds</h3>
-                <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;">Making healthcare accessible and
-                    efficient for everyone.</p>
-            </div>
-            <div>
-                <h4>Quick Links</h4>
-                <ul style="list-style: none; padding: 0; margin-top: 0.5rem;">
-                    <li><a href="{% url 'about' %}"
-                            style="text-decoration: none; color: #666; display: block; margin-bottom: 0.5rem;">About
-                            Us</a></li>
-                    <li><a href="{% url 'contact' %}"
-                            style="text-decoration: none; color: #666; display: block; margin-bottom: 0.5rem;">Contact
-                            Us</a></li>
-                    <li><a href="{% url 'help' %}"
-                            style="text-decoration: none; color: #666; display: block; margin-bottom: 0.5rem;">Help
-                            Center</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4>Legal</h4>
-                <ul style="list-style: none; padding: 0; margin-top: 0.5rem;">
-                    <li><a href="{% url 'terms' %}"
-                            style="text-decoration: none; color: #666; display: block; margin-bottom: 0.5rem;">Terms &
-                            Conditions</a></li>
-                    <li><a href="{% url 'privacy' %}"
-                            style="text-decoration: none; color: #666; display: block; margin-bottom: 0.5rem;">Privacy
-                            Policy</a></li>
-                </ul>
-            </div>
-        </div>
-        <div
-            style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #eee; color: #999; font-size: 0.9rem;">
-            &copy; 2026 OneMeds. All rights reserved.
-        </div>
-    </footer>
-
-    <!-- Load dedicated location script -->
-    <script src="{% static 'js/location.js' %}"></script>
-
-    <!-- Initial State for JS -->
     <script>
-        // Custom CSS for Navbar dropdowns
-        const style = document.createElement('style');
-        style.innerHTML = `
-            .navbar-dropdown-content {
-                display: none; position: absolute; top: 100%; right: 0;
-                background-color: #fff; min-width: 200px;
-                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
-                z-index: 1001; border-radius: 8px; overflow: hidden;
-                margin-top: 10px;
-            }
-            .navbar-dropdown-content.show {
-                display: block;
-            }
-            .navbar-dropdown-content .dropdown-item {
-                color: black; padding: 12px 16px; 
-                text-decoration: none; display: block;
-            }
-            .navbar-dropdown-content .dropdown-item:hover {
-                background-color: #f1f1f1;
-            }
-            .text-danger { color: #dc3545 !important; }
-        `;
-        document.head.appendChild(style);
-
-        function toggleNavbarDropdown(id, fetchLive = false) {
-            document.querySelectorAll('.navbar-dropdown-content').forEach(d => {
-                if (d.id !== id) d.classList.remove('show');
-            });
-            const d = document.getElementById(id);
-            d.classList.toggle('show');
-
-            if (d.classList.contains('show') && fetchLive) {
-                fetch('/api/profile-data/')
-                    .then(res => {
-                        if (res.status === 401) {
-                            if (id === 'reminderDropdownNav') {
-                                document.getElementById('liveReminderContent').innerHTML = '<div style="color:var(--accent);">Please <a href="{% url "login" %}">login</a> to see live reminders.</div>';
-                            }
-                            return null;
-                        }
-                        return res.json();
-                    })
-                    .then(data => {
-                        if (!data) return;
-
-                        if (id === 'profileDropdownNav') {
-                            document.getElementById('liveProfileName').innerText = data.username;
-                            document.getElementById('liveProfileEmail').innerText = data.email || 'Registered via App';
-
-                            const appts = data.appointments.length;
-                            document.getElementById('liveProfileAppointments').innerHTML = `<strong>${appts}</strong> upcoming appointment${appts !== 1 ? 's' : ''}`;
-
-                            const ords = data.orders.length;
-                            document.getElementById('liveProfileOrders').innerHTML = `<strong>${ords}</strong> active order${ords !== 1 ? 's' : ''}`;
-                        }
-
-                        if (id === 'reminderDropdownNav') {
-                            let content = '';
-                            if (data.appointments.length > 0) {
-                                content += '<strong style="color:var(--primary);">🩺 Next Appointments</strong><ul style="padding-left:15px; margin-bottom:10px;">';
-                                data.appointments.slice(0, 3).forEach(a => {
-                                    content += `<li>${a.doctor} on ${a.date} at ${a.time}</li>`;
-                                });
-                                content += '</ul>';
-                            } else {
-                                content += '<div style="margin-bottom:10px;">No upcoming appointments.</div>';
-                            }
-
-                            if (data.orders.length > 0) {
-                                content += '<strong style="color:var(--secondary);">📦 Recent Orders</strong><ul style="padding-left:15px;">';
-                                data.orders.slice(0, 3).forEach(o => {
-                                    content += `<li>Order #${o.id} - ${o.status}</li>`;
-                                });
-                                content += '</ul>';
-                            } else {
-                                content += '<div>No active medicine orders.</div>';
-                            }
-
-                            document.getElementById('liveReminderContent').innerHTML = content;
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Failed to fetch live data', err);
-                    });
-            }
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function (event) {
-            if (!event.target.closest('.nav-item-dropdown') && !event.target.closest('.nav-icon-link')) {
-                document.querySelectorAll('.navbar-dropdown-content').forEach(d => {
-                    d.classList.remove('show');
-                });
-            }
-        });
-
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
-
-        function toggleDropdown(id) {
-            var content = document.getElementById(id);
-            content.classList.toggle('active');
-
-            // Optional: Rotate arrow if we add one (handled via CSS sibling selector usually or add logic here)
-        }
-
-        window.isLocationMandatory = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
-        window.hasLocationSet = "{{ request.session.user_location|default:'' }}" !== "";
-
-        // Auto-open if needed
-        document.addEventListener('DOMContentLoaded', function () {
-            if (window.isLocationMandatory && !window.hasLocationSet) {
-                if (window.openLocationModal) window.openLocationModal();
-            }
-        });
-
-        // Voice Search for Navbar
-        function startNavVoiceSearch() {
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                alert("Your browser does not support voice search.");
-                return;
-            }
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'en-US';
-            recognition.start();
-            
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                const form = document.getElementById('nav-search-form');
-                const input = form.querySelector('input[name="q"]');
-                input.value = transcript;
-                form.submit();
-            };
-            
-            recognition.onerror = function(event) {
-                console.error("Speech recognition error", event.error);
-            };
-        }
+        window.DjangoUrls = {
+            home: "{% url 'home' %}",
+            search: "{% url 'search' %}",
+            profile: "{% if user.is_authenticated %}{% url 'profile' %}{% else %}''{% endif %}",
+            cart: "{% if user.is_authenticated %}{% url 'cart_view' %}{% else %}''{% endif %}",
+            reminderList: "{% if user.is_authenticated %}{% url 'reminder_list' %}{% else %}''{% endif %}",
+            login: "{% url 'login' %}",
+            register: "{% url 'register' %}",
+            hospitalList: "{% url 'hospital_list' %}",
+            doctorList: "{% url 'doctor_list' %}",
+            labTestList: "{% url 'lab_test_list' %}",
+            medicineList: "{% url 'medicine_list' %}",
+            about: "{% url 'about' %}",
+            contact: "{% url 'contact' %}",
+            help: "{% url 'help' %}",
+            terms: "{% url 'terms' %}",
+            privacy: "{% url 'privacy' %}"
+        };
+        window.DjangoContext = {
+            isAuthenticated: "{{ user.is_authenticated|yesno:'true,false' }}" === "true",
+            userLocation: "{{ request.session.user_location|default:''|escapejs }}",
+            cartCount: parseInt("{{ cart_count|default:0 }}", 10),
+            hospitalSpecialties: [
+                {% for s in sidebar_hospital_specialties %}
+                { name: "{{ s.name|escapejs }}", iconUrl: "{% if s.icon %}{{ s.icon.url|escapejs }}{% endif %}" }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            doctorSpecialties: [
+                {% for s in sidebar_doctor_specialties %}
+                { name: "{{ s.name|escapejs }}", iconUrl: "{% if s.icon %}{{ s.icon.url|escapejs }}{% endif %}" }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            labCategories: [
+                {% for c in sidebar_lab_categories %}
+                { name: "{{ c.name|escapejs }}", iconUrl: "{% if c.icon %}{{ c.icon.url|escapejs }}{% endif %}" }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ]
+        };
     </script>
-
-    <!-- Universal Location Modal HTML (Flipkart Style) -->
-    <div id="universalLocationModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Select Location</h3>
-                <button id="closeModalBtn" onclick="closeLocationModal()" class="modal-close-btn">&times;</button>
-            </div>
-
-            <div class="modal-body">
-                <form action="{% url 'set_location' %}" method="post">
-                    {% csrf_token %}
-                    <div class="location-input-group">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" name="location" id="universalLocationInput"
-                            placeholder="Search for city, area..." required autocomplete="off">
-                    </div>
-                </form>
-
-                <div class="detect-location-btn" onclick="detectLocationUniversal()">
-                    <div style="font-size: 1.4rem;">📍</div>
-                    <div>
-                        <div style="line-height: 1.2;">Use Current Location</div>
-                        <div style="font-size: 0.8rem; font-weight: 400; color: #666; margin-top: 2px;">Using GPS</div>
-                    </div>
-                </div>
-
-                {% if request.session.user_location %}
-                <div class="saved-location">
-                    <div style="font-size: 1.2rem; color: #999;">✓</div>
-                    <div>
-                        <div style="font-weight: 500;">{{ request.session.user_location }}</div>
-                        <div style="font-size: 0.8rem; color: #999;">Selected Location</div>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
+    <div id="django-server-content">
+        {% block content %}{% endblock %}
     </div>
-</body>
 
+    <div id="react-app-root"></div>
+
+    <div id="react-nav-handler-root"></div>
+    <div id="react-location-modal-root" 
+         data-is-mandatory="{{ user.is_authenticated|yesno:'true,false' }}"
+         data-has-location="{% if request.session.user_location %}true{% else %}false{% endif %}"
+         data-current-location="{{ request.session.user_location|default:'' }}"
+         data-set-location-url="{% url 'set_location' %}"
+         data-csrf-token="{{ csrf_token }}"></div>
+
+    <!-- Inject Vite React Output -->
+    <script type="module" src="{% static 'dist/js/main.js' %}"></script>
+</body>
 </html>

@@ -51,16 +51,5 @@
     </div>
 </div>
 
-<script>
-    function togglePaymentFields(method) {
-        document.getElementById('upi-field').style.display = 'none';
-        document.getElementById('card-field').style.display = 'none';
-
-        if (method === 'upi') {
-            document.getElementById('upi-field').style.display = 'block';
-        } else if (method === 'card') {
-            document.getElementById('card-field').style.display = 'block';
-        }
-    }
-</script>
+<!-- Payment fields toggle logic moved to React Vite Setup -->
 {% endblock %}

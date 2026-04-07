@@ -1,13 +1,84 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import models
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .models import Appointment, Doctor, Hospital
+from .models import Appointment, CallbackRequest, Doctor, Hospital, Review
 
 
 def home(request):
-    return render(request, "core/home.html")
+    user_location = request.session.get("user_location")
+    nearby_hospitals = []
+    nearby_doctors = []
+    nearby_labs = []
+
+    if user_location:
+        nearby_hospitals = Hospital.objects.filter(
+            location__icontains=user_location
+        )[:6]
+        nearby_doctors = Doctor.objects.filter(
+            hospital__location__icontains=user_location
+        ).select_related("specialty", "hospital")[:6]
+        try:
+            from commerce.models import LabTest
+            nearby_labs = LabTest.objects.filter(
+                location__icontains=user_location
+            )[:6]
+        except Exception:
+            nearby_labs = []
+    else:
+        nearby_hospitals = Hospital.objects.all()[:6]
+        nearby_doctors = Doctor.objects.select_related("specialty", "hospital").all()[:6]
+        try:
+            from commerce.models import LabTest
+            nearby_labs = LabTest.objects.all()[:6]
+        except Exception:
+            nearby_labs = []
+
+    return render(request, "core/home.html", {
+        "user_location": user_location,
+        "nearby_hospitals": nearby_hospitals,
+        "nearby_doctors": nearby_doctors,
+        "nearby_labs": nearby_labs,
+    })
+
+
+def api_home(request):
+    user_location = request.session.get("user_location")
+    nearby_hospitals = []
+    nearby_doctors = []
+    nearby_labs = []
+
+    if user_location:
+        nearby_hospitals = Hospital.objects.filter(location__icontains=user_location)[:6]
+        nearby_doctors = Doctor.objects.filter(hospital__location__icontains=user_location).select_related("specialty", "hospital")[:6]
+        try:
+            from commerce.models import LabTest
+            nearby_labs = LabTest.objects.filter(location__icontains=user_location)[:6]
+        except Exception:
+            nearby_labs = []
+    else:
+        nearby_hospitals = Hospital.objects.all()[:6]
+        nearby_doctors = Doctor.objects.select_related("specialty", "hospital").all()[:6]
+        try:
+            from commerce.models import LabTest
+            nearby_labs = LabTest.objects.all()[:6]
+        except Exception:
+            nearby_labs = []
+
+    return JsonResponse({
+        "hospitals": [
+            {"id": h.id, "name": h.name, "location": h.location, "image": h.image.url if h.image else None} for h in nearby_hospitals
+        ],
+        "doctors": [
+            {"id": d.id, "name": d.name, "specialty": d.specialty.name if d.specialty else "", "hospital": d.hospital.name if d.hospital else "", "image": d.image.url if d.image else None, "experience": d.experience} for d in nearby_doctors
+        ],
+        "labs": [
+            {"id": l.id, "name": l.name, "location": l.location, "image": l.image.url if l.image else None} for l in nearby_labs
+        ]
+    })
+
 
 
 def hospital_list(request):
@@ -37,7 +108,15 @@ def hospital_list(request):
 
 def hospital_detail(request, hospital_id):
     hospital = get_object_or_404(Hospital, id=hospital_id)
-    return render(request, "core/hospital_detail.html", {"hospital": hospital})
+    reviews = hospital.reviews.select_related("user").order_by("-created_at")
+    user_has_reviewed = False
+    if request.user.is_authenticated:
+        user_has_reviewed = reviews.filter(user=request.user).exists()
+    return render(request, "core/hospital_detail.html", {
+        "hospital": hospital,
+        "reviews": reviews,
+        "user_has_reviewed": user_has_reviewed,
+    })
 
 
 def doctor_list(request):
@@ -55,6 +134,19 @@ def doctor_list(request):
         "core/doctor_list.html",
         {"doctors": doctors, "current_location": user_location},
     )
+
+
+def doctor_profile(request, doctor_id):
+    doctor = get_object_or_404(Doctor, id=doctor_id)
+    reviews = doctor.reviews.select_related("user").order_by("-created_at")
+    user_has_reviewed = False
+    if request.user.is_authenticated:
+        user_has_reviewed = reviews.filter(user=request.user).exists()
+    return render(request, "core/doctor_profile.html", {
+        "doctor": doctor,
+        "reviews": reviews,
+        "user_has_reviewed": user_has_reviewed,
+    })
 
 
 @login_required
@@ -90,12 +182,26 @@ def book_appointment(request, doctor_id):
             )
             return redirect("book_appointment", doctor_id=doctor.id)
 
-        Appointment.objects.create(
-            user=request.user, doctor=doctor, date=date_str, time=time_str
-        )
+        patient_name = request.POST.get("patient_name")
+        patient_age = request.POST.get("patient_age")
+        if not patient_age: patient_age = None
+        patient_problem = request.POST.get("patient_problem")
+        patient_contact = request.POST.get("patient_contact")
+        patient_location = request.POST.get("patient_location")
+        payment_mode = request.POST.get("payment_mode", "Cash on hand")
 
-        # Send email confirmation (Placeholder for next step)
-        # send_confirmation_email(request.user, doctor, date_str, time_str)
+        Appointment.objects.create(
+            user=request.user,
+            doctor=doctor,
+            date=date_str,
+            time=time_str,
+            patient_name=patient_name,
+            patient_age=patient_age,
+            patient_problem=patient_problem,
+            patient_contact=patient_contact,
+            patient_location=patient_location,
+            payment_mode=payment_mode
+        )
 
         messages.success(request, "Appointment booked successfully!")
         return redirect("reminder_list")
@@ -154,9 +260,6 @@ def reminder_list(request):
         "core/reminder_list.html",
         {"appointments": appointments, "lab_appointments": lab_appointments},
     )
-
-
-from django.http import JsonResponse
 
 
 def api_profile_data(request):
@@ -236,7 +339,6 @@ def search_view(request):
             hospitals = hospitals.filter(location__icontains=user_location)
             doctors = doctors.filter(hospital__location__icontains=user_location)
             labs = labs.filter(location__icontains=user_location)
-            # Medicines usually don't have location filtering in this simple model sans Pharmacy inventory
 
     return render(
         request,
@@ -250,6 +352,122 @@ def search_view(request):
             "current_location": user_location,
         },
     )
+
+
+@login_required
+def request_callback(request, hospital_id):
+    hospital = get_object_or_404(Hospital, id=hospital_id)
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        message_text = request.POST.get("message", "").strip()
+
+        if not name or not phone:
+            messages.error(request, "Name and phone number are required.")
+            return redirect("hospital_detail", hospital_id=hospital_id)
+
+        CallbackRequest.objects.create(
+            hospital=hospital,
+            user=request.user,
+            name=name,
+            phone=phone,
+            message=message_text,
+        )
+        messages.success(request, "✅ Your callback request has been submitted! Our team will contact you shortly.")
+        return redirect("hospital_detail", hospital_id=hospital_id)
+
+    return redirect("hospital_detail", hospital_id=hospital_id)
+
+
+@login_required
+def submit_review(request):
+    if request.method == "POST":
+        hospital_id = request.POST.get("hospital_id")
+        doctor_id = request.POST.get("doctor_id")
+        rating = request.POST.get("rating")
+        comment = request.POST.get("comment", "").strip()
+
+        if not rating:
+            messages.error(request, "Please select a star rating.")
+            return redirect(request.META.get("HTTP_REFERER", "home"))
+
+        try:
+            rating = int(rating)
+            if rating < 1 or rating > 5:
+                raise ValueError
+        except ValueError:
+            messages.error(request, "Invalid rating value.")
+            return redirect(request.META.get("HTTP_REFERER", "home"))
+
+        if hospital_id:
+            hospital = get_object_or_404(Hospital, id=hospital_id)
+            # Prevent duplicate reviews
+            if Review.objects.filter(user=request.user, hospital=hospital).exists():
+                messages.warning(request, "You have already reviewed this hospital.")
+            else:
+                Review.objects.create(
+                    user=request.user,
+                    hospital=hospital,
+                    rating=rating,
+                    comment=comment,
+                )
+                messages.success(request, "✅ Thank you for your review!")
+            return redirect("hospital_detail", hospital_id=hospital_id)
+
+        elif doctor_id:
+            doctor = get_object_or_404(Doctor, id=doctor_id)
+            if Review.objects.filter(user=request.user, doctor=doctor).exists():
+                messages.warning(request, "You have already reviewed this doctor.")
+            else:
+                Review.objects.create(
+                    user=request.user,
+                    doctor=doctor,
+                    rating=rating,
+                    comment=comment,
+                )
+                messages.success(request, "✅ Thank you for your review!")
+            return redirect("doctor_profile", doctor_id=doctor_id)
+
+    return redirect("home")
+
+
+@login_required
+def edit_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id, user=request.user)
+    if request.method == "POST":
+        rating = request.POST.get("rating")
+        comment = request.POST.get("comment", "").strip()
+        try:
+            rating = int(rating)
+            if rating < 1 or rating > 5:
+                raise ValueError
+        except (ValueError, TypeError):
+            messages.error(request, "Invalid rating value.")
+            return redirect(request.META.get("HTTP_REFERER", "home"))
+        review.rating = rating
+        review.comment = comment
+        review.save()
+        messages.success(request, "✅ Review updated successfully!")
+        if review.hospital:
+            return redirect("hospital_detail", hospital_id=review.hospital.id)
+        elif review.doctor:
+            return redirect("doctor_profile", doctor_id=review.doctor.id)
+    return redirect("home")
+
+
+@login_required
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id, user=request.user)
+    if request.method == "POST":
+        hospital_id = review.hospital.id if review.hospital else None
+        doctor_id = review.doctor.id if review.doctor else None
+        review.delete()
+        messages.success(request, "🗑️ Review deleted successfully.")
+        if hospital_id:
+            return redirect("hospital_detail", hospital_id=hospital_id)
+        elif doctor_id:
+            return redirect("doctor_profile", doctor_id=doctor_id)
+    return redirect("home")
 
 
 def about(request):
