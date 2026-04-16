@@ -152,7 +152,7 @@
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
             {% for app in appointments %}
             <div class="appt-card" style="animation: slideUp 0.5s ease-out calc({{ forloop.counter0 }} * 0.1s + 0.1s) backwards;">
-                <div class="status-badge" style="background: {% if app.status == 'Booked' %}#16a34a{% elif app.status == 'Cancelled' %}#dc2626{% else %}#ea580c{% endif %};">
+                <div class="status-badge" style="background: {% if app.status == 'Completed' %}#16a34a{% elif app.status == 'Cancelled' %}#dc2626{% elif app.status == 'Pending' %}#ea580c{% else %}#64748b{% endif %};">
                     {{ app.status|upper }}
                 </div>
                 
@@ -176,7 +176,7 @@
                         <div>
                             <div class="appt-info-title">Dr. {{ app.doctor.name }}</div>
                             <div style="display: flex; align-items: center; gap: 0.5rem; color: #64748b; font-size: 0.95rem; font-weight: 600;">
-                                <span>{{ app.doctor.specialty.name }}</span>
+                                <span>{{ app.doctor.specialty }}</span>
                                 <span style="opacity: 0.3;">•</span>
                                 <span>{{ app.doctor.hospital.name }}</span>
                             </div>

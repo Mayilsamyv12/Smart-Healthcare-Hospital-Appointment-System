@@ -41,20 +41,7 @@
                     <span style="display: inline-block; width: 10px; height: 10px; background: #16a34a; border-radius: 50%;"></span> Open Now
                 </div>
                 
-                <h4 style="margin: 0 0 0.8rem 0; font-size: 1rem; color: #111; font-weight: 500;">Specialties</h4>
-                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                        {% for specialty in hospital.specialties.all %}
-                        {% if "core.Specialty" not in specialty.name %}
-                        <span style="{% if forloop.first %}background: #2563eb; color: white; border: 1px solid #2563eb;{% else %}background: white; color: #374151; border: 1px solid #d1d5db;{% endif %} padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; text-transform: uppercase;">
-                            {{ specialty.name }}
-                        </span>
-                        {% endif %}
-                        {% empty %}
-                        <span style="background: white; color: #374151; border: 1px solid #d1d5db; padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; text-transform: uppercase;">General</span>
-                        {% endfor %}
-                    </div>
-                </div>
+
             </div>
         </div>
 
@@ -154,16 +141,7 @@
         
         <!-- Left-aligned info -->
         <div style="padding: 1.5rem 1.5rem 0.5rem 1.5rem; flex: 1;">
-            <!-- Specialty -->
-            <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem;">
-                <span style="background: #eef2ff; color: #4338ca; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
-                    {% if doctor.specialty %}{{ doctor.specialty.name|truncatechars:18 }}{% else %}GENERAL{% endif %}
-                </span>
-                <span style="border: 1px solid #c7d2fe; border-radius: 50%; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; color: #4338ca; flex-shrink: 0;">
-                    <!-- simple stethoscope/medical icon fallback instead of custom tooth -->
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
-                </span>
-            </div>
+
             
             <!-- Details List -->
             <div style="display: flex; flex-direction: column; gap: 1.2rem; color: #1e293b; font-size: 1.05rem;">

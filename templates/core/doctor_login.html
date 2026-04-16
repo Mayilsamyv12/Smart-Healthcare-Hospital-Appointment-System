@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Login — OneMeds Portal</title>
+    <meta name="description" content="Secure 2-step login for OneMeds doctors. Enter your credentials and Doctor ID to access your workspace.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    {% load static %}
+    <!-- Vite built React styles -->
+    <link rel="stylesheet" href="{% static 'dist/assets/main.css' %}">
+    <script>
+        window.DjangoUrls = {
+            home: "{% url 'home' %}",
+            login: "{% url 'login' %}",
+        };
+        window.DjangoContext = { isAuthenticated: false };
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+    </style>
+</head>
+<body>
+    <!-- React mounts the full-screen Doctor Login UI here -->
+    <div id="react-doctor-login-root"></div>
+
+    <!-- Inject Vite React Output -->
+    <script type="module" src="{% static 'dist/js/main.js' %}"></script>
+</body>
+</html>

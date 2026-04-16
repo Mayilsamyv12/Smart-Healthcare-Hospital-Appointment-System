@@ -4,8 +4,16 @@ from django.db import models
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .models import Appointment, CallbackRequest, Doctor, Hospital, Review
+from .models import Appointment, Doctor, Hospital, Review
 
+
+def doctor_login_page(request):
+    """Renders the standalone Doctor Login page (powered by React 2-step auth)."""
+    # If already logged in as a doctor with verified ID, go straight to panel
+    if request.user.is_authenticated and hasattr(request.user, 'doctor_profile'):
+        if request.session.get('doctor_id_verified'):
+            return redirect('/doctor-panel/')
+    return render(request, 'core/doctor_login.html')
 
 def home(request):
     user_location = request.session.get("user_location")
@@ -19,7 +27,7 @@ def home(request):
         )[:6]
         nearby_doctors = Doctor.objects.filter(
             hospital__location__icontains=user_location
-        ).select_related("specialty", "hospital")[:6]
+        ).select_related("hospital")[:6]
         try:
             from commerce.models import LabTest
             nearby_labs = LabTest.objects.filter(
@@ -29,7 +37,7 @@ def home(request):
             nearby_labs = []
     else:
         nearby_hospitals = Hospital.objects.all()[:6]
-        nearby_doctors = Doctor.objects.select_related("specialty", "hospital").all()[:6]
+        nearby_doctors = Doctor.objects.select_related("hospital").all()[:6]
         try:
             from commerce.models import LabTest
             nearby_labs = LabTest.objects.all()[:6]
@@ -52,7 +60,7 @@ def api_home(request):
 
     if user_location:
         nearby_hospitals = Hospital.objects.filter(location__icontains=user_location)[:6]
-        nearby_doctors = Doctor.objects.filter(hospital__location__icontains=user_location).select_related("specialty", "hospital")[:6]
+        nearby_doctors = Doctor.objects.filter(hospital__location__icontains=user_location).select_related("hospital")[:6]
         try:
             from commerce.models import LabTest
             nearby_labs = LabTest.objects.filter(location__icontains=user_location)[:6]
@@ -60,7 +68,7 @@ def api_home(request):
             nearby_labs = []
     else:
         nearby_hospitals = Hospital.objects.all()[:6]
-        nearby_doctors = Doctor.objects.select_related("specialty", "hospital").all()[:6]
+        nearby_doctors = Doctor.objects.select_related("hospital").all()[:6]
         try:
             from commerce.models import LabTest
             nearby_labs = LabTest.objects.all()[:6]
@@ -72,7 +80,7 @@ def api_home(request):
             {"id": h.id, "name": h.name, "location": h.location, "image": h.image.url if h.image else None} for h in nearby_hospitals
         ],
         "doctors": [
-            {"id": d.id, "name": d.name, "specialty": d.specialty.name if d.specialty else "", "hospital": d.hospital.name if d.hospital else "", "image": d.image.url if d.image else None, "experience": d.experience} for d in nearby_doctors
+            {"id": d.id, "name": d.name, "specialty": d.specialty or "", "hospital": d.hospital.name if d.hospital else "", "image": d.image.url if d.image else None, "experience": d.experience} for d in nearby_doctors
         ],
         "labs": [
             {"id": l.id, "name": l.name, "location": l.location, "image": l.image.url if l.image else None} for l in nearby_labs
@@ -95,9 +103,6 @@ def hospital_list(request):
             models.Q(name__icontains=query) | models.Q(location__icontains=query)
         )
 
-    specialty = request.GET.get("specialty")
-    if specialty:
-        hospitals = hospitals.filter(specialties__name__icontains=specialty)
 
     return render(
         request,
@@ -127,7 +132,7 @@ def doctor_list(request):
 
     specialty = request.GET.get("specialty")
     if specialty:
-        doctors = doctors.filter(specialty__name__icontains=specialty)
+        doctors = doctors.filter(specialty__icontains=specialty)
 
     return render(
         request,
@@ -173,12 +178,17 @@ def book_appointment(request, doctor_id):
         date_str = request.POST.get("date")
         time_str = request.POST.get("time")
 
-        # Check if already booked
-        if Appointment.objects.filter(
+        # Check if already booked up to capacity
+        duration_mins = doctor.slot_duration_minutes or 15
+        max_patients = doctor.patients_per_slot or 3
+        
+        booked_count = Appointment.objects.filter(
             doctor=doctor, date=date_str, time=time_str
-        ).exists():
+        ).exclude(status__in=["Rejected", "Cancelled"]).count()
+        
+        if booked_count >= max_patients:
             messages.error(
-                request, "This slot is already booked. Please choose another."
+                request, "This time slot is fully booked. Please choose another."
             )
             return redirect("book_appointment", doctor_id=doctor.id)
 
@@ -204,35 +214,47 @@ def book_appointment(request, doctor_id):
         )
 
         messages.success(request, "Appointment booked successfully!")
-        return redirect("reminder_list")
+        return redirect("/patient/dashboard/")
 
     # Generate Slots
     from datetime import datetime, time, timedelta
 
     shift_start = doctor.shift_start_time or time(9, 0)
+    shift_end = doctor.shift_end_time or time(12, 0)
+    
     current_dt = datetime.combine(selected_date, shift_start)
-    end_dt = current_dt + timedelta(hours=3)  # 3 Hours Shift logic
+    end_dt = datetime.combine(selected_date, shift_end)
+    
+    # Handle overnight shift implicitly if start > end
+    if end_dt <= current_dt:
+        end_dt += timedelta(days=1)
 
-    booked_times = Appointment.objects.filter(
-        doctor=doctor, date=selected_date
-    ).values_list("time", flat=True)
+    duration_mins = doctor.slot_duration_minutes or 15
+    max_patients = doctor.patients_per_slot or 3
 
     slots = []
     while current_dt < end_dt:
         slot_time = current_dt.time()
-        is_booked = False
-        # Simple check: if slot_time is exactly in booked_times
-        if slot_time in booked_times:
-            is_booked = True
+        
+        # Count non-cancelled appointments for this specific slot time
+        booked_count = Appointment.objects.filter(
+            doctor=doctor, 
+            date=selected_date, 
+            time=slot_time
+        ).exclude(status__in=["Rejected", "Cancelled"]).count()
+
+        is_booked = booked_count >= max_patients
 
         slots.append(
             {
-                "time": slot_time.strftime("%H:%M"),
-                "label": current_dt.strftime("%I:%M %p"),
+                "time": slot_time.strftime("%H:%M:%S"),
+                "label": current_dt.strftime("%I:%M %p")[:5] + current_dt.strftime("%p").lower(),
                 "is_booked": is_booked,
+                "booked_count": booked_count,
+                "max_patients": max_patients
             }
         )
-        current_dt += timedelta(minutes=30)  # 30 min interval
+        current_dt += timedelta(minutes=duration_mins)
 
     return render(
         request,
@@ -310,14 +332,13 @@ def search_view(request):
         hospitals = Hospital.objects.filter(
             models.Q(name__icontains=query)
             | models.Q(location__icontains=query)
-            | models.Q(specialties__name__icontains=query)
             | models.Q(contact_no__icontains=query)
         ).distinct()
 
         # Search Doctors
         doctors = Doctor.objects.filter(
             models.Q(name__icontains=query)
-            | models.Q(specialty__name__icontains=query)
+            | models.Q(specialty__icontains=query)
             | models.Q(hospital__name__icontains=query)
             | models.Q(hospital__location__icontains=query)
         ).distinct()
@@ -354,29 +375,6 @@ def search_view(request):
     )
 
 
-@login_required
-def request_callback(request, hospital_id):
-    hospital = get_object_or_404(Hospital, id=hospital_id)
-    if request.method == "POST":
-        name = request.POST.get("name", "").strip()
-        phone = request.POST.get("phone", "").strip()
-        message_text = request.POST.get("message", "").strip()
-
-        if not name or not phone:
-            messages.error(request, "Name and phone number are required.")
-            return redirect("hospital_detail", hospital_id=hospital_id)
-
-        CallbackRequest.objects.create(
-            hospital=hospital,
-            user=request.user,
-            name=name,
-            phone=phone,
-            message=message_text,
-        )
-        messages.success(request, "✅ Your callback request has been submitted! Our team will contact you shortly.")
-        return redirect("hospital_detail", hospital_id=hospital_id)
-
-    return redirect("hospital_detail", hospital_id=hospital_id)
 
 
 @login_required
@@ -501,3 +499,48 @@ def set_location(request):
                 del request.session["user_location"]
                 messages.info(request, "Location filter cleared")
     return redirect(request.META.get("HTTP_REFERER", "home"))
+
+def api_hospitals(request):
+    hospitals = Hospital.objects.all()
+    user_location = request.session.get("user_location")
+    if user_location:
+         hospitals = hospitals.filter(location__icontains=user_location)
+    
+    data = []
+    for h in hospitals:
+        data.append({
+            "id": h.id,
+            "name": h.name,
+            "location": h.location,
+            "image": h.image.url if h.image else None,
+            "about": getattr(h, 'about', ''),
+            "contact_no": getattr(h, 'contact_no', ''),
+            "latitude": getattr(h, 'latitude', ''),
+            "longitude": getattr(h, 'longitude', ''),
+            "specialties": [],
+            "avg_rating": h.avg_rating(),
+            "review_count": h.review_count()
+        })
+    return JsonResponse({"hospitals": data, "current_location": user_location})
+
+def api_doctors(request):
+    doctors = Doctor.objects.select_related("hospital").all()
+    user_location = request.session.get("user_location")
+    if user_location:
+         doctors = doctors.filter(hospital__location__icontains=user_location)
+         
+    data = []
+    for d in doctors:
+        data.append({
+            "id": d.id,
+            "name": d.name,
+            "specialty": d.specialty or "",
+            "hospital": d.hospital.name if d.hospital else "",
+            "hospital_id": d.hospital.id if d.hospital else None,
+            "image": d.image.url if d.image else None,
+            "experience": d.experience,
+            "consultation_fee": getattr(d, 'consultation_fee', 0),
+            "avg_rating": d.avg_rating(),
+            "review_count": d.review_count()
+        })
+    return JsonResponse({"doctors": data, "current_location": user_location})

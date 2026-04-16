@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-wur+d%9u^4jl#6ln_#umly68_r5c97f@d2it*klz2+1pkw3tk&"
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-development-key-replace-in-production")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -33,6 +33,7 @@ INTERNAL_IPS = ["127.0.0.1", "localhost"]
 # Application definition
 
 INSTALLED_APPS = [
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -42,11 +43,17 @@ INSTALLED_APPS = [
     "users",
     "core",
     "commerce",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "corsheaders",
+    "django_otp",
+    "django_otp.plugins.otp_email",
 ]
 
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -86,7 +93,7 @@ DATABASES = {
         "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.mysql"),
         "NAME": os.environ.get("SQL_DATABASE", "Health"),
         "USER": os.environ.get("SQL_USER", "root"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD", "MYSQL@mayil1"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "your_db_password"),
         "HOST": os.environ.get("SQL_HOST", "localhost"),
         "PORT": os.environ.get("SQL_PORT", "3306"),
     }
@@ -145,8 +152,8 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "onmeds001@gmail.com"
-EMAIL_HOST_PASSWORD = "OneMeds@2004"  # Note: Gmail usually requires an App Password
+EMAIL_HOST_USER = "onemedsindia@gmail.com"
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "your_email_password")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
@@ -154,3 +161,142 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ── Doctor Portal Shared Access Credentials ──────────────────
+# All doctors use this ONE username + password to enter the portal.
+# After login, each doctor enters their unique Doctor ID to access their workspace.
+# Change these at any time — doctors will need the updated password to login.
+DOCTOR_PORTAL_USERNAME = os.environ.get('DOCTOR_PORTAL_USERNAME', 'doctor')
+DOCTOR_PORTAL_PASSWORD = os.environ.get('DOCTOR_PORTAL_PASSWORD', 'your_doctor_portal_password')
+
+# SMS Configuration (Twilio for real-time OTP delivery)
+TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "your_twilio_sid")
+TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "your_twilio_token")
+TWILIO_PHONE_NUMBER = os.environ.get("TWILIO_PHONE_NUMBER", "your_twilio_phone")
+
+# Cache Configuration (Used for real-time OTP storage)
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
+}
+
+
+# CORS Configuration
+CORS_ALLOW_ALL_ORIGINS = True
+
+# REST Framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',  # needed for session-based doctor panel access
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+# JWT Configuration
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+# ── Premium Jazzmin Admin Configuration ──────────────────────────
+JAZZMIN_SETTINGS = {
+    # Title of the window (Will default to current_admin_site.site_title if absent or None)
+    "site_title": "OneMeds Admin",
+    
+    # Title on the login screen (19 chars max)
+    "site_header": "OneMeds",
+    
+    # Title on the brand (19 chars max)
+    "site_brand": "OneMeds Portal",
+    
+    # Logo to use for your site, must be present in static files, used for brand on top left
+    # "site_logo": "img/logo.png",
+    
+    # Welcome text on the login screen
+    "welcome_sign": "Welcome to OneMeds Hero Admin",
+    
+    # Copyright on the footer
+    "copyright": "OneMeds Healthcare India Ltd",
+
+    # The model admin to search from the search bar, search bar omitted if excluded
+    "search_model": ["users.CustomUser", "core.Doctor", "core.Hospital"],
+    
+    # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user
+    "user_avatar": None,
+    
+    # Links to put along the top menu
+    "topmenu_links": [
+        {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "View Site", "url": "/"},
+        {"model": "users.CustomUser"},
+    ],
+
+    
+    # Custom icons for side menu apps/models
+    # for the full list of 5.13.0 free icon classes
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "users.CustomUser": "fas fa-user-md",
+        "core.Hospital": "fas fa-hospital",
+        "core.Doctor": "fas fa-user-md",
+        "core.Appointment": "fas fa-calendar-check",
+        "core.Prescription": "fas fa-file-prescription",
+        "core.MedicalRecord": "fas fa-file-medical",
+        "core.Review": "fas fa-star",
+        "commerce.Medicine": "fas fa-pills",
+        "commerce.Order": "fas fa-shopping-cart",
+        "commerce.LabTest": "fas fa-flask",
+        "commerce.LabCategory": "fas fa-tags",
+    },
+    # Icons that are used when one is not manually specified
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+    
+    "related_modal_active": False,
+    "custom_css": "css/admin_custom.css",
+    "custom_js": None,
+    
+    # Render out the change view as a single form
+    "changeform_format": "horizontal_tabs",
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-dark",
+    "accent": "accent-primary",
+    "navbar": "navbar-primary navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": True,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "darkly",
+    "dark_mode_theme": "darkly",
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
+}

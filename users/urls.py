@@ -12,9 +12,7 @@ urlpatterns = [
     path("verify-otp/", views.verify_otp, name="verify_otp"),
     path("reset-password/", views.reset_password, name="reset_password"),
 
-    # OTP API endpoints (JSON)
-    path("api/login/request-otp/", views.api_login_request_otp, name="api_login_request_otp"),
-    path("api/login/verify-otp/", views.api_login_verify_otp, name="api_login_verify_otp"),
-    path("api/register/request-otp/", views.api_register_request_otp, name="api_register_request_otp"),
-    path("api/register/verify-otp/", views.api_register_verify_otp, name="api_register_verify_otp"),
+    # Unified OTP API endpoints (DRF)
+    path("api/send-otp/", views.SendOTPView.as_view(), name="api_send_otp"),
+    path("api/verify-otp/", views.VerifyOTPView.as_view(), name="api_verify_otp"),
 ]

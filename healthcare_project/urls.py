@@ -9,9 +9,13 @@ admin.site.site_header = "OneMeds Administration"
 admin.site.site_title = "OneMeds Admin Portal"
 admin.site.index_title = "Welcome to OneMeds Admin Portal"
 
+from core.admin import doctor_admin_site
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("doctor-admin/", doctor_admin_site.urls),
     path("users/", include("users.urls")),
+    path("api/", include("core.api_urls")),
     path("", include("core.urls")),
     path("commerce/", include("commerce.urls")),
     # Fail-safe redirections for legacy or root-level requests

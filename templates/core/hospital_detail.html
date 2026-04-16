@@ -54,19 +54,7 @@
                 
                 <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
                 
-                <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a; margin-bottom: 0.8rem; letter-spacing: 0.5px;">SPECIALTIES:</div>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
-                    {% for specialty in hospital.specialties.all|slice:":3" %}
-                        {% if "core.Specialty" not in specialty.name %}
-                        <span style="background: #e0f2fe; color: #0369a1; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; text-transform: uppercase;">
-                            {{ specialty.name }}
-                        </span>
-                        {% endif %}
-                    {% empty %}
-                        <span style="background: #e0f2fe; color: #0369a1; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; text-transform: uppercase;">GENERAL</span>
-                    {% endfor %}
-                    <span style="color: #64748b; font-weight: 700; font-size: 1.2rem; margin-left: 0.3rem; letter-spacing: 2px;">...</span>
-                </div>
+
             </div>
 
             <!-- Column 2: Contact & Accolades -->
@@ -78,12 +66,7 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                         <a href="tel:{{ hospital.contact_no|default:'+9118001234567' }}" style="color: inherit; text-decoration: underline;">{{ hospital.contact_no|default:"+91 1800 123 4567" }}</a>
                     </div>
-                    {% if hospital.email %}
-                    <div style="display: flex; align-items: center; gap: 0.8rem; color: #1e293b; font-size: 1.05rem;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                        <a href="mailto:{{ hospital.email }}" style="color: inherit; text-decoration: underline;">{{ hospital.email }}</a>
-                    </div>
-                    {% endif %}
+
                 </div>
                 
                 <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
@@ -95,24 +78,7 @@
                 </div>
             </div>
 
-            <!-- Column 3: Action -->
-            <div style="flex: 1; min-width: 200px;">
-                <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a; margin-bottom: 1.2rem; letter-spacing: 0.5px;">ACTION</div>
-                
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    {% if user.is_authenticated %}
-                    <button onclick="document.getElementById('callbackModal').style.display='flex'"
-                        style="background: #f0f9ff; color: #0369a1; padding: 0.9rem; text-align: center; font-weight: 600; font-size: 0.95rem; border-radius: 8px; border: 1px solid #bae6fd; cursor: pointer; transition: 0.3s; width: 100%;">
-                        📞 REQUEST A CALLBACK
-                    </button>
-                    {% else %}
-                    <a href="{% url 'login' %}?next={{ request.path }}"
-                        style="background: #f0f9ff; color: #0369a1; padding: 0.9rem; text-align: center; font-weight: 600; font-size: 0.95rem; border-radius: 8px; border: 1px solid #bae6fd; text-decoration: none; display: block; transition: 0.3s;">
-                        📞 REQUEST A CALLBACK
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
+
             
         </div>
         
@@ -179,15 +145,7 @@
             
             <!-- Left-aligned info -->
             <div style="padding: 1.5rem 1.5rem 0.5rem 1.5rem; flex: 1;">
-                <!-- Specialty -->
-                <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem;">
-                    <span style="background: #eef2ff; color: #4338ca; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">
-                        {% if doctor.specialty %}{{ doctor.specialty.name|truncatechars:18 }}{% else %}GENERAL{% endif %}
-                    </span>
-                    <span style="border: 1px solid #c7d2fe; border-radius: 50%; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; color: #4338ca; flex-shrink: 0;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
-                    </span>
-                </div>
+
                 
                 <!-- Details List -->
                 <div style="display: flex; flex-direction: column; gap: 1.2rem; color: #1e293b; font-size: 1.05rem;">
@@ -375,53 +333,6 @@
             </div>
             <button type="submit" style="width: 100%; background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; border: none; border-radius: 10px; padding: 0.9rem; font-size: 1rem; font-weight: 700; cursor: pointer;">
                 Update Review
-            </button>
-        </form>
-    </div>
-</div>
-
-<!-- ===== CALLBACK MODAL ===== -->
-<div id="callbackModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div style="background: white; border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 480px; margin: 1rem; box-shadow: 0 25px 60px rgba(0,0,0,0.3); position: relative; animation: slideUp 0.3s ease;">
-        <!-- Close -->
-        <button onclick="document.getElementById('callbackModal').style.display='none'"
-            style="position: absolute; top: 1.2rem; right: 1.2rem; background: #f1f5f9; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b;">
-            ✕
-        </button>
-        
-        <div style="text-align: center; margin-bottom: 1.8rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;"></div>
-            <h2 style="font-size: 1.6rem; color: #0f172a; font-weight: 800; margin: 0 0 0.5rem 0;">Request a Callback</h2>
-            <p style="color: #64748b; font-size: 0.95rem; margin: 0;">from <strong>{{ hospital.name }}</strong></p>
-        </div>
-        
-        <form method="post" action="{% url 'request_callback' hospital.id %}">
-            {% csrf_token %}
-            
-            <div style="margin-bottom: 1.2rem;">
-                <label style="font-weight: 600; color: #334155; font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">Your Name *</label>
-                <input type="text" name="name" value="{{ user.get_full_name|default:user.username }}" required
-                    style="width: 100%; padding: 0.85rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box; transition: border-color 0.2s;"
-                    onfocus="this.style.borderColor='#0ea5e9'" onblur="this.style.borderColor='#e2e8f0'">
-            </div>
-            
-            <div style="margin-bottom: 1.2rem;">
-                <label style="font-weight: 600; color: #334155; font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">Phone Number *</label>
-                <input type="tel" name="phone" placeholder="e.g. +91 98765 43210" required
-                    style="width: 100%; padding: 0.85rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box; transition: border-color 0.2s;"
-                    onfocus="this.style.borderColor='#0ea5e9'" onblur="this.style.borderColor='#e2e8f0'">
-            </div>
-            
-            <div style="margin-bottom: 1.8rem;">
-                <label style="font-weight: 600; color: #334155; font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">Message (optional)</label>
-                <textarea name="message" rows="3" placeholder="e.g. I need information about cardiology department..."
-                    style="width: 100%; padding: 0.85rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box; resize: vertical; font-family: inherit; transition: border-color 0.2s;"
-                    onfocus="this.style.borderColor='#0ea5e9'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
-            </div>
-            
-            <button type="submit"
-                style="width: 100%; background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; border: none; border-radius: 10px; padding: 1rem; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; letter-spacing: 0.3px;">
-                Submit Callback Request
             </button>
         </form>
     </div>

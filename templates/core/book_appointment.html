@@ -26,7 +26,7 @@
         <div id="react-booking-root"
              data-slots='[
                 {% for slot in slots %}
-                  {"time": "{{ slot.time|escapejs }}", "label": "{{ slot.label|escapejs }}", "is_booked": {{ slot.is_booked|yesno:"true,false" }}}{% if not forloop.last %},{% endif %}
+                  {"time": "{{ slot.time|escapejs }}", "label": "{{ slot.label|escapejs }}", "is_booked": {{ slot.is_booked|yesno:"true,false" }}, "booked_count": {{ slot.booked_count }}, "max_patients": {{ slot.max_patients }}}{% if not forloop.last %},{% endif %}
                 {% endfor %}
              ]'
              data-selected-date="{{ selected_date }}"

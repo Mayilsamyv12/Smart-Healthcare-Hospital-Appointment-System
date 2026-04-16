@@ -108,18 +108,21 @@ const LoginPage = () => {
         if (!identifier.trim()) { setError('Please enter your email or phone.'); return; }
         setLoading(true); setError(''); setInfo('');
         try {
-            const res = await apiPost('/users/api/login/request-otp/', { identifier });
-            const data = await res.json();
+            const res = await apiPost('/users/api/send-otp/', { identifier });
+            const data = await res.json().catch(() => ({ error: 'Invalid server response.' }));
             if (res.ok) {
                 setStep('otp');
                 setOtp('');
                 setCanResend(false);
                 setCountdownKey(k => k + 1);
-                setInfo(data.dev_otp ? `OTP Sent! (Dev Code: ${data.dev_otp})` : `OTP Sent to ${identifier}`);
+                setInfo(`OTP Sent to ${identifier}`);
             } else {
                 setError(data.error || 'Failed to send OTP.');
             }
-        } catch { setError('Network error. Please try again.'); }
+        } catch (err) { 
+            console.error(err);
+            setError('Connection failed. Please check if the server is running.'); 
+        }
         setLoading(false);
     };
 
@@ -128,14 +131,22 @@ const LoginPage = () => {
         if (otp.length < 6) { setError('Enter full 6-digit code.'); return; }
         setLoading(true); setError('');
         try {
-            const res = await apiPost('/users/api/login/verify-otp/', { otp });
-            const data = await res.json();
+            const res = await apiPost('/users/api/verify-otp/', { identifier, otp });
+            const data = await res.json().catch(() => ({ error: 'Invalid server response.' }));
             if (res.ok) {
+                // Check if we need to store tokens for local storage (if using SPA mode)
+                if (data.access) {
+                    localStorage.setItem('access_token', data.access);
+                    localStorage.setItem('refresh_token', data.refresh);
+                }
                 window.location.href = data.redirect || '/';
             } else {
                 setError(data.error || 'Invalid OTP code.');
             }
-        } catch { setError('Network error. Please try again.'); }
+        } catch (err) { 
+            console.error(err);
+            setError('Connection failed. Please check if the server is running.'); 
+        }
         setLoading(false);
     };
 
@@ -217,7 +228,7 @@ const LoginPage = () => {
                             onMouseOver={e => e.target.style.transform = 'translateY(-2px)'}
                             onMouseOut={e => e.target.style.transform = 'translateY(0)'}
                         >
-                            {loading ? 'Encrypting...' : 'Get Security Code'}
+                            {loading ? 'Processing...' : 'Generate OTP'}
                             {!loading && <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M5 12h14m-7-7l7 7-7 7"></path></svg>}
                         </button>
 
@@ -247,7 +258,7 @@ const LoginPage = () => {
                                 cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 10px 15px -3px rgba(37, 99, 235, 0.3)'
                             }}
                         >
-                            {loading ? 'Verifying...' : 'Unlock Account'}
+                            {loading ? 'Verifying...' : 'Verify & Login'}
                         </button>
 
                         <div style={{ textAlign: 'center', marginTop: '2rem', color: '#64748b', fontSize: '0.95rem' }}>

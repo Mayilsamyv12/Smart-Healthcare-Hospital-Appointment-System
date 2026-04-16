@@ -9,7 +9,6 @@ const BookAppointment = ({ slots, selectedDate, doctorFee, csrfToken, userDetail
         patient_location: userDetails.location || '',
         patient_problem: ''
     });
-    const [paymentMode, setPaymentMode] = useState('Cash on hand');
 
     const handleInputChange = (e) => {
         setPatientDetails({ ...patientDetails, [e.target.name]: e.target.value });
@@ -49,71 +48,57 @@ const BookAppointment = ({ slots, selectedDate, doctorFee, csrfToken, userDetail
             form.appendChild(createInput('patient_contact', patientDetails.patient_contact));
             form.appendChild(createInput('patient_location', patientDetails.patient_location));
             form.appendChild(createInput('patient_problem', patientDetails.patient_problem));
-            form.appendChild(createInput('payment_mode', paymentMode));
-
             document.body.appendChild(form);
             form.submit();
         };
 
-        if (paymentMode === 'Razorpay') {
-            const options = {
-                "key": "rzp_test_mock_key_only",
-                "amount": parseFloat(doctorFee) * 100,
-                "currency": "INR",
-                "name": "Health App",
-                "description": "Consultation Fee",
-                "handler": function (response) {
-                    submitForm();
-                },
-                "prefill": {
-                    "name": patientDetails.patient_name,
-                    "contact": patientDetails.patient_contact
-                },
-                "theme": { "color": "#2563eb" }
-            };
-
-            // Temporary mock bypass
-            setTimeout(() => {
-                if(window.confirm(`This is a simulated Razorpay Modal for test keys.\nAmount: ₹${doctorFee}\nConfirm payment?`)) {
-                    submitForm();
-                }
-            }, 500);
-
-            // In real scenario:
-            // const rzp = new window.Razorpay(options);
-            // rzp.on('payment.failed', function (response) {
-            //     alert('Payment failed. Please try again or choose Cash on Hand.');
-            // });
-            // rzp.open();
-        } else {
-            submitForm();
-        }
+        submitForm();
     };
 
     return (
         <form id="bookingForm" onSubmit={handlePayment}>
             <label className="form-label" style={{marginTop: '2rem'}}>Select Time Slot:</label>
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '12px', marginBottom: '2.5rem'}}>
-                {slots.map((slot, idx) => (
-                    slot.is_booked ? (
-                        <button key={idx} type="button" disabled
-                            style={{padding: '12px', border: '1px solid #e2e8f0', background: '#f1f5f9', color: '#cbd5e1', borderRadius: '8px', cursor: 'not-allowed', fontWeight: 500}}>
-                            {slot.label}
-                        </button>
-                    ) : (
-                        <button key={idx} type="button" 
-                            onClick={() => setSelectedTime(slot.time)}
-                            style={{
-                                padding: '12px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 500,
-                                background: selectedTime === slot.time ? 'var(--primary)' : 'white',
-                                color: selectedTime === slot.time ? 'white' : 'var(--text-main)',
-                                border: '1px solid ' + (selectedTime === slot.time ? 'var(--primary)' : '#e2e8f0'),
-                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                            }}>
-                            {slot.label}
-                        </button>
-                    )
-                ))}
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px', marginBottom: '2.5rem'}}>
+                {slots.map((slot, idx) => {
+                    const available = slot.max_patients - slot.booked_count;
+                    const isFullyBooked = available <= 0;
+                    const fillingUp = available > 0 && available < slot.max_patients;
+                    
+                    if (isFullyBooked) {
+                        return (
+                            <div key={idx} style={{display: 'flex', flexDirection: 'column'}}>
+                                <button type="button" disabled
+                                    style={{padding: '10px', border: '1px solid #fecdd3', background: '#fff1f2', color: '#fda4af', borderRadius: '8px', cursor: 'not-allowed', fontWeight: 600}}>
+                                    {slot.label}
+                                </button>
+                                <span style={{fontSize: '0.7rem', color: '#be123c', textAlign: 'center', marginTop: '4px'}}>Full</span>
+                            </div>
+                        );
+                    }
+
+                    return (
+                        <div key={idx} style={{display: 'flex', flexDirection: 'column'}}>
+                            <button type="button" 
+                                onClick={() => setSelectedTime(slot.time)}
+                                style={{
+                                    padding: '10px', 
+                                    borderRadius: '8px', 
+                                    cursor: 'pointer', 
+                                    transition: 'all 0.2s', 
+                                    fontWeight: 600,
+                                    background: selectedTime === slot.time ? 'var(--primary)' : 'white',
+                                    color: selectedTime === slot.time ? 'white' : 'var(--text-main)',
+                                    border: '1px solid ' + (selectedTime === slot.time ? 'var(--primary)' : (fillingUp ? '#fdba74' : '#86efac')),
+                                    boxShadow: selectedTime === slot.time ? '0 4px 10px rgba(x,x,x,0.1)' : '0 1px 2px rgba(0,0,0,0.05)'
+                                }}>
+                                {slot.label}
+                            </button>
+                            <span style={{fontSize: '0.7rem', color: fillingUp ? '#ea580c' : '#16a34a', textAlign: 'center', marginTop: '4px', fontWeight: 600}}>
+                                {available} {available === 1 ? 'slot' : 'slots'} left
+                            </span>
+                        </div>
+                    );
+                })}
             </div>
 
             <div style={{marginTop: '1.5rem', background: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', textAlign: 'left'}}>
@@ -145,22 +130,6 @@ const BookAppointment = ({ slots, selectedDate, doctorFee, csrfToken, userDetail
                     <textarea name="patient_problem" value={patientDetails.patient_problem} onChange={handleInputChange} className="form-input" rows="3" placeholder="Describe your health issue"></textarea>
                 </div>
                 
-                <hr style={{border: 0, borderTop: '1px solid #e2e8f0', margin: '1.5rem 0'}} />
-                
-                <h3 style={{marginBottom: '1rem', color: '#333', fontSize: '1.1rem'}}>Payment Options</h3>
-                <div className="form-group" style={{display: 'flex', gap: '1.5rem', alignItems: 'center'}}>
-                    <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer'}}>
-                        <input type="radio" name="payment_mode" value="Cash on hand" checked={paymentMode === 'Cash on hand'} onChange={() => setPaymentMode('Cash on hand')} />
-                        <span>Cash on Hand</span>
-                    </label>
-                    <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer'}}>
-                        <input type="radio" name="payment_mode" value="Razorpay" checked={paymentMode === 'Razorpay'} onChange={() => setPaymentMode('Razorpay')} />
-                        <span style={{display: 'flex', alignItems: 'center', gap: '0.3rem'}}>
-                            Razorpay
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg" alt="Razorpay" style={{height: '16px'}} />
-                        </span>
-                    </label>
-                </div>
             </div>
 
             <div style={{marginTop: '1.5rem', marginBottom: '2rem', padding: '1.5rem', background: '#f0f9ff', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>

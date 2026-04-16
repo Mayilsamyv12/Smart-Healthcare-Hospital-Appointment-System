@@ -176,6 +176,7 @@ const Navbar = ({ urls, context }) => {
                             </svg>
                             Profile
                         </a>
+
                         {/* Cart - Django page, use <a> */}
                         <a
                             href={urls.cart || '/cart/'}

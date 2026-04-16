@@ -2,78 +2,108 @@
 {% load static %}
 
 {% block content %}
-<div style="background: url('{% static 'img/hero_bg.png' %}') center/cover no-repeat; padding: 4rem 1rem 6rem 1rem; margin-top: 60px; min-height: calc(100vh - 60px);">
-    <!-- Large Glass wrapper -->
-    <div style="max-width: 1200px; margin: 0 auto; background: rgba(255, 255, 255, 0.35); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1.5px solid rgba(255, 255, 255, 0.6); border-radius: 24px; padding: 2rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);">
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+    .quick-service-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15) !important;
+        border-color: #bae6fd !important;
+    }
+    .quick-service-card:hover .service-icon-bg {
+        transform: rotate(0deg) scale(1.1) !important;
+    }
+    .quick-service-card:hover .service-icon-img {
+        transform: rotate(0deg) !important;
+    }
+    .hero-btn:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 25px rgba(37,99,235,0.4) !important;
+    }
+</style>
+
+<!-- Full Bleed Hero Section with Deep Modern Gradient and Mesh Orbs -->
+<div style="position: relative; overflow: hidden; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); margin-top: 70px; padding: 6rem 1rem 12rem 1rem; min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+    
+    <!-- Decorative Blur Orbs for 2025 Glassmorphism Effect -->
+    <div style="position: absolute; top: -100px; left: -100px; width: 400px; height: 400px; background: rgba(56, 189, 248, 0.4); border-radius: 50%; filter: blur(100px); pointer-events: none;"></div>
+    <div style="position: absolute; bottom: 0; right: -50px; width: 500px; height: 500px; background: rgba(59, 130, 246, 0.3); border-radius: 50%; filter: blur(120px); pointer-events: none;"></div>
+    <div style="position: absolute; top: 20%; right: 15%; width: 300px; height: 300px; background: rgba(16, 185, 129, 0.2); border-radius: 50%; filter: blur(90px); pointer-events: none;"></div>
+    
+    <div style="max-width: 1200px; margin: 0 auto; width: 100%; position: relative; z-index: 10; text-align: center;">
         
-        <!-- Dark Blue Inner Banner -->
-        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); border-radius: 16px; padding: 5rem 2rem; text-align: center; color: white; position: relative; overflow: hidden;">
-            <div class="hero-graphic-cross"></div>
-            <div style="position: relative; z-index: 2;">
-                <h1 class="hero-title" style="font-size: 4rem; margin-bottom: 1.5rem; color: white;">Your Health,<br>Our Priority</h1>
-                <p class="hero-subtitle" style="margin: 0 auto 3rem auto; font-size: 1.25rem; color: #e2e8f0; max-width: 800px;">Find doctors, hospitals, medicines, and labs instantly with our premium verified network.</p>
-
-                <!-- Search Bar -->
-                <div style="margin: 0 auto; max-width: 700px; width: 100%; box-sizing: border-box;">
-                    <form id="home-search-form" action="{% url 'search' %}" method="get" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.95); border-radius: 50px; padding: 10px 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); width: 100%; box-sizing: border-box; height: 55px;">
-                        <span style="font-size: 1.3rem; color: #3b82f6; margin-right: 0.6rem;"></span>
-                        <input type="text" name="q" placeholder="Search doctors, hospitals, medicines..." style="flex: 1; border: none; outline: none; font-size: 1.05rem; padding: 0; margin: 0; background: transparent; color: #1e293b;" />
-                        <button type="button" onclick="handleVoiceSearch()" style="background: none; border: none; cursor: pointer; padding: 0; color: #64748b; margin-left: 0.6rem;" title="Search by voice">
-                            <svg fill="currentColor" viewBox="0 0 24 24" width="22" height="22">
-                                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"></path>
-                                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"></path>
-                            </svg>
-                        </button>
-                    </form>
-                </div>
-            </div>
+        <!-- Hero Badge -->
+        <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,1); backdrop-filter: blur(10px); padding: 6px 16px; border-radius: 50px; color: #0284c7; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-transform: uppercase; animation: fadeIn 0.5s ease-out;">
+            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #0ea5e9; box-shadow: 0 0 10px #0ea5e9;"></span> 
+            India's #1 Smart Healthcare Platform
         </div>
+        
+        <!-- Typography -->
+        <h1 style="font-family: 'Poppins', 'Inter', sans-serif; font-size: clamp(3rem, 5vw, 5rem); font-weight: 800; color: #0f172a; line-height: 1.15; margin-bottom: 1.5rem; letter-spacing: -1.5px; text-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+            Redefining Your <br>
+            <span style="background: linear-gradient(90deg, #0284c7, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Healthcare Experience</span>
+        </h1>
+        
+        <p style="font-size: 1.15rem; color: #475569; max-width: 700px; margin: 0 auto 3.5rem auto; line-height: 1.6; font-weight: 500;">
+            Instantly book appointments with top-rated doctors, locate premium hospitals, order lab tests, and get medicines delivered right to your door.
+        </p>
 
-        <!-- Voice search moved to React Vite Setup -->
-
-        <!-- Quick Service Cards -->
-        <div style="margin-top: 2rem;">
-            <h3 style="font-size: 1.6rem; color: #1e293b; margin-bottom: 1.5rem; font-weight: 700; padding-left: 0.5rem;">Quick Services</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
-                
-                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
-                    <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem auto; background: #e0f2fe; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <img src="{% static 'img/doctor_icon.png' %}" alt="Find Doctors" style="width: 35px; height: 35px; object-fit: contain;" />
-                    </div>
-                    <h3 style="font-size: 1.4rem; color: #1f2937; margin-bottom: 1rem; font-weight: 700;">Find Doctors</h3>
-                    <p style="color: #475569; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">Expert consultations at your fingertips. Book appointments with top specialists.</p>
-                    <a href="{% url 'doctor_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239,246,255,0.9);">Browse Doctors</a>
-                </div>
-
-                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
-                    <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem auto; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <img src="{% static 'img/hospital_icon.png' %}" alt="Hospitals" style="width: 35px; height: 35px; object-fit: contain;" />
-                    </div>
-                    <h3 style="font-size: 1.4rem; color: #1f2937; margin-bottom: 1rem; font-weight: 700;">Hospitals</h3>
-                    <p style="color: #475569; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">Locate top-rated hospitals near you with world-class facilities and premium verified network.</p>
-                    <a href="{% url 'hospital_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239,246,255,0.9);">Find Hospitals</a>
-                </div>
-
-                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
-                    <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem auto; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <img src="{% static 'img/medicine_icon.png' %}" alt="Pharmacy" style="width: 35px; height: 35px; object-fit: contain;" />
-                    </div>
-                    <h3 style="font-size: 1.4rem; color: #1f2937; margin-bottom: 1rem; font-weight: 700;">Pharmacy</h3>
-                    <p style="color: #475569; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">Order medicines and get them delivered to your doorstep quickly safely and securely.</p>
-                    <a href="{% url 'medicine_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239,246,255,0.9);">Order Now</a>
-                </div>
-
-                <div class="form-card" style="padding: 2rem 1.5rem; text-align: center; transition: all 0.3s ease; cursor: pointer; border-radius: 16px; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8);" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
-                    <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem auto; background: #f3e8ff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <img src="{% static 'img/lab_icon.png' %}" alt="Lab Tests" style="width: 35px; height: 35px; object-fit: contain;" />
-                    </div>
-                    <h3 style="font-size: 1.4rem; color: #1f2937; margin-bottom: 1rem; font-weight: 700;">Lab Tests</h3>
-                    <p style="color: #475569; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">Book diagnostic tests from certified labs with home sample collection options today.</p>
-                    <a href="{% url 'lab_test_list' %}" style="display: inline-block; color: #2563eb; font-weight: 600; text-decoration: none; padding: 0.5rem 1rem; border-radius: 50px; background: rgba(239,246,255,0.9);">Book Tests</a>
-                </div>
-
-            </div>
+        <!-- Glassmorphic Search Bar -->
+        <div style="margin: 0 auto; max-width: 800px; width: 100%; box-sizing: border-box; position: relative;">
+            <div style="position: absolute; inset: -3px; background: linear-gradient(90deg, rgba(37,99,235,0.2), rgba(14,165,233,0.4), rgba(37,99,235,0.2)); border-radius: 50px; filter: blur(10px); opacity: 0.8; z-index: -1;"></div>
+            <form id="home-search-form" action="{% url 'search' %}" method="get" style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.9); border-radius: 50px; padding: 8px 8px 8px 24px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); width: 100%; height: 75px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" name="q" placeholder="Search doctors, hospitals, or medicines..." style="flex: 1; border: none; outline: none; font-size: 1.1rem; background: transparent; color: #0f172a; width: 100%; font-family: inherit; font-weight: 500;" />
+                <button type="submit" class="hero-btn" style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; border: none; padding: 0 32px; height: 100%; border-radius: 40px; font-weight: 700; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(37,99,235,0.3); transition: all 0.3s;">Search</button>
+            </form>
         </div>
+        
+    </div>
+</div>
+
+<!-- Floating Quick Services -->
+<div style="max-width: 1200px; margin: -100px auto 4rem auto; padding: 0 1.5rem; position: relative; z-index: 20;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
+        
+        <a href="{% url 'doctor_list' %}" style="text-decoration: none;">
+            <div class="quick-service-card" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 2rem; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.06); border: 1px solid rgba(255,255,255,1); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; height: 100%; display: flex; flex-direction: column; align-items: center;">
+                <div class="service-icon-bg" style="width: 76px; height: 76px; margin: 0 auto 1.2rem auto; background: linear-gradient(135deg, #e0f2fe, #bae6fd); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(186, 230, 253, 0.5); transform: rotate(-6deg); transition: transform 0.3s ease-out;">
+                    <img src="{% static 'img/doctor_icon.png' %}" alt="Doctors" class="service-icon-img" style="width: 36px; height: 36px; object-fit: contain; transform: rotate(6deg); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); transition: transform 0.3s ease-out;" />
+                </div>
+                <h3 style="font-size: 1.3rem; color: #0f172a; margin-bottom: 0.5rem; font-weight: 800; font-family: 'Poppins', sans-serif;">Find Doctors</h3>
+                <p style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin: 0;">Book instant consultations with top-rated specialists near you.</p>
+            </div>
+        </a>
+
+        <a href="{% url 'hospital_list' %}" style="text-decoration: none;">
+            <div class="quick-service-card" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 2rem; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.06); border: 1px solid rgba(255,255,255,1); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; height: 100%; display: flex; flex-direction: column; align-items: center;">
+                <div class="service-icon-bg" style="width: 76px; height: 76px; margin: 0 auto 1.2rem auto; background: linear-gradient(135deg, #dcfce7, #86efac); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(134, 239, 172, 0.4); transform: rotate(4deg); transition: transform 0.3s ease-out;">
+                    <img src="{% static 'img/hospital_icon.png' %}" alt="Hospitals" class="service-icon-img" style="width: 36px; height: 36px; object-fit: contain; transform: rotate(-4deg); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); transition: transform 0.3s ease-out;" />
+                </div>
+                <h3 style="font-size: 1.3rem; color: #0f172a; margin-bottom: 0.5rem; font-weight: 800; font-family: 'Poppins', sans-serif;">Hospitals</h3>
+                <p style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin: 0;">Locate top-rated hospitals with world-class medical facilities.</p>
+            </div>
+        </a>
+
+        <a href="{% url 'medicine_list' %}" style="text-decoration: none;">
+            <div class="quick-service-card" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 2rem; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.06); border: 1px solid rgba(255,255,255,1); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; height: 100%; display: flex; flex-direction: column; align-items: center;">
+                <div class="service-icon-bg" style="width: 76px; height: 76px; margin: 0 auto 1.2rem auto; background: linear-gradient(135deg, #fee2e2, #fca5a5); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(252, 165, 165, 0.4); transform: rotate(-5deg); transition: transform 0.3s ease-out;">
+                    <img src="{% static 'img/medicine_icon.png' %}" alt="Pharmacy" class="service-icon-img" style="width: 36px; height: 36px; object-fit: contain; transform: rotate(5deg); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); transition: transform 0.3s ease-out;" />
+                </div>
+                <h3 style="font-size: 1.3rem; color: #0f172a; margin-bottom: 0.5rem; font-weight: 800; font-family: 'Poppins', sans-serif;">Pharmacy</h3>
+                <p style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin: 0;">Order medicines online safely and get them delivered fast.</p>
+            </div>
+        </a>
+
+        <a href="{% url 'lab_test_list' %}" style="text-decoration: none;">
+            <div class="quick-service-card" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 2rem; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.06); border: 1px solid rgba(255,255,255,1); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; height: 100%; display: flex; flex-direction: column; align-items: center;">
+                <div class="service-icon-bg" style="width: 76px; height: 76px; margin: 0 auto 1.2rem auto; background: linear-gradient(135deg, #f3e8ff, #d8b4fe); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(216, 180, 254, 0.4); transform: rotate(5deg); transition: transform 0.3s ease-out;">
+                    <img src="{% static 'img/lab_icon.png' %}" alt="Labs" class="service-icon-img" style="width: 36px; height: 36px; object-fit: contain; transform: rotate(-5deg); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); transition: transform 0.3s ease-out;" />
+                </div>
+                <h3 style="font-size: 1.3rem; color: #0f172a; margin-bottom: 0.5rem; font-weight: 800; font-family: 'Poppins', sans-serif;">Lab Tests</h3>
+                <p style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin: 0;">Book accurate diagnostic tests easily with home collection.</p>
+            </div>
+        </a>
+        
     </div>
 </div>
 
@@ -145,12 +175,7 @@
                         <div style="color: #64748b; font-size: 0.88rem; display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.6rem;">
                             <span></span> {{ hospital.location }}
                         </div>
-                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem;">
-                            {% for spec in hospital.specialties.all|slice:":2" %}
-                            <span style="background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;">{{ spec.name }}</span>
-                            {% empty %}
-                            <span style="background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;">General</span>
-                            {% endfor %}
+                        <div style="display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 0.4rem;">
                             <span style="color: #0ea5e9; font-size: 0.82rem; font-weight: 600;">View</span>
                         </div>
                     </div>
@@ -187,7 +212,7 @@
                     </div>
                     <div style="font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem;">Dr. {{ doctor.name }}</div>
                     {% if doctor.specialty %}
-                    <div style="background: #eef2ff; color: #4338ca; padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; display: inline-block; margin-bottom: 0.6rem; text-transform: uppercase;">{{ doctor.specialty.name }}</div>
+                    <div style="background: #eef2ff; color: #4338ca; padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; display: inline-block; margin-bottom: 0.6rem; text-transform: uppercase;">{{ doctor.specialty }}</div>
                     {% endif %}
                     <div style="color: #64748b; font-size: 0.82rem; margin-bottom: 0.8rem;">{{ doctor.hospital.name|truncatechars:22 }}</div>
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">

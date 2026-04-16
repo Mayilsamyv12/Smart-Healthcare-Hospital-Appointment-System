@@ -126,18 +126,21 @@ const RegisterPage = () => {
 
         setLoading(true); setError(''); setInfo('');
         try {
-            const res = await apiPost('/users/api/register/request-otp/', form);
-            const data = await res.json();
+            const res = await apiPost('/users/api/send-otp/', { identifier: form.identifier });
+            const data = await res.json().catch(() => ({ error: 'Invalid server response.' }));
             if (res.ok) {
                 setStep('otp');
                 setOtp('');
                 setCanResend(false);
                 setCountdownKey(k => k + 1);
-                setInfo(data.dev_otp ? `OTP Sent! (Dev Code: ${data.dev_otp})` : `OTP Sent to ${form.identifier}`);
+                setInfo(`OTP Sent to ${form.identifier}`);
             } else {
                 setError(data.error || 'Failed to send OTP.');
             }
-        } catch { setError('Network error. Please try again.'); }
+        } catch (err) { 
+            console.error(err);
+            setError('Connection failed. Please check if the server is running.'); 
+        }
         setLoading(false);
     };
 
@@ -146,14 +149,21 @@ const RegisterPage = () => {
         if (otp.length < 6) { setError('Enter full 6-digit code.'); return; }
         setLoading(true); setError('');
         try {
-            const res = await apiPost('/users/api/register/verify-otp/', { otp });
-            const data = await res.json();
+            const res = await apiPost('/users/api/verify-otp/', { identifier: form.identifier, otp });
+            const data = await res.json().catch(() => ({ error: 'Invalid server response.' }));
             if (res.ok) {
-                window.location.href = data.redirect || '/users/login/';
+                if (data.access) {
+                    localStorage.setItem('access_token', data.access);
+                    localStorage.setItem('refresh_token', data.refresh);
+                }
+                window.location.href = '/users/login/';
             } else {
                 setError(data.error || 'Invalid OTP code.');
             }
-        } catch { setError('Network error. Please try again.'); }
+        } catch (err) { 
+            console.error(err);
+            setError('Connection failed. Please check if the server is running.'); 
+        }
         setLoading(false);
     };
 
@@ -255,7 +265,7 @@ const RegisterPage = () => {
                                 justifyContent: 'center', gap: '8px', boxShadow: '0 10px 15px -3px rgba(6, 95, 70, 0.3)'
                             }}
                         >
-                            {loading ? 'Creating Verification...' : 'Begin Security Verification'}
+                            {loading ? 'Processing...' : 'Generate OTP'}
                             {!loading && <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M5 12h14m-7-7l7 7-7 7"></path></svg>}
                         </button>
 
@@ -284,7 +294,7 @@ const RegisterPage = () => {
                                 cursor: 'pointer', transition: 'all 0.3s', boxShadow: '0 10px 15px -3px rgba(5, 150, 105, 0.3)'
                             }}
                         >
-                            {loading ? 'Finalizing Setup...' : 'Complete Registration'}
+                            {loading ? 'Finalizing...' : 'Verify & Register'}
                         </button>
 
                         <div style={{ textAlign: 'center', marginTop: '2rem', color: '#64748b' }}>

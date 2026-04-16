@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.0">
+    <!-- Vite built React styles -->
+    <link rel="stylesheet" href="{% static 'dist/assets/main.css' %}">
 </head>
 
 <body>
@@ -34,16 +36,8 @@
             isAuthenticated: "{{ user.is_authenticated|yesno:'true,false' }}" === "true",
             userLocation: "{{ request.session.user_location|default:''|escapejs }}",
             cartCount: parseInt("{{ cart_count|default:0 }}", 10),
-            hospitalSpecialties: [
-                {% for s in sidebar_hospital_specialties %}
-                { name: "{{ s.name|escapejs }}", iconUrl: "{% if s.icon %}{{ s.icon.url|escapejs }}{% endif %}" }{% if not forloop.last %},{% endif %}
-                {% endfor %}
-            ],
-            doctorSpecialties: [
-                {% for s in sidebar_doctor_specialties %}
-                { name: "{{ s.name|escapejs }}", iconUrl: "{% if s.icon %}{{ s.icon.url|escapejs }}{% endif %}" }{% if not forloop.last %},{% endif %}
-                {% endfor %}
-            ],
+            hospitalSpecialties: [],
+            doctorSpecialties: [],
             labCategories: [
                 {% for c in sidebar_lab_categories %}
                 { name: "{{ c.name|escapejs }}", iconUrl: "{% if c.icon %}{{ c.icon.url|escapejs }}{% endif %}" }{% if not forloop.last %},{% endif %}
@@ -51,7 +45,7 @@
             ]
         };
     </script>
-    <div id="django-server-content">
+    <div id="django-server-content" style="display: none;">
         {% block content %}{% endblock %}
     </div>
 
@@ -59,7 +53,7 @@
 
     <div id="react-nav-handler-root"></div>
     <div id="react-location-modal-root" 
-         data-is-mandatory="{{ user.is_authenticated|yesno:'true,false' }}"
+         data-is-mandatory="{% if user.is_authenticated %}{% if 'doctor' in request.path %}false{% else %}true{% endif %}{% else %}false{% endif %}"
          data-has-location="{% if request.session.user_location %}true{% else %}false{% endif %}"
          data-current-location="{{ request.session.user_location|default:'' }}"
          data-set-location-url="{% url 'set_location' %}"

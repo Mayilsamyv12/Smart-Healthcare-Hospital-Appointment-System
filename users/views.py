@@ -16,213 +16,160 @@ from django.views.decorators.http import require_POST
 from .models import CustomUser
 
 
+from django.core.cache import cache
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from rest_framework_simplejwt.tokens import RefreshToken
+# Old serializers were moved/refactored
+
 # ──────────────────────────────────────────────────────────────
-# Helper: generate & print OTP
+# Helper: generate & send OTP
 # ──────────────────────────────────────────────────────────────
 def _generate_otp():
     return str(random.randint(100000, 999999))  # 6-digit OTP
 
-
 def _send_otp(identifier, otp):
-    """Print OTP to terminal for development; try email if looks like one."""
-    print(f"\n{'='*44}")
-    print(f"  OTP FOR  : {identifier}")
-    print(f"  CODE     : {otp}")
-    print(f"{'='*44}\n")
+    """Send OTP via SMTP (email) or Twilio SMS (mobile), based on identifier."""
+    print(f"\n--- OTP for {identifier}: {otp} ---\n")
 
     if "@" in identifier:
+        # ── Email via SMTP ──
+        subject = "Your OneMeds OTP Verification Code"
+        message = (
+            f"Hello,\n\n"
+            f"Your 6-digit OTP verification code is: {otp}\n\n"
+            f"This code will expire in 5 minutes. Do not share this with anyone.\n\n"
+            f"Best regards,\nThe OneMeds Team"
+        )
         try:
-            send_mail(
-                "Your OneMeds OTP",
-                f"Your 6-digit OTP is: {otp}\n\nDo not share this with anyone.",
-                settings.DEFAULT_FROM_EMAIL,
-                [identifier],
-                fail_silently=True,
-            )
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [identifier], fail_silently=False)
+            return True
         except Exception as e:
-            print(f"Email send failed: {e}")
-
-
-# ──────────────────────────────────────────────────────────────
-# OTP-Based Login API  (JSON)
-# ──────────────────────────────────────────────────────────────
-
-@require_POST
-def api_login_request_otp(request):
-    """Step 1: User enters email/mobile → generate & send OTP."""
-    import json
-    try:
-        body = json.loads(request.body)
-    except Exception:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
-
-    identifier = body.get("identifier", "").strip()
-    if not identifier:
-        return JsonResponse({"error": "Email or mobile number is required."}, status=400)
-
-    # Look up the user
-    user = CustomUser.objects.filter(
-        Q(email=identifier) | Q(contact_no=identifier)
-    ).first()
-
-    if not user:
-        return JsonResponse({"error": "No account found with this email or phone number."}, status=404)
-
-    otp = _generate_otp()
-    request.session["login_otp"] = otp
-    request.session["login_identifier"] = identifier
-
-    _send_otp(identifier, otp)
-
-    return JsonResponse({"message": "OTP sent successfully.", "dev_otp": otp})  # Remove dev_otp in production
-
-
-@require_POST
-def api_login_verify_otp(request):
-    """Step 2: User submits OTP → log in."""
-    import json
-    try:
-        body = json.loads(request.body)
-    except Exception:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
-
-    user_otp = body.get("otp", "").strip()
-    session_otp = request.session.get("login_otp")
-    identifier = request.session.get("login_identifier")
-
-    if not session_otp or not identifier:
-        return JsonResponse({"error": "Session expired. Please request a new OTP."}, status=400)
-
-    if user_otp != session_otp:
-        return JsonResponse({"error": "Invalid OTP. Please try again."}, status=400)
-
-    # Find & log in the user
-    user = CustomUser.objects.filter(
-        Q(email=identifier) | Q(contact_no=identifier)
-    ).first()
-
-    if not user:
-        return JsonResponse({"error": "User not found."}, status=404)
-
-    # Log the user in (Django session)
-    user.backend = "django.contrib.auth.backends.ModelBackend"
-    login(request, user)
-
-    # Clean up OTP from session
-    request.session.pop("login_otp", None)
-    request.session.pop("login_identifier", None)
-
-    return JsonResponse({"message": "Login successful.", "redirect": "/"})
-
-
-# ──────────────────────────────────────────────────────────────
-# OTP-Based Register API  (JSON)
-# ──────────────────────────────────────────────────────────────
-
-@require_POST
-def api_register_request_otp(request):
-    """Step 1: Collect user details → validate → send OTP."""
-    import json
-    try:
-        body = json.loads(request.body)
-    except Exception:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
-
-    name = body.get("name", "").strip()
-    age = body.get("age", "").strip()
-    gender = body.get("gender", "").strip()
-    location = body.get("location", "").strip()
-    identifier = body.get("identifier", "").strip()  # email or mobile
-
-    # Validate
-    if not name:
-        return JsonResponse({"error": "Full name is required."}, status=400)
-    if not identifier:
-        return JsonResponse({"error": "Email or mobile number is required."}, status=400)
-
-    # Check if already registered
-    existing = CustomUser.objects.filter(
-        Q(email=identifier) | Q(contact_no=identifier)
-    ).first()
-    if existing:
-        return JsonResponse({"error": "An account already exists with this email or mobile number."}, status=409)
-
-    # Store data in session for later account creation
-    request.session["reg_name"] = name
-    request.session["reg_age"] = age
-    request.session["reg_gender"] = gender
-    request.session["reg_location"] = location
-    request.session["reg_identifier"] = identifier
-
-    otp = _generate_otp()
-    request.session["reg_otp"] = otp
-    _send_otp(identifier, otp)
-
-    return JsonResponse({"message": "OTP sent successfully.", "dev_otp": otp})  # Remove dev_otp in production
-
-
-@require_POST
-def api_register_verify_otp(request):
-    """Step 2: Verify OTP → create account."""
-    import json
-    try:
-        body = json.loads(request.body)
-    except Exception:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
-
-    user_otp = body.get("otp", "").strip()
-    session_otp = request.session.get("reg_otp")
-    identifier = request.session.get("reg_identifier")
-
-    if not session_otp or not identifier:
-        return JsonResponse({"error": "Session expired. Please start registration again."}, status=400)
-
-    if user_otp != session_otp:
-        return JsonResponse({"error": "Invalid OTP. Please try again."}, status=400)
-
-    # Create the user account
-    name = request.session.get("reg_name", "")
-    age = request.session.get("reg_age")
-    gender = request.session.get("reg_gender")
-    location = request.session.get("reg_location", "")
-
-    # Determine username from name (make unique)
-    base_username = name.lower().replace(" ", "_")
-    username = base_username
-    counter = 1
-    while CustomUser.objects.filter(username=username).exists():
-        username = f"{base_username}_{counter}"
-        counter += 1
-
-    user = CustomUser(
-        username=username,
-        first_name=name,
-        location=location if location else None,
-        gender=gender if gender else None,
-    )
-
-    # Set age
-    if age:
-        try:
-            user.age = int(age)
-        except ValueError:
-            pass
-
-    # Set email or contact_no
-    if "@" in identifier:
-        user.email = identifier
+            print(f"SMTP Error: {e}")
+            return False
     else:
-        user.contact_no = identifier
+        # ── Mobile via Twilio SMS ──
+        account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '')
+        auth_token  = getattr(settings, 'TWILIO_AUTH_TOKEN', '')
+        from_number = getattr(settings, 'TWILIO_PHONE_NUMBER', '')
 
-    # Set an unusable password (OTP-only auth)
-    user.set_unusable_password()
-    user.save()
+        if not (account_sid and auth_token and from_number):
+            print("[SMS] Twilio credentials not configured.")
+            return settings.DEBUG  # succeed silently in DEBUG mode
 
-    # Clean session
-    for key in ["reg_name", "reg_age", "reg_gender", "reg_location", "reg_identifier", "reg_otp"]:
-        request.session.pop(key, None)
+        # Normalize to E.164
+        mobile = identifier.strip().replace("-", "").replace(" ", "")
+        if not mobile.startswith("+"):
+            if len(mobile) == 10 and mobile.isdigit():
+                mobile = f"+91{mobile}"
+            elif mobile.startswith("91") and len(mobile) == 12:
+                mobile = f"+{mobile}"
 
-    return JsonResponse({"message": "Account created successfully.", "redirect": "/users/login/"})
+        try:
+            from twilio.rest import Client
+            client = Client(account_sid, auth_token)
+            msg = client.messages.create(
+                body=f"Your OneMeds OTP is {otp}. Valid for 5 minutes. Do not share this.",
+                from_=from_number,
+                to=mobile,
+            )
+            print(f"[SMS] Sent. SID: {msg.sid}")
+            return True
+        except ImportError:
+            print("[SMS] Twilio not installed. Run: pip install twilio")
+            return settings.DEBUG
+        except Exception as e:
+            print(f"[SMS] Twilio Error: {e}")
+            return False
+
+# ──────────────────────────────────────────────────────────────
+# DRF OTP Views (Unified Send & Verify)
+# ──────────────────────────────────────────────────────────────
+
+from .serializers import SendOTPSerializer, VerifyOTPSerializer
+from .services import process_otp_request, verify_otp_submission
+
+class SendOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = SendOTPSerializer(data=request.data)
+        if serializer.is_valid():
+            identifier = serializer.validated_data['identifier']
+            
+            success, message, dev_otp = process_otp_request(identifier)
+            
+            if not success:
+                # Due to rate limiting or delivery failure
+                return Response({"error": message}, status=status.HTTP_400_BAD_REQUEST)
+                
+            return Response({
+                "message": message,
+                "dev_otp": dev_otp if settings.DEBUG else None
+            }, status=status.HTTP_200_OK)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class VerifyOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = VerifyOTPSerializer(data=request.data)
+        if serializer.is_valid():
+            identifier = serializer.validated_data['identifier']
+            otp_val = serializer.validated_data['otp']
+            
+            is_valid, error = verify_otp_submission(identifier, otp_val)
+            if not is_valid:
+                return Response({"error": error}, status=status.HTTP_400_BAD_REQUEST)
+                
+            # If Valid, Login existing or Create new User
+            is_email = "@" in identifier
+            if is_email:
+                user, created = CustomUser.objects.get_or_create(email=identifier)
+            else:
+                user, created = CustomUser.objects.get_or_create(contact_no=identifier)
+                
+            if created:
+                # Setup default username
+                base_username = identifier.split('@')[0] if is_email else f"user_{identifier[-4:]}"
+                username = base_username
+                counter = 1
+                while CustomUser.objects.filter(username=username).exists():
+                    username = f"{base_username}_{counter}"
+                    counter += 1
+                    
+                user.username = username
+                if is_email:
+                    user.email = identifier
+                else:
+                    user.contact_no = identifier
+                    
+                user.set_unusable_password()
+                user.save()
+
+            # Generate JWT
+            refresh = RefreshToken.for_user(user)
+            
+            # Log the user in for session-based authentication (compatibility with templates)
+            login(request, user)
+            
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+                "redirect": "/",
+                "message": "User registered successfully." if created else "Login successful.",
+                "user": {
+                    "username": user.username,
+                    "email": user.email,
+                    "contact_no": user.contact_no,
+                    "is_new": created
+                }
+            }, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 # ──────────────────────────────────────────────────────────────
@@ -231,11 +178,15 @@ def api_register_verify_otp(request):
 
 def login_view(request):
     """Render the OTP login page (React-powered)."""
+    if request.user.is_authenticated:
+        return redirect("home")
     return render(request, "users/login.html")
 
 
 def register_view(request):
     """Render the OTP register page (React-powered)."""
+    if request.user.is_authenticated:
+        return redirect("home")
     return render(request, "users/register.html")
 
 
@@ -264,7 +215,14 @@ def forgot_password(request):
             otp = _generate_otp()
             request.session["reset_otp"] = otp
             request.session["reset_identifier"] = identifier
-            _send_otp(identifier, otp)
+            
+            if not _send_otp(identifier, otp):
+                return render(
+                    request,
+                    "users/forgot_password.html",
+                    {"error": "Failed to send OTP. Please check your contact info and backend configuration."},
+                )
+                
             return redirect("verify_otp")
         else:
             return render(

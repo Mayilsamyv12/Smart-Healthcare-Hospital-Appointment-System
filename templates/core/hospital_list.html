@@ -38,20 +38,7 @@
                     <span style="display: inline-block; width: 10px; height: 10px; background: #16a34a; border-radius: 50%;"></span> Open Now
                 </div>
                 
-                <h4 style="margin: 0 0 0.8rem 0; font-size: 1rem; color: #111; font-weight: 500;">Specialties</h4>
-                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                        {% for specialty in hospital.specialties.all %}
-                        {% if "core.Specialty" not in specialty.name %}
-                        <span style="{% if forloop.first %}background: #2563eb; color: white; border: 1px solid #2563eb;{% else %}background: white; color: #374151; border: 1px solid #d1d5db;{% endif %} padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; text-transform: uppercase;">
-                            {{ specialty.name }}
-                        </span>
-                        {% endif %}
-                        {% empty %}
-                        <span style="background: white; color: #374151; border: 1px solid #d1d5db; padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; text-transform: uppercase;">General</span>
-                        {% endfor %}
-                    </div>
-                </div>
+
             </div>
         </div>
 

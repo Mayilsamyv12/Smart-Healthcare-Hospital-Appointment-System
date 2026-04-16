@@ -6,6 +6,7 @@ import GlobalInteractions from './components/GlobalInteractions';
 import BookAppointment from './components/BookAppointment';
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
+import DoctorLogin from './pages/DoctorLogin';
 
 const initReactApp = () => {
     const urls = window.DjangoUrls || {};
@@ -27,6 +28,12 @@ const initReactApp = () => {
     const registerRoot = document.getElementById('react-register-root');
     if (registerRoot) {
         createRoot(registerRoot).render(<RegisterPage />);
+    }
+
+    // ── 2b. Doctor Login (2-step: credentials + Doctor ID) ──────
+    const doctorLoginRoot = document.getElementById('react-doctor-login-root');
+    if (doctorLoginRoot) {
+        createRoot(doctorLoginRoot).render(<DoctorLogin />);
     }
 
     // ── 3. Location Modal ───────────────────────────────────────

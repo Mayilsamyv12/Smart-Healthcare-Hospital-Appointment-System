@@ -20,17 +20,11 @@ def notification_counts(request):
 
 def sidebar_categories(request):
     from commerce.models import LabCategory
-    from core.models import Specialty
 
-    # Fetch Specialties and LabCategories
-    doctor_specialties = Specialty.objects.all().order_by("name")
     lab_categories = LabCategory.objects.all().order_by("name")
 
-    # Hospital specialties are shared with Doctor specialties for now
-    hospital_specialties = doctor_specialties
-
     return {
-        "sidebar_doctor_specialties": doctor_specialties,
+        "sidebar_doctor_specialties": [],
         "sidebar_lab_categories": lab_categories,
-        "sidebar_hospital_specialties": hospital_specialties,
+        "sidebar_hospital_specialties": [],
     }

@@ -26,84 +26,12 @@ const Sidebar = ({ urls, context }) => {
                 {/* Home - React SPA route, use Link (no reload) */}
                 <Link to="/" className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }} onClick={toggleSidebar}>Home</Link>
 
-                {/* Hospitals Dropdown */}
-                <div className="nav-item-dropdown" onClick={() => toggleDropdown('hospitals')}>
-                    <span>Hospitals</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ marginLeft: '6px', transition: 'transform 0.2s', transform: openDropdowns.hospitals ? 'rotate(180deg)' : 'rotate(0)' }}>
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </div>
-                {openDropdowns.hospitals && (
-                    <div className="sidebar-dropdown-content active" style={{ display: 'block' }}>
-                        {/* Django-rendered pages: use <a href> */}
-                        <a href={urls.hospitalList || '/hospitals/'} className="sidebar-subitem">All Hospitals</a>
-                        {context.hospitalSpecialties?.map?.(specialty => (
-                            <a
-                                key={specialty.name}
-                                href={`${urls.hospitalList || '/hospitals/'}?specialty=${encodeURIComponent(specialty.name)}`}
-                                className="sidebar-subitem"
-                                style={{ display: 'flex', alignItems: 'center' }}
-                            >
-                                {specialty.iconUrl && (
-                                    <img src={specialty.iconUrl} alt="" style={{ width: '20px', height: '20px', marginRight: '8px', objectFit: 'contain' }} />
-                                )}
-                                {specialty.name}
-                            </a>
-                        ))}
-                    </div>
-                )}
+                {/* Django-rendered pages: use <a href> */}
+                <a href={urls.hospitalList || '/hospitals/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }}>Hospitals</a>
 
-                {/* Doctors Dropdown */}
-                <div className="nav-item-dropdown" onClick={() => toggleDropdown('doctors')}>
-                    <span>Doctors</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ marginLeft: '6px', transition: 'transform 0.2s', transform: openDropdowns.doctors ? 'rotate(180deg)' : 'rotate(0)' }}>
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </div>
-                {openDropdowns.doctors && (
-                    <div className="sidebar-dropdown-content active" style={{ display: 'block' }}>
-                        <a href={urls.doctorList || '/doctors/'} className="sidebar-subitem">All Doctors</a>
-                        {context.doctorSpecialties?.map?.(specialty => (
-                            <a
-                                key={specialty.name}
-                                href={`${urls.doctorList || '/doctors/'}?specialty=${encodeURIComponent(specialty.name)}`}
-                                className="sidebar-subitem"
-                                style={{ display: 'flex', alignItems: 'center' }}
-                            >
-                                {specialty.iconUrl && (
-                                    <img src={specialty.iconUrl} alt="" style={{ width: '20px', height: '20px', marginRight: '8px', objectFit: 'contain' }} />
-                                )}
-                                {specialty.name}
-                            </a>
-                        ))}
-                    </div>
-                )}
+                <a href={urls.doctorList || '/doctors/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }}>Doctors</a>
 
-                {/* Lab Tests Dropdown */}
-                <div className="nav-item-dropdown" onClick={() => toggleDropdown('labTests')}>
-                    <span>Lab Tests</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ marginLeft: '6px', transition: 'transform 0.2s', transform: openDropdowns.labTests ? 'rotate(180deg)' : 'rotate(0)' }}>
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </div>
-                {openDropdowns.labTests && (
-                    <div className="sidebar-dropdown-content active" style={{ display: 'block' }}>
-                        <a href={urls.labTestList || '/lab-tests/'} className="sidebar-subitem">All Lab Tests</a>
-                        {context.labCategories?.map?.(category => (
-                            <a
-                                key={category.name}
-                                href={`${urls.labTestList || '/lab-tests/'}?category=${encodeURIComponent(category.name)}`}
-                                className="sidebar-subitem"
-                                style={{ display: 'flex', alignItems: 'center' }}
-                            >
-                                {category.iconUrl && (
-                                    <img src={category.iconUrl} alt="" style={{ width: '20px', height: '20px', marginRight: '8px', objectFit: 'contain' }} />
-                                )}
-                                {category.name}
-                            </a>
-                        ))}
-                    </div>
-                )}
+                <a href={urls.labTestList || '/lab-tests/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }}>Lab Tests</a>
 
                 {/* Medicine Orders - Django page */}
                 <a href={urls.medicineList || '/medicines/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem', marginTop: '0.5rem' }}>Medicine Orders</a>
