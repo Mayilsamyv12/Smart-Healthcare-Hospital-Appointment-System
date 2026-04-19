@@ -362,6 +362,17 @@
   text-transform: uppercase;
 }
 
+/* ─── SCHEDULE MANAGER ─── */
+.schedule-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* High-Priority Button States */
+.safety-btn-edit:hover { background-color: #ede9fe !important; border-color: #4f46e5 !important; }
+
 .status-pending { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
 .status-accepted { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
 .status-completed { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
@@ -377,12 +388,6 @@
   cursor: pointer;
   transition: all 0.2s;
   border: 1px solid transparent;
-}
-
-.action-btn.prescribe {
-  background: var(--primary-gradient);
-  color: white;
-  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
 }
 
 .action-btn.outline {
@@ -439,115 +444,6 @@
   font-style: italic;
 }
 
-/* ─── PRINTING & PROFESSIONAL TEMPLATE ─── */
-#prescription-print-container {
-  display: none;
-}
-
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  #prescription-print-container, #prescription-print-container * {
-    visibility: visible;
-  }
-  #prescription-print-container {
-    display: block !important;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 20px;
-    background: white;
-  }
-  .doctor-admin-wrapper {
-    background: white !important;
-  }
-}
-
-.professional-prescription {
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #1e293b;
-  padding: 40px;
-  max-width: 900px;
-  margin: 0 auto;
-  background: white;
-}
-
-.rx-header {
-  background: #0ea5e9;
-  color: white;
-  padding: 30px;
-  margin: -40px -40px 30px -40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.rx-logo-plus {
-  font-size: 3.5rem;
-  font-weight: 800;
-  opacity: 0.9;
-}
-
-.hospital-info h1 {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: white;
-  margin: 0 0 5px 0;
-}
-
-.hospital-info p {
-  font-size: 0.95rem;
-  color: rgba(255,255,255,0.9);
-  margin: 2px 0;
-}
-
-.rx-label-side {
-  font-size: 3rem;
-  font-weight: 900;
-  color: #e2e8f0;
-  opacity: 0.1;
-  position: absolute;
-  left: 40px;
-  top: 280px;
-}
-
-.rx-meta-info {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 25px;
-}
-
-.dr-name {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.dr-qual {
-  font-size: 0.95rem;
-  color: #475569;
-}
-
-.dr-reg {
-  font-size: 0.85rem;
-  color: #64748b;
-  margin-top: 4px;
-}
-
-.date-section {
-  text-align: right;
-  font-size: 1rem;
-}
-
-.rx-divider {
-  border: 0;
-  border-top: 1px solid #e2e8f0;
-  margin: 20px 0;
-}
-
 .rx-subtitle {
   font-size: 1rem;
   font-weight: 700;
@@ -558,128 +454,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.rx-patient-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px 30px;
-  background: #f1f5f9;
-  padding: 20px;
-  border-radius: 0;
-  border-top: 1px solid #cbd5e1;
-  border-bottom: 1px solid #cbd5e1;
-  margin-bottom: 30px;
-  font-size: 1rem;
-}
-
-.rx-clinical {
-  display: flex;
-  gap: 30px;
-  margin-bottom: 30px;
-}
-
-.rx-column {
-  flex: 1;
-}
-
-.rx-text-box {
-  min-height: 60px;
-  padding: 10px 0;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-.rx-med-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 30px;
-}
-
-.rx-med-table th {
-  text-align: left;
-  background: #f1f5f9;
-  padding: 12px 15px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-}
-
-.rx-med-table td {
-  padding: 12px 15px;
-  border: 1px solid #e2e8f0;
-  font-size: 1rem;
-}
-
-.rx-split-section {
-  display: flex;
-  gap: 40px;
-  margin-bottom: 40px;
-}
-
-.rx-half {
-  flex: 1;
-}
-
-.rx-footer {
-  margin-top: 60px;
-  padding: 20px 40px;
-  background: #f8fafc;
-  margin: 60px -40px -40px -40px;
-  display: grid;
-  grid-template-columns: 2fr 1fr 1.5fr;
-  gap: 20px;
-  align-items: center;
-  border-top: 1px solid #e2e8f0;
-}
-
-.rx-verified {
-  text-align: center;
-}
-
-.rx-verified img {
-  border: 1px solid #e2e8f0;
-  padding: 5px;
-  background: white;
-  border-radius: 4px;
-}
-
-.rx-verified span {
-  display: block;
-  font-size: 0.75rem;
-  color: #94a3b8;
-  margin-top: 5px;
-}
-
-.rx-signature {
-  text-align: right;
-}
-
-.sig-line {
-  border-bottom: 1px solid #0f172a;
-  min-height: 50px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-}
-
-.sig-name {
-  font-family: 'Dancing Script', cursive, 'Brush Script MT', cursive;
-  font-size: 1.8rem;
-  color: #1a237e;
-  padding-right: 10px;
-}
-
-.sig-role {
-  font-size: 0.75rem;
-  color: #64748b;
-  margin-top: 5px;
-}
-
-.sig-role b {
-  color: #0f172a;
 }
 
 /* Animations */
@@ -740,14 +514,6 @@
   font-size: 1.25rem;
 }
 
-/* Prescription Form */
-.form-section {
-  background: #f8fafc;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  margin-bottom: 1.5rem;
-}
-
 .form-label {
   display: block;
   font-weight: 600;
@@ -770,33 +536,6 @@
   outline: none;
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.medicine-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
-  align-items: center;
-}
-
-.ai-hint {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: #f0f9ff;
-  color: #0369a1;
-  border-radius: 50px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid #bae6fd;
-}
-
-.ai-hint:hover {
-  background: #e0f2fe;
 }
 
 .patient-grid {

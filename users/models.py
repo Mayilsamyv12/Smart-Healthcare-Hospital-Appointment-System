@@ -16,21 +16,12 @@ class CustomUser(AbstractUser):
     gender = models.CharField(
         max_length=1, choices=GENDER_CHOICES, null=True, blank=True
     )
-    contact_no = models.CharField(max_length=15, null=True, blank=True)
+    contact_no = models.CharField(max_length=15, unique=True, null=True, blank=True)
+    country_code = models.CharField(max_length=5, default="+91")
     location = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"{self.username} ({self.role})"
 
 
-class OTPRecord(models.Model):
-    identifier = models.CharField(max_length=255, unique=True)
-    otp_hash = models.CharField(max_length=255)
-    # NOT auto_now_add — must be updatable when a new OTP is issued
-    created_at = models.DateTimeField(default=timezone.now)
-    is_verified = models.BooleanField(default=False)
-    attempts = models.IntegerField(default=0)
-    
-    def __str__(self):
-        return self.identifier
 

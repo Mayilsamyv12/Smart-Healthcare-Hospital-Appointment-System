@@ -4,7 +4,7 @@
 {% block content %}
 <style>
 :root {
-    --primary: #0f4a56;
+    --primary: #2d39d9;
     --primary-light: #1a7a8a;
     --accent: #45b0a3;
     --bg-light: #f8fafc;
@@ -170,7 +170,7 @@
                             {% if app.doctor.image %}
                             <img src="{{ app.doctor.image.url }}" style="width: 100%; height: 100%; object-fit: cover;">
                             {% else %}
-                            <span style="font-size: 2rem;"></span>
+                            <span style="font-size: 2rem;">👨‍⚕️</span>
                             {% endif %}
                         </div>
                         <div>
@@ -203,7 +203,7 @@
         </div>
         {% else %}
         <div style="text-align: center; padding: 6rem 2rem; background: white; border-radius: 30px; border: 2px dashed #e2e8f0;">
-            <div style="font-size: 6rem; margin-bottom: 2rem;"></div>
+            <div style="font-size: 6rem; margin-bottom: 2rem;">📅</div>
             <h2 style="font-size: 2rem; color: #0f172a; font-weight: 900; margin: 0;">No Appointments</h2>
             <p style="color: #64748b; font-size: 1.1rem; margin: 1rem 0 2.5rem 0;">You haven't scheduled any doctor visits yet.</p>
             <a href="{% url 'hospital_list' %}" style="background: var(--primary); color: white; border-radius: 16px; padding: 1.2rem 3rem; font-size: 1.1rem; font-weight: 800; text-decoration: none; display: inline-block; box-shadow: 0 10px 30px rgba(15,74,86,0.2);">
@@ -232,7 +232,7 @@
 
                     <div style="flex: 1; min-width: 250px; display: flex; align-items: center; gap: 1.5rem;">
                         <div class="appt-avatar" style="background: linear-gradient(135deg, #f5f3ff, #ede9fe);">
-                            <span style="font-size: 2rem;"></span>
+                            <span style="font-size: 2rem;">🧪</span>
                         </div>
                         <div>
                             <div class="appt-info-title">{{ app.lab_test.name }}</div>
@@ -247,10 +247,10 @@
         </div>
         {% else %}
         <div style="text-align: center; padding: 6rem 2rem; background: white; border-radius: 30px; border: 2px dashed #e2e8f0;">
-            <div style="font-size: 6rem; margin-bottom: 2rem;"></div>
+            <div style="font-size: 6rem; margin-bottom: 2rem;">🧪</div>
             <h2 style="font-size: 2rem; color: #0f172a; font-weight: 900; margin: 0;">No Diagnostics</h2>
             <p style="color: #64748b; font-size: 1.1rem; margin: 1rem 0 2.5rem 0;">Ready for a checkup? Book a lab test today.</p>
-            <a href="{% url 'lab_test_list' %}" style="background: #7c3aed; color: white; border-radius: 16px; padding: 1.2rem 3rem; font-size: 1.1rem; font-weight: 800; text-decoration: none; display: inline-block; box-shadow: 0 10px 30px rgba(124,58,237,0.2);">
+            <a href="{% url 'commerce:lab_test_list' %}" style="background: #7c3aed; color: white; border-radius: 16px; padding: 1.2rem 3rem; font-size: 1.1rem; font-weight: 800; text-decoration: none; display: inline-block; box-shadow: 0 10px 30px rgba(124,58,237,0.2);">
                 Book Lab Test
             </a>
         </div>
@@ -259,7 +259,29 @@
 
 </div>
 
-<!-- Tab logic moved to React Vite Setup -->
+<script>
+// Tab switching logic is already handled by GlobalInteractions.jsx if using SPA.
+// If direct access, we include it here as a fallback.
+if (typeof switchTab !== 'function') {
+    window.switchTab = (tab) => {
+        const panels = {
+            'doctor': document.getElementById('panel-doctor'),
+            'lab': document.getElementById('panel-lab')
+        };
+        const btns = {
+            'doctor': document.getElementById('tab-doctor'),
+            'lab': document.getElementById('tab-lab')
+        };
+        Object.keys(panels).forEach(k => {
+            if (panels[k]) panels[k].style.display = k === tab ? 'block' : 'none';
+            if (btns[k]) {
+                if (k === tab) btns[k].classList.add('active');
+                else btns[k].classList.remove('active');
+            }
+        });
+    }
+}
+</script>
 
 <style>
 @keyframes slideUp {

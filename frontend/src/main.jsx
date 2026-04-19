@@ -4,9 +4,11 @@ import App from './App';
 import LocationModal from './components/LocationModal';
 import GlobalInteractions from './components/GlobalInteractions';
 import BookAppointment from './components/BookAppointment';
+import LabBooking from './components/LabBooking';
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
 import DoctorLogin from './pages/DoctorLogin';
+import { AuthProvider } from './context/AuthContext';
 
 const initReactApp = () => {
     const urls = window.DjangoUrls || {};
@@ -15,19 +17,31 @@ const initReactApp = () => {
     // ── 0. Main SPA shell (home page) ──────────────────────────
     const appRoot = document.getElementById('react-app-root');
     if (appRoot) {
-        createRoot(appRoot).render(<App />);
+        createRoot(appRoot).render(
+            <AuthProvider>
+                <App />
+            </AuthProvider>
+        );
     }
 
     // ── 1. OTP Login page ───────────────────────────────────────
     const loginRoot = document.getElementById('react-login-root');
     if (loginRoot) {
-        createRoot(loginRoot).render(<LoginPage />);
+        createRoot(loginRoot).render(
+            <AuthProvider>
+                <LoginPage />
+            </AuthProvider>
+        );
     }
 
     // ── 2. OTP Register page ────────────────────────────────────
     const registerRoot = document.getElementById('react-register-root');
     if (registerRoot) {
-        createRoot(registerRoot).render(<RegisterPage />);
+        createRoot(registerRoot).render(
+            <AuthProvider>
+                <RegisterPage />
+            </AuthProvider>
+        );
     }
 
     // ── 2b. Doctor Login (2-step: credentials + Doctor ID) ──────
@@ -81,6 +95,29 @@ const initReactApp = () => {
             );
         } catch (e) {
             console.error('Error parsing booking root data:', e);
+        }
+    }
+
+    // ── 6. Lab Booking component ───────────────────────────
+    const labBookingRoot = document.getElementById('react-lab-booking-root');
+    if (labBookingRoot) {
+        try {
+            const slots = JSON.parse(labBookingRoot.dataset.slots || '[]');
+            const selectedDate = labBookingRoot.dataset.selectedDate || '';
+            const labFee = labBookingRoot.dataset.labFee || '0';
+            const csrfToken = labBookingRoot.dataset.csrfToken || '';
+            const userDetails = JSON.parse(labBookingRoot.dataset.userDetails || '{}');
+            createRoot(labBookingRoot).render(
+                <LabBooking
+                    slots={slots}
+                    selectedDate={selectedDate}
+                    labFee={labFee}
+                    csrfToken={csrfToken}
+                    userDetails={userDetails}
+                />
+            );
+        } catch (e) {
+            console.error('Error parsing lab booking root data:', e);
         }
     }
 };

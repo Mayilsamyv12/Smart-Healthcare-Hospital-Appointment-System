@@ -7,9 +7,8 @@
     <title>OneMeds</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.0">
-    <!-- Vite built React styles -->
-    <link rel="stylesheet" href="{% static 'dist/assets/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.2">
+    <!-- Vite loads component-specific CSS dynamically -->
 </head>
 
 <body>
@@ -17,15 +16,15 @@
         window.DjangoUrls = {
             home: "{% url 'home' %}",
             search: "{% url 'search' %}",
-            profile: "{% if user.is_authenticated %}{% url 'profile' %}{% else %}''{% endif %}",
-            cart: "{% if user.is_authenticated %}{% url 'cart_view' %}{% else %}''{% endif %}",
+            profile: "{% if user.is_authenticated %}/patient/profile/{% else %}''{% endif %}",
+            cart: "{% if user.is_authenticated %}{% url 'commerce:cart_view' %}{% else %}''{% endif %}",
             reminderList: "{% if user.is_authenticated %}{% url 'reminder_list' %}{% else %}''{% endif %}",
             login: "{% url 'login' %}",
             register: "{% url 'register' %}",
             hospitalList: "{% url 'hospital_list' %}",
             doctorList: "{% url 'doctor_list' %}",
-            labTestList: "{% url 'lab_test_list' %}",
-            medicineList: "{% url 'medicine_list' %}",
+            labTestList: "{% url 'commerce:lab_test_list' %}",
+            medicineList: "{% url 'commerce:medicine_list' %}",
             about: "{% url 'about' %}",
             contact: "{% url 'contact' %}",
             help: "{% url 'help' %}",
@@ -34,15 +33,14 @@
         };
         window.DjangoContext = {
             isAuthenticated: "{{ user.is_authenticated|yesno:'true,false' }}" === "true",
+            isStaff: "{{ user.is_staff|yesno:'true,false' }}" === "true",
+            username: "{{ user.username|escapejs }}",
             userLocation: "{{ request.session.user_location|default:''|escapejs }}",
             cartCount: parseInt("{{ cart_count|default:0 }}", 10),
+            reminderCount: parseInt("{{ reminder_count|default:0 }}", 10),
             hospitalSpecialties: [],
             doctorSpecialties: [],
-            labCategories: [
-                {% for c in sidebar_lab_categories %}
-                { name: "{{ c.name|escapejs }}", iconUrl: "{% if c.icon %}{{ c.icon.url|escapejs }}{% endif %}" }{% if not forloop.last %},{% endif %}
-                {% endfor %}
-            ]
+            labCategories: []
         };
     </script>
     <div id="django-server-content" style="display: none;">

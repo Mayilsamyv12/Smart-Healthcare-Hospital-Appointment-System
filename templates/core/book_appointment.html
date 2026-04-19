@@ -1,48 +1,68 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div style="max-width: 600px; margin: 4rem auto;">
-    <div class="form-card" style="max-width: 700px; margin: 0 auto;">
-        <h2>Book Appointment</h2>
-        <p style="text-align: center; color: #64748b; margin-bottom: 0.5rem;">with <strong
-                style="color: var(--text-main);">Dr. {{ doctor.name }}</strong> ({{ doctor.specialty }})</p>
-        <p style="text-align: center; color: var(--primary); font-weight: 500; margin-bottom: 2rem;">
-            at <strong>{{ doctor.hospital.name }}</strong>, {{ doctor.hospital.location }}
-        </p>
-
-        <!-- Date Selection (Reloads page) -->
-        <form method="get" action="" class="form-group"
-            style="background: #f8fafc; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0;">
-            <label class="form-label">Select Date:</label>
-            <input type="date" name="date" value="{{ selected_date }}" onchange="this.form.submit()" class="form-input">
-            <p
-                style="font-size: 0.9rem; color: #94a3b8; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                <span>📅</span> Select a date to see available time slots
-            </p>
-        </form>
-
-        <!-- React Booking Component Root -->
-        {% if slots %}
-        <div id="react-booking-root"
-             data-slots='[
-                {% for slot in slots %}
-                  {"time": "{{ slot.time|escapejs }}", "label": "{{ slot.label|escapejs }}", "is_booked": {{ slot.is_booked|yesno:"true,false" }}, "booked_count": {{ slot.booked_count }}, "max_patients": {{ slot.max_patients }}}{% if not forloop.last %},{% endif %}
-                {% endfor %}
-             ]'
-             data-selected-date="{{ selected_date }}"
-             data-doctor-fee="{{ doctor.consultation_fee|default:'0' }}"
-             data-csrf-token="{{ csrf_token }}"
-             data-user-details='{
-                "name": "{{ request.user.get_full_name|default:request.user.username|escapejs }}",
-                "age": "{{ request.user.age|default:''|escapejs }}",
-                "contact": "{{ request.user.contact_no|default:''|escapejs }}",
-                "location": "{{ request.user.location|default:''|escapejs }}"
-             }'></div>
-        {% else %}
-        <div
-            style="text-align: center; padding: 3rem; background: #fff1f2; border-radius: 12px; color: #be123c; border: 1px solid #fecdd3;">
-            <p style="font-size: 1.1rem; font-weight: 500;">No slots available for this date.</p>
-            <p style="margin-top: 0.5rem; font-size: 0.95rem;">Please try selecting another date.</p>
+<div style="max-width: 1000px; margin: 4rem auto; padding: 0 20px;">
+    <!-- ── DOCTOR HERO CARD ── -->
+    <div style="background: linear-gradient(135deg, #0f172a, #2563eb); border-radius: 24px; padding: 3rem; color: white; margin-bottom: 2.5rem; display: flex; align-items: center; gap: 2.5rem; box-shadow: 0 15px 35px rgba(37, 99, 235, 0.2);">
+        <div style="width: 110px; height: 110px; border-radius: 20px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; font-size: 3rem; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0;">
+            {% if doctor.image %}
+                <img src="{{ doctor.image.url }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 20px;">
+            {% else %}
+                👨‍⚕️
+            {% endif %}
         </div>
-        {% endif %}
+        <div>
+            <h1 style="margin: 0; font-size: 2.5rem; font-weight: 900; letter-spacing: -0.05em;">Book Your Appointment</h1>
+            <p style="margin: 0.5rem 0 0; opacity: 0.9; font-size: 1.1rem; font-weight: 500;">
+                Consult with <strong style="color: #60a5fa;">Dr. {{ doctor.name }}</strong> · {{ doctor.specialty }}
+            </p>
+            <div style="display: flex; align-items: center; gap: 10px; margin-top: 1.2rem; background: rgba(0,0,0,0.2); width: fit-content; padding: 6px 14px; border-radius: 10px; font-size: 0.9rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                {{ doctor.hospital.name }} · {{ doctor.hospital.location }}
+            </div>
+        </div>
+    </div>
+
+    <!-- ── DATE SELECTION ── -->
+    <div class="form-card" style="margin-bottom: 2.5rem; border: 1px solid #eef2f6; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+            <div>
+                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #1e293b;">1. Select Appointment Date</h3>
+                <p style="margin: 4px 0 0; color: #64748b; font-size: 0.9rem;">Appointments are typically available up to 7 days in advance.</p>
+            </div>
+            
+            <form method="get" style="display: flex; align-items: center; gap: 12px; background: #f1f5f9; padding: 6px 6px 6px 14px; border-radius: 12px;">
+                <span style="font-size: 1rem;">📅</span>
+                <input type="date" name="date" value="{{ selected_date }}" onchange="this.form.submit()" 
+                    style="border: none; background: transparent; font-weight: 700; color: #1e293b; font-size: 1rem; outline: none; cursor: pointer;">
+            </form>
+        </div>
+    </div>
+
+    <!-- ── TIME SLOTS & DETAILS (REACT) ── -->
+    {% if slots %}
+    <div id="react-booking-root"
+         data-slots='[
+            {% for slot in slots %}
+              {"time": "{{ slot.time|escapejs }}", "label": "{{ slot.label|escapejs }}", "is_booked": {{ slot.is_booked|yesno:"true,false" }}, "booked_count": {{ slot.booked_count }}, "max_patients": {{ slot.max_patients }}}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+         ]'
+         data-selected-date="{{ selected_date }}"
+         data-doctor-fee="{{ doctor.consultation_fee|default:'0' }}"
+         data-csrf-token="{{ csrf_token }}"
+         data-user-details='{
+            "name": "{{ request.user.get_full_name|default:request.user.username|escapejs }}",
+            "age": "{{ request.user.age|default:''|escapejs }}",
+            "contact": "{{ request.user.contact_no|default:''|escapejs }}",
+            "location": "{{ request.user.location|default:''|escapejs }}"
+         }'></div>
+    {% else %}
+    <div style="text-align: center; padding: 5rem 2rem; background: #fff; border-radius: 24px; border: 2px dashed #e2e8f0;">
+        <div style="font-size: 3rem; margin-bottom: 1.5rem;">😔</div>
+        <h2 style="color: #1e293b; margin-bottom: 0.5rem;">No Slots Available</h2>
+        <p style="color: #64748b; margin-bottom: 2rem;">Unfortunately, there are no consultation slots available for {{ selected_date }}.</p>
+        <button onclick="document.querySelector('input[type=date]').showPicker()" class="btn btn-primary" style="padding: 0.8rem 2rem;">Try Another Date</button>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

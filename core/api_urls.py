@@ -15,12 +15,6 @@ from .api_views import (
     DoctorSlotsView,
     # Appointments
     AppointmentViewSet,
-    AppointmentDetailView,
-    # Prescriptions
-    PrescriptionViewSet,
-    PrescriptionTemplateViewSet,
-    # Medical Records
-    MedicalRecordViewSet,
     # Patient
     PatientDashboardView,
 )
@@ -29,10 +23,7 @@ from .api_views import (
 router = DefaultRouter()
 router.register(r'doctors', DoctorViewSet, basename='doctor')
 router.register(r'appointments', AppointmentViewSet, basename='appointment')
-router.register(r'prescriptions', PrescriptionViewSet, basename='prescription')
-router.register(r'medical-records', MedicalRecordViewSet, basename='medical-record')
 router.register(r'admin/doctors', AdminDoctorViewSet, basename='admin-doctor')
-router.register(r'prescription-templates', PrescriptionTemplateViewSet, basename='prescription-template')
 
 urlpatterns = [
     # ── Standard JWT (for patients / OTP flow) ──────────────
@@ -54,13 +45,14 @@ urlpatterns = [
     path('doctor/<int:doctor_id>/slots/', DoctorSlotsView.as_view(), name='doctor_slots'),
 
     # ── Patient Panel ─────────────────────────────────────────
-    # Patient's aggregated dashboard (appointments + prescriptions + records)
+    # Patient's aggregated dashboard (appointments)
     path('patient/dashboard/', PatientDashboardView.as_view(), name='patient_dashboard'),
-    # Appointment detail with prescription + records (patient & doctor)
-    path('appointments/<int:pk>/detail/', AppointmentDetailView.as_view(), name='appointment_detail'),
 
     # ── Home page data (existing) ─────────────────────────────
     path('home/', include('core.home_api_urls')),
+
+    # ── Lab APIs ──────────────────────────────────────────────
+    path('commerce/', include('commerce.api_urls')),
 
     # ── Router-registered ViewSets ────────────────────────────
     path('', include(router.urls)),

@@ -44,7 +44,7 @@ def home(request):
         except Exception:
             nearby_labs = []
 
-    return render(request, "core/home.html", {
+    return render(request, "base.html", {
         "user_location": user_location,
         "nearby_hospitals": nearby_hospitals,
         "nearby_doctors": nearby_doctors,
@@ -89,27 +89,7 @@ def api_home(request):
 
 
 
-def hospital_list(request):
-    query = request.GET.get("q")
-    user_location = request.session.get("user_location")
-
-    hospitals = Hospital.objects.all()
-
-    if user_location:
-        hospitals = hospitals.filter(location__icontains=user_location)
-
-    if query:
-        hospitals = hospitals.filter(
-            models.Q(name__icontains=query) | models.Q(location__icontains=query)
-        )
-
-
-    return render(
-        request,
-        "core/hospital_list.html",
-        {"hospitals": hospitals, "current_location": user_location},
-    )
-
+# Legacy list views removed (migrated to React)
 
 def hospital_detail(request, hospital_id):
     hospital = get_object_or_404(Hospital, id=hospital_id)
@@ -122,23 +102,6 @@ def hospital_detail(request, hospital_id):
         "reviews": reviews,
         "user_has_reviewed": user_has_reviewed,
     })
-
-
-def doctor_list(request):
-    doctors = Doctor.objects.all()
-    user_location = request.session.get("user_location")
-    if user_location:
-        doctors = doctors.filter(hospital__location__icontains=user_location)
-
-    specialty = request.GET.get("specialty")
-    if specialty:
-        doctors = doctors.filter(specialty__icontains=specialty)
-
-    return render(
-        request,
-        "core/doctor_list.html",
-        {"doctors": doctors, "current_location": user_location},
-    )
 
 
 def doctor_profile(request, doctor_id):
@@ -214,13 +177,45 @@ def book_appointment(request, doctor_id):
         )
 
         messages.success(request, "Appointment booked successfully!")
-        return redirect("/patient/dashboard/")
+        return redirect("/patient/profile/")
 
     # Generate Slots
     from datetime import datetime, time, timedelta
 
-    shift_start = doctor.shift_start_time or time(9, 0)
-    shift_end = doctor.shift_end_time or time(12, 0)
+    # Date Exception Check (Individual dates)
+    unavailable = [d.strip() for d in (doctor.unavailable_dates or '').split(',') if d.strip()]
+    if selected_date.strftime('%Y-%m-%d') in unavailable:
+        return render(request, "core/book_appointment.html", {
+            "doctor": doctor, 
+            "selected_date": selected_date.strftime("%Y-%m-%d"), 
+            "slots": [],
+            "leave_day": True
+        })
+
+    day_abbr = selected_date.strftime("%a") # Get e.g. 'Mon'
+    schedule = (doctor.weekly_schedule or {}).get(day_abbr)
+
+    if schedule:
+        if not schedule.get('active'):
+            # Doctor is not available this day
+            return render(request, "core/book_appointment.html", {
+                "doctor": doctor, "selected_date": selected_date_str, "slots": []
+            })
+        try:
+            shift_start = datetime.strptime(schedule.get('start', '09:00'), "%H:%M").time()
+            shift_end = datetime.strptime(schedule.get('end', '17:00'), "%H:%M").time()
+        except Exception:
+            shift_start = doctor.shift_start_time or time(9, 0)
+            shift_end = doctor.shift_end_time or time(12, 0)
+    else:
+        # Check available_days legacy field if schedule is missing
+        if day_abbr not in (doctor.available_days or ''):
+            # No slots if day not in list
+             return render(request, "core/book_appointment.html", {
+                "doctor": doctor, "selected_date": selected_date_str, "slots": []
+            })
+        shift_start = doctor.shift_start_time or time(9, 0)
+        shift_end = doctor.shift_end_time or time(12, 0)
     
     current_dt = datetime.combine(selected_date, shift_start)
     end_dt = datetime.combine(selected_date, shift_end)
@@ -269,14 +264,16 @@ def book_appointment(request, doctor_id):
 
 @login_required
 def reminder_list(request):
-    appointments = Appointment.objects.filter(user=request.user).order_by(
-        "date", "time"
-    )
+    # Exclude completed, cancelled, and rejected for reminders
+    appointments = Appointment.objects.filter(user=request.user).exclude(
+        status__in=["Completed", "Cancelled", "Rejected"]
+    ).order_by("date", "time")
+    
     from commerce.models import LabAppointment
-
-    lab_appointments = LabAppointment.objects.filter(user=request.user).order_by(
-        "date", "time"
-    )
+    lab_appointments = LabAppointment.objects.filter(user=request.user).exclude(
+        status__in=["Completed", "Cancelled", "Rejected"]
+    ).order_by("date", "time")
+    
     return render(
         request,
         "core/reminder_list.html",
@@ -333,22 +330,26 @@ def search_view(request):
             models.Q(name__icontains=query)
             | models.Q(location__icontains=query)
             | models.Q(contact_no__icontains=query)
+            | models.Q(about__icontains=query)
+            | models.Q(email__icontains=query)
         ).distinct()
 
         # Search Doctors
         doctors = Doctor.objects.filter(
             models.Q(name__icontains=query)
             | models.Q(specialty__icontains=query)
+            | models.Q(available_days__icontains=query)
             | models.Q(hospital__name__icontains=query)
             | models.Q(hospital__location__icontains=query)
+            | models.Q(hospital__about__icontains=query)
         ).distinct()
 
         # Search Lab Tests
         labs = LabTest.objects.filter(
             models.Q(name__icontains=query)
-            | models.Q(features__icontains=query)
-            | models.Q(category__name__icontains=query)
+            | models.Q(about__icontains=query)
             | models.Q(location__icontains=query)
+            | models.Q(contact_no__icontains=query)
         ).distinct()
 
         # Search Medicines
@@ -502,6 +503,15 @@ def set_location(request):
 
 def api_hospitals(request):
     hospitals = Hospital.objects.all()
+    
+    query = request.GET.get("q")
+    if query:
+        hospitals = hospitals.filter(
+            models.Q(name__icontains=query) |
+            models.Q(location__icontains=query) |
+            models.Q(about__icontains=query)
+        ).distinct()
+
     user_location = request.session.get("user_location")
     if user_location:
          hospitals = hospitals.filter(location__icontains=user_location)
@@ -525,6 +535,16 @@ def api_hospitals(request):
 
 def api_doctors(request):
     doctors = Doctor.objects.select_related("hospital").all()
+    
+    query = request.GET.get("q")
+    if query:
+        doctors = doctors.filter(
+            models.Q(name__icontains=query) |
+            models.Q(specialty__icontains=query) |
+            models.Q(hospital__name__icontains=query) |
+            models.Q(hospital__about__icontains=query)
+        ).distinct()
+
     user_location = request.session.get("user_location")
     if user_location:
          doctors = doctors.filter(hospital__location__icontains=user_location)

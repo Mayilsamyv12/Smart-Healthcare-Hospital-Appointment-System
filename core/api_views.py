@@ -11,18 +11,15 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Q, Count
 
-from .models import Doctor, Appointment, Prescription, MedicalRecord, AuditLog, PrescriptionTemplate
-from commerce.models import Order
+from .models import Doctor, Appointment, AuditLog
+from commerce.models import Order, LabAppointment
 from .serializers import (
-    DoctorSerializer, DoctorProfileUpdateSerializer, DoctorCreateSerializer,
     AppointmentSerializer, AppointmentStatusSerializer,
-    PrescriptionSerializer, PrescriptionWriteSerializer,
-    MedicalRecordSerializer,
-    PrescriptionTemplateSerializer,
     DoctorLoginSerializer, DoctorIDVerifySerializer,
-    UserSerializer,
+    UserSerializer, DoctorSerializer,
+    DoctorCreateSerializer, DoctorProfileUpdateSerializer
 )
-from commerce.serializers import OrderSerializer
+from commerce.serializers import OrderSerializer, LabAppointmentSerializer
 
 
 # ──────────────────────────────────────────────────────────────
@@ -33,30 +30,6 @@ class IsAdmin(permissions.BasePermission):
     """Main Admin only."""
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role == "Admin"
-
-
-class IsPortalDoctor(permissions.BasePermission):
-    """
-    Shared portal user (is_staff) who has verified a Doctor ID in the session.
-    Replaces the old IsDoctor that required a user.doctor_profile link.
-    """
-    def has_permission(self, request, view):
-        return (
-            request.user.is_authenticated
-            and request.user.is_staff
-            and bool(request.session.get('doctor_id_verified'))
-            and bool(request.session.get('current_doctor_id'))
-        )
-
-
-class IsDoctor(permissions.BasePermission):
-    """Legacy: Active Doctor with a linked doctor profile."""
-    def has_permission(self, request, view):
-        return (
-            request.user.is_authenticated
-            and request.user.role == "Doctor"
-            and hasattr(request.user, 'doctor_profile')
-        )
 
 
 class IsPatient(permissions.BasePermission):
@@ -411,85 +384,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         log_audit(request.user, f"Appointment → {appointment.status}", f"Appt #{pk}", request=request)
         return Response({"id": appointment.id, "status": appointment.status})
 
-    @action(detail=True, methods=['post'])
-    def complete(self, request, pk=None):
-        appointment = self.get_object()
-        doctor = get_current_doctor(request)
-        if not doctor:
-             return Response({"error": "No active doctor session."}, status=status.HTTP_403_FORBIDDEN)
-
-        # Handle multipart (file upload) or JSON prescription data
-        generate_method = request.data.get('generate_method', 'template')
-        diagnosis = request.data.get('diagnosis', '')
-        medicines_raw = request.data.get('medicines', [])
-        symptoms = request.data.get('symptoms', '')
-        instructions = request.data.get('instructions', '')
-        lab_tests = request.data.get('lab_tests', '')
-        follow_up_date = request.data.get('follow_up_date') or None
-        
-        import json
-        if isinstance(medicines_raw, str):
-            try:
-                medicines = json.loads(medicines_raw)
-            except Exception:
-                medicines = []
-        else:
-            medicines = medicines_raw
-
-        prescription = None
-
-        if generate_method == 'upload':
-            # Uploaded file prescription
-            prescription_file = request.FILES.get('prescription_file')
-            if not prescription_file:
-                return Response({"error": "Prescription file is compulsory for upload method."}, status=status.HTTP_400_BAD_REQUEST)
-            
-            prescription, _ = Prescription.objects.update_or_create(
-                appointment=appointment,
-                defaults={
-                    'doctor': doctor,
-                    'patient': appointment.user,
-                    'generate_method': 'upload',
-                    'prescription_file': prescription_file,
-                    'diagnosis': diagnosis,
-                    'symptoms': symptoms,
-                    'instructions': instructions,
-                    'lab_tests': lab_tests,
-                    'follow_up_date': follow_up_date,
-                    'medicines': [],
-                }
-            )
-        else:
-            # Template-based prescription — diagnosis or medicines required
-            if not diagnosis and not medicines:
-                return Response({"error": "Diagnosis or Medicines are compulsory for prescription."}, status=status.HTTP_400_BAD_REQUEST)
-            
-            prescription, _ = Prescription.objects.update_or_create(
-                appointment=appointment,
-                defaults={
-                    'doctor': doctor,
-                    'patient': appointment.user,
-                    'generate_method': 'template',
-                    'symptoms': symptoms,
-                    'diagnosis': diagnosis,
-                    'medicines': medicines,
-                    'instructions': instructions,
-                    'lab_tests': lab_tests,
-                    'follow_up_date': follow_up_date,
-                }
-            )
-
-        # Only mark as completed if prescription is successfully generated
-        appointment.status = 'Completed'
-        appointment.save()
-
-        log_audit(request.user, "Appointment Completed", f"Appt #{pk}", request=request)
-        return Response({
-            "message": "Appointment completed and prescription generated.",
-            "appointment_id": appointment.id,
-            "prescription_id": prescription.id if prescription else None,
-        })
-
     @action(detail=False, methods=['post'])
     def mark_leave(self, request):
         doctor = get_current_doctor(request)
@@ -506,163 +400,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
 
 # ──────────────────────────────────────────────────────────────
-# 6. Prescription ViewSet
-# ──────────────────────────────────────────────────────────────
-
-class PrescriptionViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_serializer_class(self):
-        if self.action in ('create', 'update', 'partial_update'):
-            return PrescriptionWriteSerializer
-        return PrescriptionSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        qs = Prescription.objects.select_related('doctor', 'patient', 'appointment')
-        if user.role == "Admin":
-            return qs.all()
-        doctor_id = self.request.session.get('current_doctor_id')
-        if user.is_staff and doctor_id:
-            return qs.filter(doctor__doctor_id=doctor_id)
-        if hasattr(user, 'doctor_profile'):
-            return qs.filter(doctor__user=user)
-        return qs.filter(patient=user)
-
-    def get_permissions(self):
-        if self.action in ('create', 'update', 'partial_update', 'destroy'):
-            return [IsPortalDoctor()]
-        return [permissions.IsAuthenticated()]
-
-    def perform_create(self, serializer):
-        serializer.save()
-        log_audit(self.request.user, "Prescription Created", request=self.request)
-
-
-# ──────────────────────────────────────────────────────────────
-# 7. Medical Record ViewSet
-# ──────────────────────────────────────────────────────────────
-
-class MedicalRecordViewSet(viewsets.ModelViewSet):
-    serializer_class = MedicalRecordSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        qs = MedicalRecord.objects.select_related('patient', 'doctor')
-        if user.role == "Admin":
-            return qs.all()
-        doctor_id = self.request.session.get('current_doctor_id')
-        if user.is_staff and doctor_id:
-            return qs.filter(doctor__doctor_id=doctor_id)
-        if hasattr(user, 'doctor_profile'):
-            return qs.filter(doctor__user=user)
-        return qs.filter(patient=user)
-
-    def get_permissions(self):
-        if self.action in ('create', 'update', 'partial_update', 'destroy'):
-            return [IsAdminOrDoctor()]
-        return [permissions.IsAuthenticated()]
-
-    def perform_create(self, serializer):
-        doctor = get_current_doctor(self.request)
-        serializer.save(doctor=doctor)
-        log_audit(self.request.user, "Medical Record Uploaded", request=self.request)
-
-    @action(detail=False, methods=['post'], url_path='upload-for-appointment')
-    def upload_for_appointment(self, request):
-        """Doctor uploads a medical record tied to a specific appointment."""
-        doctor = get_current_doctor(request)
-        if not doctor:
-            return Response({"error": "No active doctor session."}, status=status.HTTP_403_FORBIDDEN)
-
-        appt_id = request.data.get('appointment_id')
-        if not appt_id:
-            return Response({"error": "appointment_id is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            appointment = Appointment.objects.get(id=appt_id, doctor=doctor)
-        except Appointment.DoesNotExist:
-            return Response({"error": "Appointment not found or not yours."}, status=status.HTTP_404_NOT_FOUND)
-
-        file = request.FILES.get('file')
-        if not file:
-            return Response({"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
-
-        record = MedicalRecord.objects.create(
-            patient=appointment.user,
-            doctor=doctor,
-            appointment=appointment,
-            title=request.data.get('title', 'Medical Record'),
-            record_type=request.data.get('record_type', 'Other'),
-            file=file,
-            notes=request.data.get('notes', ''),
-        )
-        log_audit(request.user, "Medical Record Uploaded for Appointment", f"Appt #{appt_id}", request=request)
-        return Response(MedicalRecordSerializer(record, context={'request': request}).data, status=status.HTTP_201_CREATED)
-
-
-# ──────────────────────────────────────────────────────────────
-# 7b. Prescription Template ViewSet (doctor's own templates)
-# ──────────────────────────────────────────────────────────────
-
-class PrescriptionTemplateViewSet(viewsets.ModelViewSet):
-    serializer_class = PrescriptionTemplateSerializer
-    permission_classes = [IsPortalDoctor]
-
-    def get_queryset(self):
-        doctor = get_current_doctor(self.request)
-        if not doctor:
-            return PrescriptionTemplate.objects.none()
-        return PrescriptionTemplate.objects.filter(doctor=doctor).order_by('-updated_at')
-
-    def perform_create(self, serializer):
-        doctor = get_current_doctor(self.request)
-        serializer.save(doctor=doctor)
-
-    def perform_update(self, serializer):
-        serializer.save()
-
-
-# ──────────────────────────────────────────────────────────────
-# 7c. Appointment Detail View (prescription + records combined)
-# ──────────────────────────────────────────────────────────────
-
-class AppointmentDetailView(APIView):
-    """
-    Returns full detail of one appointment including its prescription and medical records.
-    Accessible by the patient who owns it, or the doctor who managed it.
-    """
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request, pk):
-        user = request.user
-        try:
-            # Patient: own appointment; Doctor: their appointment
-            if user.is_staff and request.session.get('current_doctor_id'):
-                appt = Appointment.objects.select_related('user', 'doctor').get(
-                    id=pk, doctor__doctor_id=request.session['current_doctor_id']
-                )
-            else:
-                appt = Appointment.objects.select_related('user', 'doctor').get(id=pk, user=user)
-        except Appointment.DoesNotExist:
-            return Response({"error": "Appointment not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        prescription = None
-        try:
-            prescription = PrescriptionSerializer(appt.prescription, context={'request': request}).data
-        except Prescription.DoesNotExist:
-            pass
-
-        records = MedicalRecord.objects.filter(appointment=appt).select_related('doctor')
-        return Response({
-            "appointment": AppointmentSerializer(appt, context={'request': request}).data,
-            "prescription": prescription,
-            "medical_records": MedicalRecordSerializer(records, many=True, context={'request': request}).data,
-        })
-
-
-# ──────────────────────────────────────────────────────────────
 # 8. Patient Dashboard
 # ──────────────────────────────────────────────────────────────
 
@@ -674,33 +411,35 @@ class PatientDashboardView(APIView):
         appointments = Appointment.objects.filter(user=user).select_related(
             'doctor', 'doctor__hospital'
         ).order_by('-date', '-time')
-
-        prescriptions = Prescription.objects.filter(patient=user).select_related(
-            'doctor', 'appointment'
-        ).order_by('-created_at')
-
-        records = MedicalRecord.objects.filter(patient=user).select_related(
-            'doctor'
-        ).order_by('-uploaded_at')
-
         orders = Order.objects.filter(user=user).order_by('-created_at')
+        lab_appointments = LabAppointment.objects.filter(user=user).select_related('lab_test').order_by('-date', '-time')
 
         return Response({
             "profile": UserSerializer(user).data,
             "appointments": AppointmentSerializer(appointments, many=True, context={'request': request}).data,
-            "prescriptions": PrescriptionSerializer(prescriptions, many=True, context={'request': request}).data,
-            "medical_records": MedicalRecordSerializer(records, many=True, context={'request': request}).data,
             "orders": OrderSerializer(orders, many=True, context={'request': request}).data,
+            "lab_appointments": LabAppointmentSerializer(lab_appointments, many=True, context={'request': request}).data,
             "stats": {
                 "total_appointments": appointments.count(),
                 "upcoming": appointments.filter(
                     date__gte=date.today(), status='Pending'
                 ).count(),
                 "completed": appointments.filter(status='Completed').count(),
-                "total_prescriptions": prescriptions.count(),
+                "lab_completed": lab_appointments.filter(status='Completed').count(),
                 "total_orders": orders.count(),
             }
         })
+
+    def patch(self, request):
+        user = request.user
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "message": "Profile updated successfully.",
+                "profile": UserSerializer(user).data
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # ──────────────────────────────────────────────────────────────

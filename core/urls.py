@@ -1,16 +1,18 @@
 from django.urls import path
+from django.views.generic import RedirectView
 
 from . import views
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("home/", RedirectView.as_view(url="/", permanent=True), name="home_explicit"),
     # Note: /api/home/ is now served via api_urls.py → home_api_urls.py
     path("api/hospitals/", views.api_hospitals, name="api_hospitals"),
     path("api/doctors/", views.api_doctors, name="api_doctors"),
-    path("hospitals/", views.hospital_list, name="hospital_list"),
+    path("hospitals/", views.home, name="hospital_list"),
     path("hospital/<int:hospital_id>/", views.hospital_detail, name="hospital_detail"),
 
-    path("doctors/", views.doctor_list, name="doctor_list"),
+    path("doctors/", views.home, name="doctor_list"),
     path("doctor/<int:doctor_id>/", views.doctor_profile, name="doctor_profile"),
     path("book/<int:doctor_id>/", views.book_appointment, name="book_appointment"),
     path("reminders/", views.reminder_list, name="reminder_list"),
@@ -37,4 +39,12 @@ urlpatterns = [
     # Doctor Admin Panel (React SPA — isolated from patient layout)
     path("doctor-panel/", views.home, name="doctor_panel_react"),
     path("doctor-panel", views.home, name="doctor_panel_react_noslash"),
+    # Lab Admin Panel (React SPA)
+    path("lab-login/", views.home, name="lab_login_react"),
+    path("lab-login", views.home, name="lab_login_react_noslash"),
+    path("lab-panel/", views.home, name="lab_panel_react"),
+    path("lab-panel", views.home, name="lab_panel_react_noslash"),
+    # Fail-safe redirect for deleted location gate
+    path("select-location", RedirectView.as_view(url="/", permanent=True)),
+    path("select-location/", RedirectView.as_view(url="/", permanent=True)),
 ]

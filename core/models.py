@@ -63,6 +63,11 @@ class Doctor(models.Model):
         help_text="Comma-separated days e.g. Mon, Tue, Wed"
     )
     unavailable_dates = models.TextField(blank=True, null=True, help_text="Comma-separated dates doctor is on leave (YYYY-MM-DD)")
+    weekly_schedule = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Day-wise schedule configurations"
+    )
     image = models.ImageField(upload_to="doctors/", null=True, blank=True)
 
     def __str__(self):
@@ -105,73 +110,6 @@ class Appointment(models.Model):
     def __str__(self):
         return f"Appt: {self.patient_name} with {self.doctor.name} on {self.date}"
 
-
-class Prescription(models.Model):
-    GENERATE_METHOD = (
-        ("template", "Custom Template"),
-        ("upload", "Uploaded File"),
-    )
-    appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE, related_name="prescription")
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="prescriptions")
-    patient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="patient_prescriptions")
-    
-    generate_method = models.CharField(max_length=20, choices=GENERATE_METHOD, default="template")
-    symptoms = models.TextField(blank=True, null=True)
-    diagnosis = models.TextField(blank=True, null=True)
-    medicines = models.JSONField(help_text="List of medicines, dosage, and duration", default=list)
-    instructions = models.TextField(blank=True, null=True)
-    lab_tests = models.TextField(blank=True, null=True, help_text="Recommended lab tests / investigations")
-    follow_up_date = models.DateField(blank=True, null=True)
-    
-    # For uploaded prescription (image/PDF)
-    prescription_file = models.FileField(upload_to="prescriptions/uploads/", null=True, blank=True)
-    
-    digital_signature = models.ImageField(upload_to="signatures/", null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Prescription - {self.patient.username} - {self.appointment.date}"
-
-
-class MedicalRecord(models.Model):
-    RECORD_TYPES = (
-        ("Lab Report", "Lab Report"),
-        ("X-Ray", "X-Ray"),
-        ("Scan", "Scan"),
-        ("Prescription", "Prescription"),
-        ("Other", "Other"),
-    )
-    patient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="medical_records")
-    doctor = models.ForeignKey(Doctor, on_delete=models.SET_NULL, null=True, blank=True, related_name="uploaded_records")
-    appointment = models.ForeignKey(
-        Appointment, on_delete=models.SET_NULL, null=True, blank=True, related_name="medical_records"
-    )
-    
-    title = models.CharField(max_length=255)
-    record_type = models.CharField(max_length=50, choices=RECORD_TYPES, default="Other")
-    file = models.FileField(upload_to="medical_records/")
-    notes = models.TextField(blank=True, null=True)
-    
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.title} - {self.patient.username}"
-
-
-class PrescriptionTemplate(models.Model):
-    """Doctor's saved prescription templates for quick re-use."""
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="prescription_templates")
-    name = models.CharField(max_length=255, help_text="Template name, e.g. 'Viral Fever Protocol'")
-    diagnosis = models.TextField(blank=True, null=True)
-    medicines = models.JSONField(default=list)
-    instructions = models.TextField(blank=True, null=True)
-    lab_tests = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.doctor.name} — {self.name}"
 
 
 class AuditLog(models.Model):

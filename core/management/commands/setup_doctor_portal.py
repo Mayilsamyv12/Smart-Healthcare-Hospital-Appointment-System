@@ -29,7 +29,7 @@ class Command(BaseCommand):
 
         status = 'Created' if created else 'Updated'
         self.stdout.write(self.style.SUCCESS(
-            f'\n✅ {status} shared Doctor Portal user.\n'
+            f'\n[SUCCESS] {status} shared Doctor Portal user.\n'
             f'   Username : {username}\n'
             f'   Password : {password}\n'
             f'\nShare these credentials with ALL your doctors.\n'

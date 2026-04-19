@@ -23,34 +23,38 @@ const Sidebar = ({ urls, context }) => {
             </div>
 
             <div style={{ padding: '1rem' }}>
-                {/* Home - React SPA route, use Link (no reload) */}
                 <Link to="/" className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }} onClick={toggleSidebar}>Home</Link>
 
-                {/* Django-rendered pages: use <a href> */}
-                <a href={urls.hospitalList || '/hospitals/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }}>Hospitals</a>
+                <Link to={urls.hospitalList || '/hospitals/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }} onClick={toggleSidebar}>Hospitals</Link>
 
-                <a href={urls.doctorList || '/doctors/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }}>Doctors</a>
+                <Link to={urls.doctorList || '/doctors/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }} onClick={toggleSidebar}>Doctors</Link>
 
-                <a href={urls.labTestList || '/lab-tests/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }}>Lab Tests</a>
+                <Link to={urls.labTestList || '/lab-tests/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }} onClick={toggleSidebar}>Labs</Link>
 
-                {/* Medicine Orders - Django page */}
-                <a href={urls.medicineList || '/medicines/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem', marginTop: '0.5rem' }}>Medicine Orders</a>
+                <Link to={urls.medicineList || '/medicines/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem', marginTop: '0.5rem' }} onClick={toggleSidebar}>Medicine Orders</Link>
 
                 <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '0.8rem 0' }} />
 
-                {/* Auth links in sidebar */}
                 {context.isAuthenticated ? (
                     <>
-                        <a href={urls.profile || '/profile/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }}>My Profile</a>
-                        <a href={urls.reminderList || '/reminders/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }}>My Appointments</a>
-                        <a href={urls.cart || '/cart/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }}>
-                            Cart {context.cartCount > 0 && `(${context.cartCount})`}
-                        </a>
+                        <Link to="/patient/profile" className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }} onClick={toggleSidebar}>My Profile</Link>
+                        <Link to={urls.reminderList || '/reminders/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }} onClick={toggleSidebar}>Reminder</Link>
+                        <Link to={urls.cart || '/commerce/cart/'} className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }} onClick={toggleSidebar}>
+                            Cart
+                        </Link>
                     </>
                 ) : (
                     <>
-                        <a href="/users/login/" className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }}>Login</a>
-                        <a href="/users/register/" className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }}>Register</a>
+                        <Link to="/users/login/" className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }} onClick={toggleSidebar}>Login</Link>
+                        <Link to="/users/register/" className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }} onClick={toggleSidebar}>Register</Link>
+                    </>
+                )}
+                {context.isStaff && (
+                    <>
+                        <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '0.8rem 0' }} />
+                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Admin Portals</div>
+                        <Link to="/doctor-panel/" className="nav-item" style={{ display: 'block', marginBottom: '0.5rem' }} onClick={toggleSidebar}>Doctor Dashboard</Link>
+                        <Link to="/lab-panel/" className="nav-item" style={{ display: 'block', marginBottom: '1.5rem' }} onClick={toggleSidebar}>Lab Dashboard</Link>
                     </>
                 )}
             </div>

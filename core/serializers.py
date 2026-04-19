@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Doctor, Appointment, Prescription, MedicalRecord, Hospital, PrescriptionTemplate
+from .models import Doctor, Appointment, Hospital
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -48,7 +48,7 @@ class DoctorSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'doctor_id', 'name', 'hospital', 'specialty',
             'experience', 'consultation_fee', 'is_active',
-            'available_days', 'shift_start_time', 'shift_end_time', 'slot_duration_minutes', 'patients_per_slot', 'unavailable_dates',
+            'available_days', 'shift_start_time', 'shift_end_time', 'slot_duration_minutes', 'patients_per_slot', 'unavailable_dates', 'weekly_schedule',
             'image', 'avg_rating', 'review_count'
         ]
         # doctor_id is set by admin — writable via API too
@@ -67,7 +67,7 @@ class DoctorProfileUpdateSerializer(serializers.ModelSerializer):
         model = Doctor
         fields = [
             'name', 'image', 'experience', 'consultation_fee',
-            'available_days', 'shift_start_time', 'shift_end_time', 'slot_duration_minutes', 'patients_per_slot', 'unavailable_dates'
+            'available_days', 'shift_start_time', 'shift_end_time', 'slot_duration_minutes', 'patients_per_slot', 'unavailable_dates', 'weekly_schedule'
         ]
 
 
@@ -109,6 +109,7 @@ class DoctorCreateSerializer(serializers.ModelSerializer):
 # Appointment Serializers
 # ──────────────────────────────────────────────────────────────
 
+
 class AppointmentSerializer(serializers.ModelSerializer):
     doctor = DoctorSerializer(read_only=True)
     user = PatientSummarySerializer(read_only=True)
@@ -133,103 +134,8 @@ class AppointmentStatusSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=STATUS_CHOICES)
 
 
-# ──────────────────────────────────────────────────────────────
-# Prescription Serializers
-# ──────────────────────────────────────────────────────────────
-
-class PrescriptionSerializer(serializers.ModelSerializer):
-    appointment = AppointmentSerializer(read_only=True)
-    appointment_id = serializers.PrimaryKeyRelatedField(
-        queryset=Appointment.objects.all(), source='appointment', write_only=True
-    )
-    doctor_name = serializers.CharField(source='doctor.name', read_only=True)
-    patient_username = serializers.CharField(source='patient.username', read_only=True)
-    prescription_file = serializers.FileField(read_only=True)
-
-    class Meta:
-        model = Prescription
-        fields = [
-            'id', 'appointment', 'appointment_id',
-            'doctor', 'doctor_name', 'patient', 'patient_username',
-            'generate_method', 'symptoms', 'diagnosis', 'medicines', 'instructions',
-            'lab_tests', 'follow_up_date',
-            'prescription_file', 'digital_signature', 'created_at', 'updated_at'
-        ]
-        read_only_fields = ['doctor', 'patient', 'created_at', 'updated_at']
-
-
-class PrescriptionWriteSerializer(serializers.ModelSerializer):
-    """Doctor creates/updates a prescription linked to an appointment."""
-    appointment_id = serializers.PrimaryKeyRelatedField(
-        queryset=Appointment.objects.all(), source='appointment'
-    )
-    prescription_file = serializers.FileField(required=False, allow_null=True)
-
-    class Meta:
-        model = Prescription
-        fields = [
-            'appointment_id', 'generate_method', 'symptoms', 'diagnosis',
-            'medicines', 'instructions', 'lab_tests', 'follow_up_date',
-            'prescription_file', 'digital_signature'
-        ]
-
-    def validate_appointment_id(self, appointment):
-        """Ensure the appointment belongs to the requesting doctor."""
-        request = self.context.get('request')
-        if request and hasattr(request.user, 'doctor_profile'):
-            if appointment.doctor != request.user.doctor_profile:
-                raise serializers.ValidationError(
-                    "You can only write prescriptions for your own appointments."
-                )
-        return appointment
-
-    def create(self, validated_data):
-        request = self.context.get('request')
-        appointment = validated_data['appointment']
-        # Try session doctor first, then linked doctor_profile
-        from .api_views import get_current_doctor
-        doctor = get_current_doctor(request) if request else None
-        if not doctor and hasattr(request.user, 'doctor_profile'):
-            doctor = request.user.doctor_profile
-        patient = appointment.user
-
-        prescription, _ = Prescription.objects.update_or_create(
-            appointment=appointment,
-            defaults={
-                'doctor': doctor,
-                'patient': patient,
-                **{k: v for k, v in validated_data.items() if k != 'appointment'}
-            }
-        )
-        return prescription
-
 
 # ──────────────────────────────────────────────────────────────
-# Medical Record Serializer
-# ──────────────────────────────────────────────────────────────
-
-class MedicalRecordSerializer(serializers.ModelSerializer):
-    patient_name = serializers.CharField(source='patient.username', read_only=True)
-    doctor_name = serializers.CharField(source='doctor.name', read_only=True)
-    appointment_id = serializers.PrimaryKeyRelatedField(
-        queryset=Appointment.objects.all(), source='appointment', write_only=True, required=False, allow_null=True
-    )
-
-    class Meta:
-        model = MedicalRecord
-        fields = [
-            'id', 'patient', 'patient_name', 'doctor', 'doctor_name',
-            'appointment', 'appointment_id',
-            'title', 'record_type', 'file', 'notes', 'uploaded_at'
-        ]
-        read_only_fields = ['patient', 'doctor', 'uploaded_at', 'appointment']
-
-
-class PrescriptionTemplateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PrescriptionTemplate
-        fields = ['id', 'name', 'diagnosis', 'medicines', 'instructions', 'lab_tests', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
 
 
 # ──────────────────────────────────────────────────────────────
@@ -250,8 +156,6 @@ class PatientDashboardSerializer(serializers.Serializer):
     """Aggregated patient dashboard data."""
     profile = UserSerializer()
     appointments = AppointmentSerializer(many=True)
-    prescriptions = PrescriptionSerializer(many=True)
-    medical_records = MedicalRecordSerializer(many=True)
 
 
 # ──────────────────────────────────────────────────────────────

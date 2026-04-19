@@ -1,34 +1,79 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1 style="margin-bottom: 2rem;">Diagnostic Labs</h1>
-<div class="grid">
-    {% for test in tests %}
-    <div class="card">
-        {% if test.image %}
-        <img src="{{ test.image.url }}" alt="{{ test.name }}"
-            style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
-        {% else %}
-        <div
-            style="width: 100%; height: 150px; background: #eee; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: #aaa;">
-            No Image</div>
-        {% endif %}
-        <h3>{{ test.name }}</h3>
-        <p>{{ test.features }}</p>
-        <p><strong>Location:</strong> {{ test.location }}</p>
-
-        <a href="{% url 'book_lab_test' test.id %}" class="btn btn-primary">Book Appointment</a>
+<div id="labs-page" style="margin-top: 80px; padding: 0 2rem; background: #f8fafc; min-height: 100vh; font-family: 'Inter', sans-serif;">
+    <div style="text-align: center; margin-bottom: 4rem; padding-top: 60px;">
+        <h1 style="font-size: 3.5rem; color: #0ea5e9; margin-bottom: 1rem; font-weight: 800; letter-spacing: -0.04em;">Diagnostic Labs</h1>
+        <p style="color: #64748b; font-size: 1.25rem; font-weight: 500; max-width: 600px; margin: 0 auto;">Premium clinical facilities providing state-of-the-art diagnostic services and laboratory testing.</p>
     </div>
 
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2.5rem; margin: 0 auto; max-width: 1400px; padding-bottom: 5rem;">
+        {% for test in tests %}
+        <div style="background: white; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; padding: 1.5rem; display: flex; flex-direction: column; height: 100%; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.04)'">
+            
+            {# Top Section: Image #}
+            <div style="width: 100%; position: relative; border-radius: 20px; overflow: hidden; height: 260px; flex-shrink: 0; margin-bottom: 1.5rem;">
+                {% if test.image %}
+                <img src="{{ test.image.url }}" alt="{{ test.name }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                {% else %}
+                <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); display: flex; align-items: center; justify-content: center;">
+                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 100-18 9 9 0 000 18z"/><path d="M12 7v5l3 3"/></svg>
+                </div>
+                {% endif %}
+                <div style="position: absolute; top: 0; left: 0; right: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%); padding: 16px; color: white; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                    Verified Clinical Lab
+                </div>
+            </div>
+            
+            {# Info Section #}
+            <div style="display: flex; flex-direction: column; flex: 1; padding: 0 0.5rem;">
+                <h2 style="margin: 0 0 0.75rem 0; font-size: 1.5rem; color: #0f172a; line-height: 1.25; font-weight: 800;">{{ test.name }}</h2>
+                
+                {% if test.about %}
+                <p style="color: #475569; font-size: 0.95rem; margin-bottom: 1.2rem; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-weight: 500;">
+                    {{ test.about }}
+                </p>
+                {% endif %}
+                
+                <div style="color: #16a34a; font-weight: 700; font-size: 0.9rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px; background: #f0fdf4; width: fit-content; padding: 4px 12px; border-radius: 99px; border: 1px solid #dcfce7;">
+                    <span style="display: inline-block; width: 8px; height: 8px; background: #16a34a; border-radius: 50%;"></span>
+                    Open Until 8:00 PM
+                </div>
+                
+                <div style="margin-top: auto; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                        <div style="width: 36px; height: 36px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        </div>
+                        <div style="font-size: 0.92rem; color: #334155; line-height: 1.4; font-weight: 600;">{{ test.location }}</div>
+                    </div>
+                    {% if test.contact_no %}
+                    <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                        <div style="width: 36px; height: 36px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        </div>
+                        <div style="font-size: 0.92rem; color: #334155; font-weight: 600; padding-top: 8px;">{{ test.contact_no }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
 
-    {% empty %}
-    <p>
-        {% if current_location %}
-        No lab tests available in "<strong>{{ current_location }}</strong>".
-        {% else %}
-        No lab tests available.
-        {% endif %}
-    </p>
-    {% endfor %}
+            <div style="display: flex; gap: 1rem; align-items: stretch; border-top: 1px solid #f1f5f9; padding-top: 1.5rem;">
+                <a href="{% url 'commerce:book_lab_test' test.id %}" style="flex: 1; display: flex; align-items: center; justify-content: center; background: #f8fafc; color: #2563eb; padding: 0.75rem; border-radius: 12px; font-weight: 700; font-size: 0.85rem; text-decoration: none; border: 1.5px solid #e2e8f0; transition: all 0.2s;">
+                    VIEW LAB
+                </a>
+                <a href="{% url 'commerce:book_lab_test' test.id %}" style="flex: 1; display: flex; align-items: center; justify-content: center; background: #2563eb; color: white; padding: 0.75rem; border-radius: 12px; font-weight: 700; font-size: 0.85rem; text-decoration: none; border: 1.5px solid #2563eb; transition: all 0.2s; box-shadow: 0 4px 12px rgba(37,99,235,0.2);">
+                    BOOK TEST
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 6rem 2rem; background: white; border-radius: 32px; border: 1px dashed #cbd5e1;">
+            <div style="font-size: 4rem; margin-bottom: 1.5rem; filter: grayscale(1);">🧪</div>
+            <h3 style="font-size: 1.5rem; color: #0f172a; font-weight: 800; margin-bottom: 0.5rem;">No Facilities Found</h3>
+            <p style="font-size: 1.1rem; color: #64748b; font-weight: 500;">We're currently expanding our network of diagnostic partners.</p>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

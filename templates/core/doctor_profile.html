@@ -35,20 +35,6 @@
 
                         at <a href="{% url 'hospital_detail' doctor.hospital.id %}" style="color: #0ea5e9; font-weight: 600; text-decoration: none;">{{ doctor.hospital.name }}</a>
                     </div>
-                    <!-- Rating display -->
-                    <div style="display: flex; align-items: center; gap: 0.6rem;">
-                        {% with avg=doctor.avg_rating count=doctor.review_count %}
-                        {% if avg %}
-                        <span style="font-size: 1.4rem; color: #fbbf24;">
-                            {% for i in "1234567890"|slice:avg %}⭐{% endfor %}
-                        </span>
-                        <span style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">{{ avg }}</span>
-                        <span style="color: #94a3b8; font-size: 0.95rem;">({{ count }} review{{ count|pluralize }})</span>
-                        {% else %}
-                        <span style="color: #94a3b8; font-size: 0.95rem;">No reviews yet</span>
-                        {% endif %}
-                        {% endwith %}
-                    </div>
                 </div>
 
                 <a href="{% url 'book_appointment' doctor.id %}"
@@ -68,12 +54,6 @@
             <div style="flex: 1; min-width: 180px; padding: 1.5rem; text-align: center; border-right: 1px solid #e2e8f0;">
                 <div style="font-size: 1.8rem; font-weight: 800; color: #0f4a56;">₹{{ doctor.consultation_fee }}</div>
                 <div style="color: #64748b; font-size: 0.9rem; margin-top: 0.2rem;">Consultation Fee</div>
-            </div>
-            <div style="flex: 1; min-width: 180px; padding: 1.5rem; text-align: center; border-right: 1px solid #e2e8f0;">
-                <div style="font-size: 1.8rem; font-weight: 800; color: #0f4a56;">
-                    {% with avg=doctor.avg_rating %}{% if avg %}{{ avg }}{% else %}—{% endif %}{% endwith %}
-                </div>
-                <div style="color: #64748b; font-size: 0.9rem; margin-top: 0.2rem;">Avg. Rating</div>
             </div>
             <div style="flex: 1; min-width: 180px; padding: 1.5rem; text-align: center;">
                 <div style="font-size: 1.8rem; font-weight: 800; color: #0f4a56;">{{ doctor.review_count }}</div>
@@ -150,11 +130,6 @@
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
-                        <div style="display: flex; gap: 2px;">
-                            {% for i in "12345" %}
-                            <span style="color: {% if forloop.counter <= review.rating %}#fbbf24{% else %}#d1d5db{% endif %}; font-size: 1.1rem;">★</span>
-                            {% endfor %}
-                        </div>
                         {% if user == review.user %}
                         <div class="kebab-wrap" style="position: relative;">
                             <button class="kebab-btn" onclick="toggleKebab(this)" style="background: #f1f5f9; border: none; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; font-size: 1.3rem; color: #64748b; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">⋮</button>

@@ -46,8 +46,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
-    "django_otp",
-    "django_otp.plugins.otp_email",
 ]
 
 
@@ -60,6 +58,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.middleware.SPAMiddleware",
 ]
 
 ROOT_URLCONF = "healthcare_project.urls"
@@ -88,17 +87,18 @@ WSGI_APPLICATION = "healthcare_project.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# Database Configuration
+# Default to MySQL as requested
 DATABASES = {
-    "default": {
-        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.mysql"),
-        "NAME": os.environ.get("SQL_DATABASE", "Health"),
-        "USER": os.environ.get("SQL_USER", "root"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD", "your_db_password"),
-        "HOST": os.environ.get("SQL_HOST", "localhost"),
-        "PORT": os.environ.get("SQL_PORT", "3306"),
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'Health',
+        'USER': 'root',
+        'PASSWORD': 'MYSQL@mayil1',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -147,16 +147,6 @@ LOGOUT_REDIRECT_URL = "home"
 LOGIN_URL = "login"
 
 
-# Email Configuration (SMTP)
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "onemedsindia@gmail.com"
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "your_email_password")
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -167,21 +157,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # After login, each doctor enters their unique Doctor ID to access their workspace.
 # Change these at any time — doctors will need the updated password to login.
 DOCTOR_PORTAL_USERNAME = os.environ.get('DOCTOR_PORTAL_USERNAME', 'doctor')
-DOCTOR_PORTAL_PASSWORD = os.environ.get('DOCTOR_PORTAL_PASSWORD', 'your_doctor_portal_password')
-
-# SMS Configuration (Twilio for real-time OTP delivery)
-TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "your_twilio_sid")
-TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "your_twilio_token")
-TWILIO_PHONE_NUMBER = os.environ.get("TWILIO_PHONE_NUMBER", "your_twilio_phone")
-
-# Cache Configuration (Used for real-time OTP storage)
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "unique-snowflake",
-    }
-}
-
+DOCTOR_PORTAL_PASSWORD = os.environ.get('DOCTOR_PORTAL_PASSWORD', 'OneMeds@2024')
 
 # CORS Configuration
 CORS_ALLOW_ALL_ORIGINS = True
@@ -300,3 +276,7 @@ JAZZMIN_UI_TWEAKS = {
         "success": "btn-success"
     }
 }
+
+# Razorpay Configuration
+RAZORPAY_KEY_ID = "rzp_test_SevOQTpmA7l3Is"
+RAZORPAY_KEY_SECRET = "jrSK765JEBLFJ445W4Tz3jQ1"

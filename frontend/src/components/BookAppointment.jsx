@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const BookAppointment = ({ slots, selectedDate, doctorFee, csrfToken, userDetails }) => {
     const [selectedTime, setSelectedTime] = useState('');
@@ -16,131 +16,119 @@ const BookAppointment = ({ slots, selectedDate, doctorFee, csrfToken, userDetail
 
     const handlePayment = (e) => {
         e.preventDefault();
+        if (!selectedTime) { return; }
 
-        // Form validation is done by the native browser if we use a form ref, but here we enforce required
-        if (!selectedTime) {
-            alert('Please select a time slot.');
-            return;
-        }
-        if (!patientDetails.patient_name || !patientDetails.patient_contact) {
-            alert('Patient name and contact are required.');
-            return;
-        }
-
-        const submitForm = () => {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '';
-            
-            const createInput = (name, value) => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = name;
-                input.value = value;
-                return input;
-            };
-
-            form.appendChild(createInput('csrfmiddlewaretoken', csrfToken));
-            form.appendChild(createInput('date', selectedDate));
-            form.appendChild(createInput('time', selectedTime));
-            form.appendChild(createInput('patient_name', patientDetails.patient_name));
-            form.appendChild(createInput('patient_age', patientDetails.patient_age));
-            form.appendChild(createInput('patient_contact', patientDetails.patient_contact));
-            form.appendChild(createInput('patient_location', patientDetails.patient_location));
-            form.appendChild(createInput('patient_problem', patientDetails.patient_problem));
-            document.body.appendChild(form);
-            form.submit();
+        const createInput = (name, value) => {
+            const input = document.createElement('input');
+            input.type = 'hidden'; input.name = name; input.value = value;
+            return input;
         };
 
-        submitForm();
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '';
+        form.appendChild(createInput('csrfmiddlewaretoken', csrfToken));
+        form.appendChild(createInput('date', selectedDate));
+        form.appendChild(createInput('time', selectedTime));
+        form.appendChild(createInput('patient_name', patientDetails.patient_name));
+        form.appendChild(createInput('patient_age', patientDetails.patient_age));
+        form.appendChild(createInput('patient_contact', patientDetails.patient_contact));
+        form.appendChild(createInput('patient_location', patientDetails.patient_location));
+        form.appendChild(createInput('patient_problem', patientDetails.patient_problem));
+        document.body.appendChild(form);
+        form.submit();
     };
 
     return (
-        <form id="bookingForm" onSubmit={handlePayment}>
-            <label className="form-label" style={{marginTop: '2rem'}}>Select Time Slot:</label>
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px', marginBottom: '2.5rem'}}>
-                {slots.map((slot, idx) => {
-                    const available = slot.max_patients - slot.booked_count;
-                    const isFullyBooked = available <= 0;
-                    const fillingUp = available > 0 && available < slot.max_patients;
-                    
-                    if (isFullyBooked) {
-                        return (
-                            <div key={idx} style={{display: 'flex', flexDirection: 'column'}}>
-                                <button type="button" disabled
-                                    style={{padding: '10px', border: '1px solid #fecdd3', background: '#fff1f2', color: '#fda4af', borderRadius: '8px', cursor: 'not-allowed', fontWeight: 600}}>
-                                    {slot.label}
+        <form onSubmit={handlePayment} style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2.5rem', alignItems: 'start' }}>
+            <div>
+                <div className="form-card" style={{ padding: '2rem', border: '1px solid #eef2f6', marginBottom: '2.5rem' }}>
+                    <h3 style={{ margin: '0 0 1.5rem', fontWeight: 800 }}>2. Available Time Slots</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '14px' }}>
+                        {slots.map((slot, idx) => {
+                            const available = slot.max_patients - slot.booked_count;
+                            const isFull = available <= 0;
+                            const isSel = selectedTime === slot.time;
+                            return (
+                                <button key={idx} type="button" disabled={isFull} onClick={() => setSelectedTime(slot.time)}
+                                    style={{
+                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                        padding: '14px', borderRadius: '16px', 
+                                        border: `2px solid ${isSel ? '#2563eb' : (isFull ? '#f1f5f9' : '#e2e8f0')}`,
+                                        background: isSel ? '#eff6ff' : (isFull ? '#f8fafc' : 'white'), 
+                                        cursor: isFull ? 'not-allowed' : 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        transform: isSel ? 'scale(1.02)' : 'scale(1)',
+                                        boxShadow: isSel ? '0 8px 20px rgba(37, 99, 235, 0.15)' : 'none'
+                                    }}>
+                                    <span style={{ fontWeight: 800, fontSize: '1rem', color: isSel ? '#1e40af' : (isFull ? '#94a3b8' : '#1e293b') }}>{slot.label}</span>
+                                    <span style={{ fontSize: '0.75rem', marginTop: '4px', fontWeight: 600, color: isFull ? '#fda4af' : (isSel ? '#2563eb' : '#16a34a') }}>
+                                        {isFull ? 'Booked' : `${available} slots left`}
+                                    </span>
                                 </button>
-                                <span style={{fontSize: '0.7rem', color: '#be123c', textAlign: 'center', marginTop: '4px'}}>Full</span>
-                            </div>
-                        );
-                    }
+                            );
+                        })}
+                    </div>
+                </div>
 
-                    return (
-                        <div key={idx} style={{display: 'flex', flexDirection: 'column'}}>
-                            <button type="button" 
-                                onClick={() => setSelectedTime(slot.time)}
-                                style={{
-                                    padding: '10px', 
-                                    borderRadius: '8px', 
-                                    cursor: 'pointer', 
-                                    transition: 'all 0.2s', 
-                                    fontWeight: 600,
-                                    background: selectedTime === slot.time ? 'var(--primary)' : 'white',
-                                    color: selectedTime === slot.time ? 'white' : 'var(--text-main)',
-                                    border: '1px solid ' + (selectedTime === slot.time ? 'var(--primary)' : (fillingUp ? '#fdba74' : '#86efac')),
-                                    boxShadow: selectedTime === slot.time ? '0 4px 10px rgba(x,x,x,0.1)' : '0 1px 2px rgba(0,0,0,0.05)'
-                                }}>
-                                {slot.label}
-                            </button>
-                            <span style={{fontSize: '0.7rem', color: fillingUp ? '#ea580c' : '#16a34a', textAlign: 'center', marginTop: '4px', fontWeight: 600}}>
-                                {available} {available === 1 ? 'slot' : 'slots'} left
-                            </span>
+                <div className="form-card" style={{ padding: '2.5rem', border: '1px solid #eef2f6', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
+                    <h3 style={{ margin: '0 0 1.5rem', fontWeight: 800, fontSize: '1.25rem' }}>3. Patient Information</h3>
+                    <div className="form-group">
+                        <label className="form-label" style={{ fontSize: '0.85rem', textTransform: 'uppercase' }}>Full Name</label>
+                        <input type="text" name="patient_name" value={patientDetails.patient_name} onChange={handleInputChange} className="form-input" required style={{ borderRadius: '12px' }} />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                        <div className="form-group">
+                            <label className="form-label" style={{ fontSize: '0.85rem', textTransform: 'uppercase' }}>Age</label>
+                            <input type="number" name="patient_age" value={patientDetails.patient_age} onChange={handleInputChange} className="form-input" style={{ borderRadius: '12px' }} />
                         </div>
-                    );
-                })}
-            </div>
-
-            <div style={{marginTop: '1.5rem', background: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', textAlign: 'left'}}>
-                <h3 style={{marginBottom: '1rem', color: '#333', fontSize: '1.1rem'}}>Patient Details</h3>
-                
-                <div className="form-group">
-                    <label className="form-label">Patient Name:</label>
-                    <input type="text" name="patient_name" value={patientDetails.patient_name} onChange={handleInputChange} className="form-input" required />
-                </div>
-                
-                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem'}}>
-                    <div className="form-group">
-                        <label className="form-label">Age:</label>
-                        <input type="number" name="patient_age" value={patientDetails.patient_age} onChange={handleInputChange} className="form-input" />
+                        <div className="form-group">
+                            <label className="form-label" style={{ fontSize: '0.85rem', textTransform: 'uppercase' }}>Contact Number</label>
+                            <input type="text" name="patient_contact" value={patientDetails.patient_contact} onChange={handleInputChange} className="form-input" required style={{ borderRadius: '12px' }} />
+                        </div>
                     </div>
                     <div className="form-group">
-                        <label className="form-label">Contact:</label>
-                        <input type="text" name="patient_contact" value={patientDetails.patient_contact} onChange={handleInputChange} className="form-input" required />
+                        <label className="form-label" style={{ fontSize: '0.85rem', textTransform: 'uppercase' }}>Current Location</label>
+                        <input type="text" name="patient_location" value={patientDetails.patient_location} onChange={handleInputChange} className="form-input" style={{ borderRadius: '12px' }} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label" style={{ fontSize: '0.85rem', textTransform: 'uppercase' }}>Reason for Visit</label>
+                        <textarea name="patient_problem" value={patientDetails.patient_problem} onChange={handleInputChange} className="form-input" rows="4" style={{ borderRadius: '12px', resize: 'none' }} placeholder="Describe symptoms or medical history..."></textarea>
                     </div>
                 </div>
-
-                <div className="form-group">
-                    <label className="form-label">Location:</label>
-                    <input type="text" name="patient_location" value={patientDetails.patient_location} onChange={handleInputChange} className="form-input" />
-                </div>
-
-                <div className="form-group">
-                    <label className="form-label">Problem Description:</label>
-                    <textarea name="patient_problem" value={patientDetails.patient_problem} onChange={handleInputChange} className="form-input" rows="3" placeholder="Describe your health issue"></textarea>
-                </div>
-                
             </div>
 
-            <div style={{marginTop: '1.5rem', marginBottom: '2rem', padding: '1.5rem', background: '#f0f9ff', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                <span style={{color: '#0c4a6e', fontWeight: 600}}>Consultation Fee</span>
-                <span style={{fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary)'}}>₹{doctorFee}</span>
+            <div style={{ position: 'sticky', top: '100px' }}>
+                <div style={{ background: '#fff', borderRadius: '24px', padding: '2.5rem', border: '1px solid #eef2f6', boxShadow: '0 20px 50px rgba(0,0,0,0.08)' }}>
+                    <h4 style={{ margin: '0 0 1.5rem', fontWeight: 800, fontSize: '1.2rem' }}>Summary</h4>
+                    <div style={{ paddingBottom: '1.5rem', borderBottom: '1px dashed #e2e8f0', marginBottom: '1.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.8rem', fontSize: '0.95rem' }}>
+                            <span style={{ color: '#64748b' }}>Consultation</span>
+                            <span style={{ fontWeight: 700 }}>₹{doctorFee}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem' }}>
+                            <span style={{ color: '#64748b' }}>Booking Fee</span>
+                            <span style={{ color: '#10b981', fontWeight: 700 }}>₹0</span>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 800, fontSize: '1.1rem' }}>Total</span>
+                        <span style={{ fontSize: '2rem', fontWeight: 900, color: '#2563eb' }}>₹{doctorFee}</span>
+                    </div>
+                    <button type="submit" disabled={!selectedTime}
+                        style={{ 
+                            width: '100%', padding: '16px', 
+                            background: selectedTime ? 'linear-gradient(135deg, #2563eb, #1e40af)' : '#e2e8f0', 
+                            color: 'white', border: 'none', borderRadius: '16px', fontWeight: 800, fontSize: '1.1rem',
+                            cursor: selectedTime ? 'pointer' : 'not-allowed',
+                            boxShadow: selectedTime ? '0 10px 25px rgba(37, 99, 235, 0.3)' : 'none',
+                            transition: 'all 0.3s'
+                         }}>
+                        Confirm Booking
+                    </button>
+                    {!selectedTime && <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#ef4444', marginTop: '12px', fontWeight: 600 }}>Please select a time slot</p>}
+                </div>
             </div>
-
-            <button type="submit" id="confirmBtn" className="btn btn-primary"
-                style={{width: '100%', padding: '1rem', fontSize: '1.1rem', opacity: selectedTime ? 1 : 0.5, pointerEvents: selectedTime ? 'auto' : 'none', transition: 'all 0.3s'}}>
-                Confirm Booking
-            </button>
         </form>
     );
 };

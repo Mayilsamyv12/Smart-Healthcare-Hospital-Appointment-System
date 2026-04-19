@@ -21,6 +21,7 @@ const apiFetch = (url, opts = {}) => {
     const csrfToken = getCookie('csrftoken');
     const headers = { 
         ...(opts.headers || {}), 
+        'Content-Type': 'application/json',
         Authorization: token ? `Bearer ${token}` : undefined 
     };
     if (csrfToken) {
@@ -45,15 +46,34 @@ const Badge = ({ s }) => {
     );
 };
 
+
+
+/* ─── icons ───────────────────────────────────────────────── */
+const ApptIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#2563eb' }}>
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="8.5" cy="7" r="4"></circle>
+        <line x1="20" y1="8" x2="20" y2="14"></line>
+        <line x1="23" y1="11" x2="17" y2="11"></line>
+    </svg>
+);
+
+const OrderIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#16a34a' }}>
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+    </svg>
+);
+
 /* ══════════════════════════════════════════════════════════════
    APPOINTMENT DETAIL DRAWER
-══════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════ */
 const ApptDetailPanel = ({ apptId, onClose }) => {
     const [detail, setDetail] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        apiFetch(`/api/appointments/${apptId}/detail/`)
+        apiFetch(`/api/appointments/${apptId}/`)
             .then(r => r.ok ? r.json() : null)
             .then(d => { setDetail(d); setLoading(false); })
             .catch(() => setLoading(false));
@@ -61,201 +81,154 @@ const ApptDetailPanel = ({ apptId, onClose }) => {
 
     return (
         <div style={{
-            position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)',
-            zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(8px)',
+            zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
         }} onClick={onClose}>
             <div style={{
-                background: '#fff', borderRadius: '20px', padding: '2rem', width: '90%', maxWidth: 700,
-                maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 25px 60px rgba(0,0,0,0.2)',
+                background: '#fff', borderRadius: '32px', padding: '3rem', width: '100%', maxWidth: 700,
+                maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 30px 100px rgba(0,0,0,0.15)', border: '1px solid #f1f5f9'
             }} onClick={e => e.stopPropagation()}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h3 style={{ margin: 0, fontWeight: 700, fontSize: '1.2rem' }}>📋 Appointment Record</h3>
-                    <button onClick={onClose} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 36, height: 36, cursor: 'pointer', fontSize: '1.1rem' }}>×</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                    <div>
+                        <h3 style={{ margin: 0, fontWeight: 800, fontSize: '1.5rem', color: '#1e293b' }}>Medical Consultation Record</h3>
+                        <p style={{ margin: '0.4rem 0 0', color: '#94a3b8', fontWeight: 500 }}>Ref ID: #{apptId}</p>
+                    </div>
+                    <button onClick={onClose} style={{ background: '#f8fafc', border: 'none', borderRadius: '14px', width: 44, height: 44, cursor: 'pointer', fontSize: '1.2rem', color: '#64748b', transition: 'all 0.2s' }}>×</button>
                 </div>
 
-                {loading && <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>Loading…</div>}
-
-                {!loading && !detail && (
-                    <div style={{ textAlign: 'center', padding: '40px', color: '#ef4444' }}>Failed to load record.</div>
-                )}
-
-                {detail && (() => {
-                    const { appointment: appt, prescription: rx, medical_records: recs } = detail;
-                    return (
-                        <>
-                            {/* Appointment summary */}
-                            <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e3a5f)', borderRadius: '14px', padding: '16px 20px', color: '#fff', marginBottom: '1.5rem' }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: '12px' }}>
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '60px' }}>
+                        <div style={{ width: '32px', height: '32px', border: '3px solid #f1f5f9', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
+                    </div>
+                ) : (
+                    detail && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                            <div style={{ background: '#f8fafc', borderRadius: '24px', padding: '2.5rem', border: '1px solid #f1f5f9' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem' }}>
                                     {[
-                                        ['Doctor', `Dr. ${appt.doctor?.name}`],
-                                        ['Specialty', appt.doctor?.specialty_name],
-                                        ['Hospital', appt.doctor?.hospital?.name],
-                                        ['Date', appt.date],
-                                        ['Time', appt.time],
-                                        ['Status', appt.status],
+                                        ['Clinician', `Dr. ${detail.doctor?.name}`],
+                                        ['Specialization', detail.doctor?.specialty_name],
+                                        ['Healthcare Facility', detail.doctor?.hospital?.name],
+                                        ['Consultation Mode', 'In-Person Visit'],
+                                        ['Visit Date', detail.date],
+                                        ['Visit Time', detail.time],
                                     ].map(([l, v]) => (
                                         <div key={l}>
-                                            <div style={{ fontSize: '0.68rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 }}>{l}</div>
-                                            <div style={{ fontWeight: 600, marginTop: '2px' }}>{v || '—'}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800, marginBottom: '0.4rem', letterSpacing: '0.02em' }}>{l}</div>
+                                            <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '1rem' }}>{v || '—'}</div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
-
-                            {/* Prescription */}
-                            <h4 style={{ margin: '0 0 12px', fontWeight: 700, color: '#1e293b' }}>Prescription</h4>
-                            {!rx ? (
-                                <div style={{ background: '#fffbeb', borderRadius: '10px', padding: '16px', border: '1.5px dashed #fbbf24', color: '#92400e', marginBottom: '1.5rem', textAlign: 'center' }}>
-                                    ⚠️ No prescription has been generated for this appointment.
-                                </div>
-                            ) : (
-                                <div style={{ background: '#fff', border: '1px solid #f1f5f9', borderRadius: '14px', overflow: 'hidden', marginBottom: '1.5rem', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-                                    <div style={{ background: 'linear-gradient(135deg,#1e293b,#334155)', padding: '14px 18px', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div>
-                                            <div style={{ fontWeight: 700 }}>Dr. {rx.doctor_name}</div>
-                                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(rx.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-                                        </div>
-                                        <span style={{ background: rx.generate_method === 'upload' ? '#0ea5e9' : '#6366f1', color: '#fff', fontSize: '0.72rem', fontWeight: 700, borderRadius: '999px', padding: '3px 10px' }}>
-                                            {rx.generate_method === 'upload' ? '📎 File' : '📝 Template'}
-                                        </span>
-                                    </div>
-                                    <div style={{ padding: '18px' }}>
-                                        {rx.generate_method === 'upload' && rx.prescription_file ? (
-                                            <div style={{ textAlign: 'center' }}>
-                                                {rx.prescription_file.match(/\.(jpg|jpeg|png|gif)$/i) ? (
-                                                    <img src={rx.prescription_file} alt="Prescription" style={{ maxWidth: '100%', borderRadius: '10px' }} />
-                                                ) : (
-                                                    <a href={rx.prescription_file} target="_blank" rel="noreferrer"
-                                                        style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#eff6ff', color: '#2563eb', borderRadius: '10px', padding: '12px 24px', textDecoration: 'none', fontWeight: 700 }}>
-                                                        📄 View Prescription PDF
-                                                    </a>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <>
-                                                {rx.symptoms && <div style={{ marginBottom: '10px' }}><div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '3px' }}>Symptoms</div><div style={{ fontSize: '0.9rem' }}>{rx.symptoms}</div></div>}
-                                                <div style={{ marginBottom: '10px' }}><div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '3px' }}>Diagnosis</div><div style={{ fontWeight: 700, color: '#1e293b' }}>{rx.diagnosis || '—'}</div></div>
-                                                {rx.medicines?.length > 0 && (
-                                                    <div style={{ marginBottom: '10px' }}>
-                                                        <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' }}>Medicines</div>
-                                                        {rx.medicines.map((m, i) => (
-                                                            <div key={i} style={{ background: '#f8fafc', borderRadius: '8px', padding: '8px 12px', marginBottom: '5px', display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                                                                <strong>{m.name}</strong>
-                                                                <span style={{ color: '#64748b' }}>{m.dosage} · {m.duration}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                                {rx.instructions && <div style={{ background: '#faf5ff', borderRadius: '8px', padding: '10px 12px', borderLeft: '3px solid #7c3aed' }}><div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#7c3aed', marginBottom: '3px' }}>INSTRUCTIONS</div><div style={{ fontSize: '0.85rem' }}>{rx.instructions}</div></div>}
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Medical Records */}
-                            <h4 style={{ margin: '0 0 12px', fontWeight: 700, color: '#1e293b' }}>Medical Records</h4>
-                            {recs.length === 0 ? (
-                                <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px', background: '#f8fafc', borderRadius: '10px' }}>
-                                    No additional records uploaded.
-                                </div>
-                            ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    {recs.map(r => (
-                                        <div key={r.id} style={{ background: '#fff', border: '1px solid #f1f5f9', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-                                            <div style={{ fontSize: '1.5rem' }}>{r.record_type === 'X-Ray' ? '🦴' : r.record_type === 'Scan' ? '🔬' : r.record_type === 'Lab Report' ? '🧪' : '📄'}</div>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: 700, color: '#1e293b' }}>{r.title}</div>
-                                                <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{r.record_type} · {new Date(r.uploaded_at).toLocaleDateString('en-IN')}</div>
-                                            </div>
-                                            <a href={r.file} target="_blank" rel="noreferrer"
-                                                style={{ background: '#dcfce7', color: '#16a34a', borderRadius: '8px', padding: '6px 14px', textDecoration: 'none', fontWeight: 700, fontSize: '0.8rem' }}>
-                                                ⬇ View
-                                            </a>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </>
-                    );
-                })()}
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem', background: '#f0f9ff', borderRadius: '18px', border: '1px solid #e0f2fe' }}>
+                                <div style={{ fontWeight: 800, color: '#0369a1' }}>Status:</div>
+                                <Badge s={detail.status} />
+                            </div>
+                        </div>
+                    )
+                )}
             </div>
+            <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
         </div>
     );
 };
 
 
 /* ══════════════════════════════════════════════════════════════
-   COMPLETED ORDERS SECTION (medicine/prescription orders)
-══════════════════════════════════════════════════════════════ */
-/* ══════════════════════════════════════════════════════════════
-   COMPLETED ORDERS SECTION (Commerce Orders)
+   PHARMACY ORDERS SECTION
    ══════════════════════════════════════════════════════════════ */
 const CompletedOrders = ({ orders }) => {
     if (!orders || orders.length === 0) {
         return (
-            <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f8fafc', borderRadius: '16px' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '12px' }}>📦</div>
-                <p style={{ color: '#64748b' }}>No completed medicine orders yet.</p>
-                <a href="/pharmacy" style={{ color: '#2563eb', fontWeight: 700, textDecoration: 'none' }}>Order Medicines →</a>
+            <div style={{ textAlign: 'center', padding: '100px 20px', background: '#fff', borderRadius: '32px', border: '1px solid #f1f5f9' }}>
+                <div style={{ background: '#f8fafc', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                    <OrderIcon />
+                </div>
+                <p style={{ color: '#94a3b8', fontWeight: 600, fontSize: '1.1rem' }}>No medicine orders found.</p>
+                <a href="/pharmacy" style={{ color: '#2563eb', fontWeight: 800, textDecoration: 'none', transition: 'all 0.2s', display: 'inline-block', marginTop: '1rem' }}>Browse Pharmacy →</a>
             </div>
         );
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1e293b', marginBottom: '0.5rem' }}>Pharmacy Orders</h2>
             {orders.map(order => (
                 <div key={order.id} style={{
-                    background: '#fff', borderRadius: '14px', overflow: 'hidden',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9',
+                    background: '#fff', borderRadius: '32px', overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9',
                 }}>
                     <div style={{
-                        background: 'linear-gradient(135deg,#1e293b,#334155)',
-                        padding: '14px 20px', color: '#fff', display: 'flex',
-                        justifyContent: 'space-between', alignItems: 'center'
+                        background: '#f8fafc', padding: '1.5rem 2.5rem', borderBottom: '1px solid #f1f5f9',
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                     }}>
-                        <div>
-                            <div style={{ fontWeight: 700 }}>Order ID: #{order.id}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                                Placed on: {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            </div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>₹{order.total_amount}</div>
-                            <Badge s={order.status} />
-                        </div>
-                    </div>
-                    <div style={{ padding: '16px 20px' }}>
-                        <div style={{ marginBottom: '12px' }}>
-                            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' }}>Items Ordered</div>
-                            <div style={{ color: '#1e293b', fontSize: '0.9rem', lineHeight: '1.5' }}>
-                                {order.items || 'Medicine items details...'}
-                            </div>
-                        </div>
-                        
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
+                        <div style={{ display: 'flex', gap: '2.5rem' }}>
                             <div>
-                                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>Delivery Address</div>
-                                <div style={{ fontSize: '0.82rem', color: '#475569', marginTop: '3px' }}>
-                                    {order.house_no}, {order.street}, {order.city} - {order.pincode}
+                                <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Order Number</div>
+                                <div style={{ fontWeight: 800, color: '#1e293b' }}>#ORD-{order.id}</div>
+                            </div>
+                            <div>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Date Placed</div>
+                                <div style={{ fontWeight: 700, color: '#475569' }}>{new Date(order.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
+                            </div>
+                            <div>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Total Amount</div>
+                                <div style={{ fontWeight: 900, color: '#2563eb' }}>₹{order.total_amount}</div>
+                            </div>
+                        </div>
+                        <Badge s={order.status} />
+                    </div>
+
+                    <div style={{ padding: '2.5rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '3rem' }}>
+                            <div>
+                                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '1.2rem' }}>Itemized Receipt</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    {(() => {
+                                        try {
+                                            const items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
+                                            if (Array.isArray(items)) {
+                                                return items.map((item, idx) => (
+                                                    <div key={idx} style={{ 
+                                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                                        background: '#f8fafc', padding: '1rem 1.5rem', 
+                                                        borderRadius: '16px', border: '1px solid #f1f5f9'
+                                                    }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2563eb' }} />
+                                                            <span style={{ fontWeight: 700, color: '#1e293b' }}>{item.name}</span>
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                                                            <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>Qty: {item.quantity}</span>
+                                                            <span style={{ fontWeight: 800, color: '#0f172a' }}>₹{item.price}</span>
+                                                        </div>
+                                                    </div>
+                                                ));
+                                            }
+                                        } catch (e) {
+                                            return <p style={{ color: '#ef4444' }}>Error decoding order items.</p>;
+                                        }
+                                        return null;
+                                    })()}
                                 </div>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>Payment</div>
-                                <div style={{ fontSize: '0.82rem', color: '#475569', marginTop: '3px' }}>
-                                    {order.payment_method}
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                <div>
+                                    <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Shipping Destination</div>
+                                    <div style={{ background: '#f8fafc', padding: '1.2rem', borderRadius: '20px', fontSize: '0.85rem', color: '#475569', fontWeight: 600, border: '1px solid #f1f5f9', lineHeight: 1.5 }}>
+                                        {order.house_no}, {order.street}<br/>
+                                        {order.landmark && <span>{order.landmark}<br/></span>}
+                                        {order.city} - {order.pincode}
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.2rem', background: '#e0f2fe', borderRadius: '16px', border: '1px solid #bae6fd' }}>
+                                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#0369a1', textTransform: 'uppercase' }}>Method</span>
+                                    <span style={{ fontWeight: 700, color: '#0369a1', fontSize: '0.85rem' }}>{order.payment_method}</span>
                                 </div>
                             </div>
                         </div>
-
-                        {order.prescription && (
-                            <div style={{ marginTop: '12px', textAlign: 'center' }}>
-                                <a href={order.prescription} target="_blank" rel="noreferrer"
-                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#f0f9ff', color: '#0369a1', borderRadius: '8px', padding: '6px 14px', textDecoration: 'none', fontWeight: 700, fontSize: '0.8rem' }}>
-                                    📎 View Attached Prescription
-                                </a>
-                            </div>
-                        )}
                     </div>
                 </div>
             ))}
@@ -266,7 +239,7 @@ const CompletedOrders = ({ orders }) => {
 
 /* ══════════════════════════════════════════════════════════════
    MAIN PATIENT PROFILE PAGE
-══════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════ */
 const PatientProfile = ({ context }) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -274,15 +247,24 @@ const PatientProfile = ({ context }) => {
     const [activeTab, setActiveTab] = useState('profile');
     const [selectedApptId, setSelectedApptId] = useState(null);
 
-    useEffect(() => {
+    // Editing State
+    const [isEditing, setIsEditing] = useState(false);
+    const [saveLoading, setSaveLoading] = useState(false);
+    const [editForm, setEditForm] = useState({});
+
+    const fetchData = () => {
         apiFetch('/api/patient/dashboard/')
             .then(r => {
-                if (r.status === 401) throw new Error('Please log in to view your profile.');
+                if (r.status === 401) throw new Error('Please log in.');
                 if (!r.ok) throw new Error('Could not load profile.');
                 return r.json();
             })
             .then(d => { setData(d); setLoading(false); })
             .catch(e => { setError(e.message); setLoading(false); });
+    };
+
+    useEffect(() => {
+        fetchData();
     }, []);
 
     const handleLogout = () => {
@@ -291,243 +273,274 @@ const PatientProfile = ({ context }) => {
         window.location.href = '/users/logout/';
     };
 
-    /* ── guards ── */
+    const handleEditToggle = () => {
+        if (!isEditing) {
+            setEditForm({
+                first_name: data.profile.first_name || '',
+                last_name: data.profile.last_name || '',
+                contact_no: data.profile.contact_no || '',
+                age: data.profile.age || '',
+                gender: data.profile.gender || '',
+                location: data.profile.location || '',
+            });
+        }
+        setIsEditing(!isEditing);
+    };
+
+    const handleSaveProfile = async () => {
+        setSaveLoading(true);
+        try {
+            const res = await apiFetch('/api/patient/dashboard/', {
+                method: 'PATCH',
+                body: JSON.stringify(editForm),
+            });
+            if (res.ok) {
+                setIsEditing(false);
+                fetchData();
+            } else {
+                const errData = await res.json();
+                alert('Update Failed: ' + JSON.stringify(errData));
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Connection failed.');
+        } finally {
+            setSaveLoading(false);
+        }
+    };
+
     if (!context?.isAuthenticated) {
         return (
-            <div id="patient-profile-auth-gate" style={{ textAlign: 'center', padding: '100px 20px', marginTop: '80px' }}>
-                <div style={{ fontSize: '4rem', marginBottom: '16px' }}>🔒</div>
-                <h2 style={{ color: '#1e293b', marginBottom: '8px' }}>Please Log In</h2>
-                <p style={{ color: '#64748b', marginBottom: '24px' }}>You need to be logged in to view your profile.</p>
-                <a href="/users/login/" id="profile-login-btn" style={{
-                    background: 'linear-gradient(135deg,#0ea5e9,#2563eb)', color: '#fff', padding: '12px 32px',
-                    borderRadius: '12px', textDecoration: 'none', fontWeight: 700, fontSize: '1rem',
-                }}>Login Now</a>
+            <div id="patient-profile-auth-gate" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', padding: '2rem' }}>
+                <div style={{ maxWidth: '400px', width: '100%', background: '#fff', padding: '3rem', borderRadius: '32px', textAlign: 'center', boxShadow: '0 20px 50px rgba(15,23,42,0.08)', border: '1px solid #f1f5f9' }}>
+                    <div style={{ width: '80px', height: '80px', background: '#fef2f2', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+                    </div>
+                    <h2 style={{ color: '#1e293b', fontSize: '1.5rem', fontWeight: 800, marginBottom: '1rem' }}>Access Restricted</h2>
+                    <p style={{ color: '#64748b', marginBottom: '2.5rem', lineHeight: 1.6 }}>Please log in to your patient account to view your medical history and profile.</p>
+                    <a href="/users/login/" style={{ display: 'block', background: '#2563eb', color: '#fff', padding: '1.2rem', borderRadius: '16px', textDecoration: 'none', fontWeight: 800, transition: 'transform 0.2s', boxShadow: '0 10px 20px rgba(37, 99, 235, 0.2)' }}>
+                        Login to Continue
+                    </a>
+                </div>
             </div>
         );
     }
 
     if (loading) return (
-        <div style={{ textAlign: 'center', padding: '100px 20px', marginTop: '80px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '4px solid #e2e8f0', borderTopColor: '#2563eb', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+            <div style={{ textAlign: 'center' }}>
+                <div style={{ width: '40px', height: '40px', border: '3px solid #e2e8f0', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 1.5rem' }} />
+                <p style={{ color: '#94a3b8', fontWeight: 600 }}>Loading Patient Record...</p>
+            </div>
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-            <p style={{ color: '#64748b' }}>Loading your profile…</p>
         </div>
     );
 
-    if (error) return (
-        <div style={{ textAlign: 'center', padding: '80px 20px', marginTop: '80px' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>⚠️</div>
-            <p style={{ color: '#dc2626', marginBottom: '16px' }}>{error}</p>
-            <a href="/users/login/" style={{ background: '#2563eb', color: '#fff', borderRadius: '8px', padding: '10px 24px', textDecoration: 'none', fontWeight: 600 }}>Login</a>
-        </div>
-    );
-
-    const { profile, appointments = [], prescriptions = [], orders = [], stats = {} } = data || {};
+    const { profile, appointments = [], orders = [], lab_appointments = [], stats = {} } = data || {};
     const completedAppts = appointments.filter(a => a.status === 'Completed');
+    const completedLabs = lab_appointments.filter(a => a.status === 'Completed');
 
     const tabs = [
-        { id: 'profile', icon: '👤', label: 'My Profile' },
-        { id: 'appointments', icon: '📅', label: 'Completed Appointments', badge: completedAppts.length },
-        { id: 'orders', icon: '💊', label: 'Medicine Orders', badge: orders.length },
+        { id: 'profile', label: 'My Settings', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> },
+        { id: 'appointments', label: 'Doctor Visits', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>, badge: completedAppts.length },
+        { id: 'labs', label: 'Lab History', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"></path><path d="M12 18h.01"></path><path d="M7 14h10"></path><path d="M7 10h10"></path></svg>, badge: completedLabs.length },
+        { id: 'orders', label: 'Pharmacy Orders', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>, badge: orders.length },
     ];
 
+    const inputStyle = {
+        width: '100%', padding: '14px', border: '1.5px solid #e2e8f0', borderRadius: '14px',
+        fontSize: '0.95rem', fontWeight: 600, color: '#1e293b', outline: 'none', transition: 'border-color 0.2s'
+    };
+
     return (
-        <div id="patient-profile-page" style={{ marginTop: '80px', fontFamily: "'Inter',sans-serif", maxWidth: 960, margin: '80px auto 40px', padding: '0 20px' }}>
-
-            {/* Hero Banner */}
-            <div style={{
-                background: 'linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1e293b 100%)',
-                borderRadius: '22px', padding: '28px 32px', marginBottom: '28px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px',
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <div style={{
-                        width: '70px', height: '70px', borderRadius: '18px',
-                        background: 'linear-gradient(135deg,#6366f1,#a855f7)', flexShrink: 0,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '2rem', fontWeight: 800, color: '#fff',
-                        boxShadow: '0 8px 20px rgba(99,102,241,0.4)',
-                    }}>
-                        {(profile?.first_name || profile?.username || 'P')[0].toUpperCase()}
-                    </div>
-                    <div>
-                        <h1 id="patient-profile-greeting" style={{ margin: 0, color: '#fff', fontSize: '1.6rem', fontWeight: 800 }}>
-                            {profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : profile?.username}
-                        </h1>
-                        <p style={{ margin: '4px 0 0', color: '#94a3b8', fontSize: '0.9rem' }}>
-                            {profile?.email}{profile?.contact_no ? ` · ${profile.contact_no}` : ''}
-                        </p>
-                    </div>
-                </div>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    <button id="patient-logout-btn" onClick={handleLogout} style={{
-                        background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1.5px solid rgba(239,68,68,0.3)',
-                        borderRadius: '10px', padding: '10px 20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.88rem',
-                        transition: 'all 0.2s',
-                    }}>
-                        🚪 Logout
-                    </button>
-                </div>
-            </div>
-
-            {/* Stats Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: '14px', marginBottom: '28px' }}>
-                {[
-                    ['📅', 'Total Visits', stats.total_appointments || 0, '#eff6ff'],
-                    ['⏳', 'Upcoming', stats.upcoming || 0, '#f0fdf4'],
-                    ['✅', 'Completed', stats.completed || 0, '#dcfce7'],
-                    ['💊', 'Prescriptions', stats.total_prescriptions || 0, '#faf5ff'],
-                ].map(([icon, lbl, val, bg]) => (
-                    <div key={lbl} style={{ background: '#fff', borderRadius: '14px', padding: '18px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>{icon}</div>
-                        <div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e293b', lineHeight: 1 }}>{val}</div>
-                            <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '3px' }}>{lbl}</div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Tabs */}
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '22px', borderBottom: '2px solid #f1f5f9', paddingBottom: '0' }}>
-                {tabs.map(t => (
-                    <button key={t.id} id={`profile-tab-${t.id}`}
-                        onClick={() => setActiveTab(t.id)}
-                        style={{
-                            background: 'none', border: 'none', cursor: 'pointer', padding: '10px 16px',
-                            fontSize: '0.88rem', fontWeight: 700, transition: 'all 0.2s',
-                            color: activeTab === t.id ? '#2563eb' : '#64748b',
-                            borderBottom: activeTab === t.id ? '2.5px solid #2563eb' : '2.5px solid transparent',
-                            marginBottom: '-2px', display: 'flex', alignItems: 'center', gap: '6px',
-                        }}
-                    >
-                        {t.icon} {t.label}
-                        {t.badge != null && (
-                            <span style={{
-                                background: activeTab === t.id ? '#dbeafe' : '#f1f5f9',
-                                color: activeTab === t.id ? '#2563eb' : '#94a3b8',
-                                borderRadius: '999px', padding: '1px 8px', fontSize: '0.72rem', fontWeight: 700,
-                            }}>{t.badge}</span>
-                        )}
-                    </button>
-                ))}
-            </div>
-
-            {/* ── Profile Tab ── */}
-            {activeTab === 'profile' && (
-                <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
-                    <style>{`@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}`}</style>
-                    <div style={{ background: '#fff', borderRadius: '18px', padding: '28px 32px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9' }}>
-                        <h3 style={{ fontWeight: 700, color: '#1e293b', marginTop: 0, marginBottom: '20px' }}>Personal Details</h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: '24px' }}>
-                            {[
-                                ['👤 Full Name', profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : profile?.username],
-                                ['📧 Email', profile?.email],
-                                ['📱 Contact', profile?.contact_no || 'Not provided'],
-                                ['🎂 Age', profile?.age ? `${profile.age} years` : 'Not provided'],
-                                ['⚥ Gender', profile?.gender || 'Not provided'],
-                                ['📍 Location', profile?.location || 'Not provided'],
-                                ['🏥 Role', profile?.role || 'Patient'],
-                            ].map(([label, value]) => (
-                                <div key={label}>
-                                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{label}</div>
-                                    <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.95rem' }}>{value || '—'}</div>
+        <div style={{ background: '#f8fafc', minHeight: '100vh', padding: '100px 0 60px' }}>
+            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 2rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 350px) 1fr', gap: '3rem', alignItems: 'start' }}>
+                    
+                    {/* Sidebar */}
+                    <aside style={{ position: 'sticky', top: '120px' }}>
+                        {/* Profile Card Summary */}
+                        <div style={{ background: '#fff', borderRadius: '32px', padding: '2.5rem', border: '1px solid #f1f5f9', boxShadow: '0 10px 30px rgba(0,0,0,0.02)', marginBottom: '2rem' }}>
+                            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                                <div style={{ width: '100px', height: '100px', borderRadius: '32px', background: 'linear-gradient(135deg,#6366f1,#a855f7)', margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 800, color: '#fff', boxShadow: '0 15px 35px rgba(99,102,241,0.25)' }}>
+                                    {(profile?.first_name || profile?.username || 'P')[0].toUpperCase()}
                                 </div>
-                            ))}
-                        </div>
-                        <div style={{ marginTop: '28px', paddingTop: '20px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '10px' }}>
-                            <a href="/users/profile/" id="edit-profile-btn" style={{
-                                background: 'linear-gradient(135deg,#0ea5e9,#2563eb)', color: '#fff', borderRadius: '10px',
-                                padding: '10px 22px', textDecoration: 'none', fontWeight: 700, fontSize: '0.88rem',
-                            }}>✏️ Edit Profile</a>
-                            <button id="profile-logout-btn2" onClick={handleLogout} style={{
-                                background: '#fff', color: '#ef4444', border: '1.5px solid #fecaca', borderRadius: '10px',
-                                padding: '10px 22px', cursor: 'pointer', fontWeight: 700, fontSize: '0.88rem',
-                            }}>🚪 Logout</button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                                <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>
+                                    {profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}` : profile?.username}
+                                </h1>
+                                <p style={{ margin: '0.5rem 0 0', color: '#94a3b8', fontSize: '0.9rem', fontWeight: 600 }}>Patient ID: #PAT-2024{profile?.id || 'XX'}</p>
+                            </div>
 
-            {/* ── Completed Appointments Tab ── */}
-            {activeTab === 'appointments' && (
-                <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
-                    {completedAppts.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f8fafc', borderRadius: '16px' }}>
-                            <div style={{ fontSize: '3rem', marginBottom: '12px' }}>📭</div>
-                            <p style={{ color: '#64748b' }}>No completed appointments yet.</p>
-                            <a href="/doctors/" style={{ color: '#2563eb', fontWeight: 700, textDecoration: 'none' }}>Book Your First Appointment →</a>
-                        </div>
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            {completedAppts.map(appt => (
-                                <div key={appt.id} id={`appt-card-${appt.id}`} style={{
-                                    background: '#fff', borderRadius: '16px', padding: '18px 22px',
-                                    boxShadow: '0 2px 10px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9',
-                                    display: 'flex', alignItems: 'center', gap: '18px', flexWrap: 'wrap',
-                                    cursor: 'pointer', transition: 'all 0.2s',
-                                }} onClick={() => setSelectedApptId(appt.id)}
-                                    onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 20px rgba(37,99,235,0.12)'}
-                                    onMouseLeave={e => e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.05)'}
-                                >
-                                    {/* Doctor avatar */}
-                                    <div style={{
-                                        width: '52px', height: '52px', borderRadius: '50%', flexShrink: 0,
-                                        background: 'linear-gradient(135deg,#dbeafe,#bfdbfe)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem',
-                                    }}>
-                                        {appt.doctor?.image ? (
-                                            <img src={appt.doctor.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-                                        ) : '👨‍⚕️'}
-                                    </div>
-
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: '2px' }}>Dr. {appt.doctor?.name}</div>
-                                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                                            {appt.doctor?.specialty_name} · {appt.doctor?.hospital?.name}
-                                        </div>
-                                    </div>
-
-                                    <div style={{ textAlign: 'center', minWidth: '90px' }}>
-                                        <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' }}>{appt.date}</div>
-                                        <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{appt.time}</div>
-                                    </div>
-
-                                    <Badge s={appt.status} />
-
-                                    <div style={{ fontSize: '0.8rem', color: '#64748b', maxWidth: '180px' }}>
-                                        {appt.patient_problem || 'General Consultation'}
-                                    </div>
-
-                                    <button id={`view-rx-btn-${appt.id}`}
-                                        onClick={e => { e.stopPropagation(); setSelectedApptId(appt.id); }}
-                                        style={{
-                                            background: 'linear-gradient(135deg,#eff6ff,#dbeafe)', color: '#2563eb',
-                                            border: 'none', borderRadius: '10px', padding: '8px 16px',
-                                            cursor: 'pointer', fontWeight: 700, fontSize: '0.82rem', whiteSpace: 'nowrap',
-                                        }}>
-                                        View Rx &amp; Records →
+                            <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                {tabs.map(t => (
+                                    <button key={t.id} onClick={() => setActiveTab(t.id)} 
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.5rem', border: 'none', borderRadius: '18px', cursor: 'pointer', fontWeight: 700, fontSize: '0.95rem', transition: 'all 0.2s',
+                                                background: activeTab === t.id ? '#f0f7ff' : 'transparent',
+                                                color: activeTab === t.id ? '#2563eb' : '#64748b'
+                                            }}>
+                                        <span style={{ display: 'flex', alignItems: 'center' }}>{t.icon}</span>
+                                        {t.label}
+                                        {t.badge != null && <span style={{ marginLeft: 'auto', background: activeTab === t.id ? '#2563eb' : '#f1f5f9', color: activeTab === t.id ? '#fff' : '#94a3b8', padding: '2px 8px', borderRadius: '8px', fontSize: '0.75rem' }}>{t.badge}</span>}
                                     </button>
-                                </div>
-                            ))}
+                                ))}
+                            </nav>
+
+                            <button onClick={handleLogout} style={{ width: '100%', marginTop: '2.5rem', padding: '1rem', border: '1.5px solid #fee2e2', borderRadius: '18px', background: '#fff5f5', color: '#ef4444', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                Sign Out
+                            </button>
                         </div>
-                    )}
-                </div>
-            )}
 
-            {/* ── Medicine Orders Tab ── */}
-            {activeTab === 'orders' && (
-                <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
-                    <CompletedOrders orders={orders} />
-                </div>
-            )}
+                        {/* Mini Stats Card */}
+                        <div style={{ background: 'linear-gradient(135deg,#0f172a,#2430d9)', borderRadius: '32px', padding: '2rem', color: '#fff', boxShadow: '0 15px 35px rgba(37, 99, 235, 0.2)' }}>
+                            <h4 style={{ margin: '0 0 1.5rem', fontSize: '1rem', fontWeight: 700, opacity: 0.9 }}>Health Overview</h4>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1.2rem', borderRadius: '20px' }}>
+                                    <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>{stats.completed || 0}</div>
+                                    <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 700, opacity: 0.7 }}>Visits</div>
+                                </div>
+                                <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1.2rem', borderRadius: '20px' }}>
+                                    <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>{stats.lab_completed || 0}</div>
+                                    <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 700, opacity: 0.7 }}>Lab Tests</div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
 
-            {/* Appointment Detail Drawer */}
-            {selectedApptId && (
-                <ApptDetailPanel apptId={selectedApptId} onClose={() => setSelectedApptId(null)} />
-            )}
+                    {/* Main Content Area */}
+                    <main>
+                        {activeTab === 'profile' && (
+                            <div style={{ animation: 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+                                <div style={{ background: '#fff', borderRadius: '32px', padding: '3.5rem', border: '1px solid #f1f5f9', boxShadow: '0 15px 50px rgba(0,0,0,0.02)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
+                                        <div>
+                                            <h2 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 800, color: '#1e293b' }}>Personal Settings</h2>
+                                            <p style={{ margin: '0.4rem 0 0', color: '#94a3b8', fontWeight: 500 }}>Update your identity and contact information</p>
+                                        </div>
+                                        {!isEditing && (
+                                            <button onClick={handleEditToggle} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: '14px', padding: '12px 28px', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 8px 20px rgba(37,99,235,0.2)' }}>
+                                                Update Profile
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2.5rem' }}>
+                                        {[
+                                            { label: 'First Name', val: profile?.first_name, key: 'first_name', edit: true },
+                                            { label: 'Last Name', val: profile?.last_name, key: 'last_name', edit: true },
+                                            { label: 'Primary Contact', val: profile?.contact_no || 'Not set', key: 'contact_no', edit: true },
+                                            { label: 'Age', val: profile?.age ? `${profile.age} Years` : '—', key: 'age', type: 'number', edit: true },
+                                            { label: 'Gender', val: profile?.gender === 'M' ? 'Male' : profile?.gender === 'F' ? 'Female' : '—', key: 'gender', type: 'select', edit: true },
+                                            { label: 'Permanent Address', val: profile?.location || 'Not set', key: 'location', span: 2, edit: true },
+                                        ].map((f, i) => (
+                                            <div key={i} style={{ gridColumn: f.span ? `span ${f.span}` : 'auto' }}>
+                                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.8rem', letterSpacing: '0.02em' }}>{f.label}</label>
+                                                {isEditing && f.edit ? (
+                                                    f.type === 'select' ? (
+                                                        <select style={inputStyle} value={editForm[f.key]} onChange={e => setEditForm({...editForm, [f.key]: e.target.value})}>
+                                                            <option value="">Select Gender</option>
+                                                            <option value="M">Male</option>
+                                                            <option value="F">Female</option>
+                                                        </select>
+                                                    ) : (
+                                                        <input style={inputStyle} type={f.type || 'text'} value={editForm[f.key]} onChange={e => setEditForm({...editForm, [f.key]: e.target.value})} />
+                                                    )
+                                                ) : (
+                                                    <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#1e293b', background: '#f8fafc', padding: '16px 20px', borderRadius: '16px', border: '1px solid #f1f5f9' }}>{f.val}</div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {isEditing && (
+                                        <div style={{ marginTop: '4rem', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                                            <button onClick={handleEditToggle} style={{ background: '#f1f5f9', color: '#475569', border: 'none', padding: '12px 30px', borderRadius: '14px', fontWeight: 800, cursor: 'pointer' }}>Discard</button>
+                                            <button onClick={handleSaveProfile} disabled={saveLoading} style={{ background: '#059669', color: '#fff', border: 'none', padding: '12px 40px', borderRadius: '14px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 20px rgba(5,150,105,0.2)' }}>
+                                                {saveLoading ? 'Syncing...' : 'Save Updates'}
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'appointments' && (
+                            <div style={{ animation: 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                                    <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1e293b', marginBottom: '0.5rem' }}>Doctor Visit History</h2>
+                                    {completedAppts.length === 0 ? (
+                                        <div style={{ background: '#fff', padding: '5rem 2rem', borderRadius: '32px', textAlign: 'center', border: '1px solid #f1f5f9' }}>
+                                            <div style={{ background: '#f8fafc', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                                                <ApptIcon />
+                                            </div>
+                                            <p style={{ color: '#94a3b8', fontWeight: 600, fontSize: '1.1rem' }}>No completed clinic visits recorded.</p>
+                                        </div>
+                                    ) : (
+                                        completedAppts.map(appt => (
+                                            <div key={appt.id} onClick={() => setSelectedApptId(appt.id)} style={{ background: '#fff', borderRadius: '32px', padding: '2rem 2.5rem', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '3rem', cursor: 'pointer', transition: 'transform 0.2s' }}>
+                                                <div style={{ width: '70px', height: '70px', borderRadius: '24px', background: '#f0f7ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #e0f2fe' }}>
+                                                    {appt.doctor?.image ? <img src={appt.doctor.image} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '24px' }} alt="" /> : <ApptIcon />}
+                                                </div>
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '1.2rem', marginBottom: '0.3rem' }}>Dr. {appt.doctor?.name}</div>
+                                                    <div style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 600 }}>{appt.doctor?.specialty_name} · {appt.doctor?.hospital?.name}</div>
+                                                </div>
+                                                <div style={{ textAlign: 'right', minWidth: '120px' }}>
+                                                    <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '1.1rem' }}>{appt.date}</div>
+                                                    <div style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 600, marginTop: '0.2rem' }}>{appt.time}</div>
+                                                </div>
+                                                <Badge s={appt.status} />
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'labs' && (
+                             <div style={{ animation: 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                                    <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1e293b', marginBottom: '0.5rem' }}>Lab Test History</h2>
+                                    {completedLabs.length === 0 ? (
+                                        <div style={{ background: '#fff', padding: '5rem 2rem', borderRadius: '32px', textAlign: 'center', border: '1px solid #f1f5f9' }}>
+                                            <div style={{ background: '#f0fdf4', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                                                🔬
+                                            </div>
+                                            <p style={{ color: '#94a3b8', fontWeight: 600, fontSize: '1.1rem' }}>No completed lab tests found.</p>
+                                        </div>
+                                    ) : (
+                                        completedLabs.map(appt => (
+                                            <div key={appt.id} style={{ background: '#fff', borderRadius: '32px', padding: '2rem 2.5rem', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '3rem', transition: 'transform 0.2s' }}>
+                                                <div style={{ width: '70px', height: '70px', borderRadius: '24px', background: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #ddd6fe', fontSize: '2rem' }}>
+                                                    🧪
+                                                </div>
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '1.2rem', marginBottom: '0.3rem' }}>{appt.lab_test?.name}</div>
+                                                    <div style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 600 }}>{appt.lab_test?.location}</div>
+                                                </div>
+                                                <div style={{ textAlign: 'right', minWidth: '120px' }}>
+                                                    <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '1.1rem' }}>{appt.date}</div>
+                                                    <div style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 600, marginTop: '0.2rem' }}>{appt.time}</div>
+                                                </div>
+                                                <Badge s={appt.status} />
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                             </div>
+                        )}
+
+                        {activeTab === 'orders' && <div style={{ animation: 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}><CompletedOrders orders={orders} /></div>}
+                    </main>
+                </div>
+            </div>
+            {selectedApptId && <ApptDetailPanel apptId={selectedApptId} onClose={() => setSelectedApptId(null)} />}
+            <style>{`
+                @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+            `}</style>
         </div>
     );
 };
+
 
 export default PatientProfile;

@@ -3,20 +3,11 @@ from django.shortcuts import redirect
 
 from .models import (
     Appointment, Doctor, Hospital,
-    Review, Prescription, MedicalRecord, AuditLog
+    Review
 )
 
 
 # ──────────────────────────────────────────────────────────────
-# Audit Log Admin (Main Admin only)
-# ──────────────────────────────────────────────────────────────
-
-@admin.register(AuditLog)
-class AuditLogAdmin(admin.ModelAdmin):
-    list_display = ("user", "action", "timestamp", "ip_address")
-    list_filter = ("action", "timestamp")
-    search_fields = ("user__username", "action", "details")
-    readonly_fields = ("user", "action", "timestamp", "ip_address", "details")
 
 
 # ──────────────────────────────────────────────────────────────
@@ -28,7 +19,7 @@ class AuditLogAdmin(admin.ModelAdmin):
 class DoctorAdminSite(admin.AdminSite):
     site_header = "OneMeds Doctor Portal"
     site_title = "Doctor Portal"
-    index_title = "Manage Your Appointments & Prescriptions"
+    index_title = "Manage Your Appointments"
 
     def has_permission(self, request):
         """
@@ -90,7 +81,7 @@ class HospitalAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Basic Info", {"fields": ("name", "about", "image")}),
         ("Location", {"fields": ("location", "latitude", "longitude")}),
-        ("Contact", {"fields": ("contact_no", "email")}),
+        ("Contact", {"fields": ("contact_no",)}),
     )
 
 
@@ -116,7 +107,7 @@ class DoctorAdmin(admin.ModelAdmin):
             "fields": ("experience", "consultation_fee")
         }),
         ("Availability", {
-            "fields": ("available_days", "shift_start_time", "unavailable_dates"),
+            "fields": ("available_days", "shift_start_time", "shift_end_time", "unavailable_dates", "weekly_schedule"),
         }),
     )
 
@@ -139,32 +130,13 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 
 
+
+
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ("user", "rating", "created_at")
-    list_filter = ("rating",)
-    search_fields = ("user__username", "hospital__name", "doctor__name", "comment")
-    readonly_fields = ("created_at", "user")
-
-
-@admin.register(Prescription)
-class PrescriptionAdmin(admin.ModelAdmin):
-    list_display = ("get_doctor_id", "patient", "doctor", "appointment", "created_at")
-    search_fields = ("doctor__doctor_id", "doctor__name", "patient__username", "diagnosis")
-    readonly_fields = ("created_at", "updated_at")
-    list_filter = ("doctor",)
-
-    def get_doctor_id(self, obj):
-        return obj.doctor.doctor_id if obj.doctor else "—"
-    get_doctor_id.short_description = "Doctor ID"
-
-
-@admin.register(MedicalRecord)
-class MedicalRecordAdmin(admin.ModelAdmin):
-    list_display = ("title", "patient", "doctor", "record_type", "uploaded_at")
-    list_filter = ("record_type", "doctor")
-    search_fields = ("title", "patient__username", "doctor__name")
-    readonly_fields = ("uploaded_at",)
+    list_display = ('user', 'doctor', 'hospital', 'rating', 'created_at')
+    list_filter = ('rating', 'created_at')
+    search_fields = ('user__username', 'doctor__name', 'hospital__name', 'comment')
 
 
 # ──────────────────────────────────────────────────────────────
@@ -234,34 +206,6 @@ class DoctorAppointmentAdmin(DoctorFilteredAdmin):
     get_patient_contact.short_description = "Contact"
 
 
-class DoctorPrescriptionAdmin(DoctorFilteredAdmin):
-    list_display = ("patient", "get_patient_name", "appointment", "created_at")
-    search_fields = ("patient__username", "diagnosis", "symptoms")
-    readonly_fields = ("doctor", "appointment", "patient", "created_at", "updated_at")
-    fieldsets = (
-        ("Prescription Info", {
-            "fields": ("doctor", "patient", "appointment")
-        }),
-        ("Clinical Details", {
-            "fields": ("symptoms", "diagnosis", "medicines", "instructions")
-        }),
-        ("Attachments", {
-            "fields": ("digital_signature",)
-        }),
-    )
-
-    def get_patient_name(self, obj):
-        appt = obj.appointment
-        return appt.patient_name if appt else "—"
-    get_patient_name.short_description = "Patient Name"
-
-
-class DoctorMedicalRecordAdmin(DoctorFilteredAdmin):
-    list_display = ("title", "patient", "record_type", "uploaded_at")
-    list_filter = ("record_type",)
-    search_fields = ("title", "patient__username")
-    readonly_fields = ("doctor", "uploaded_at")
-
 
 class DoctorSelfProfileAdmin(admin.ModelAdmin):
     """
@@ -271,7 +215,7 @@ class DoctorSelfProfileAdmin(admin.ModelAdmin):
     readonly_fields = (
         "doctor_id", "name", "hospital", "specialty",
         "experience", "consultation_fee",
-        "available_days", "shift_start_time", "unavailable_dates", "image"
+        "available_days", "shift_start_time", "shift_end_time", "unavailable_dates", "weekly_schedule", "image"
     )
     fieldsets = (
         ("Your Doctor ID", {
@@ -285,7 +229,7 @@ class DoctorSelfProfileAdmin(admin.ModelAdmin):
             "fields": ("experience", "consultation_fee")
         }),
         ("Availability Schedule", {
-            "fields": ("available_days", "shift_start_time", "unavailable_dates")
+            "fields": ("available_days", "shift_start_time", "shift_end_time", "unavailable_dates", "weekly_schedule")
         }),
     )
 
@@ -312,5 +256,3 @@ class DoctorSelfProfileAdmin(admin.ModelAdmin):
 
 doctor_admin_site.register(Doctor, DoctorSelfProfileAdmin)
 doctor_admin_site.register(Appointment, DoctorAppointmentAdmin)
-doctor_admin_site.register(Prescription, DoctorPrescriptionAdmin)
-doctor_admin_site.register(MedicalRecord, DoctorMedicalRecordAdmin)

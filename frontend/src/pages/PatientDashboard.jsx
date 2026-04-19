@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const STATUS_COLORS = {
     Pending:   { bg: '#fef9c3', color: '#854d0e' },
@@ -40,7 +41,6 @@ const PatientDashboard = ({ context }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('appointments');
-    const [expandedPrescription, setExpandedPrescription] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
@@ -123,7 +123,7 @@ const PatientDashboard = ({ context }) => {
         </div>
     );
 
-    const { profile, appointments = [], prescriptions = [], medical_records = [], stats = {} } = data || {};
+    const { profile, appointments = [], stats = {} } = data || {};
 
     // Filtered appointments
     const filteredAppts = appointments.filter(a =>
@@ -135,32 +135,47 @@ const PatientDashboard = ({ context }) => {
 
     const tabs = [
         { id: 'appointments', label: '📅 Appointments', count: appointments.length },
-        { id: 'prescriptions', label: '💊 Prescriptions', count: prescriptions.length },
-        { id: 'records', label: '📁 Medical Records', count: medical_records.length },
     ];
 
     return (
         <div style={{ marginTop: '80px', fontFamily: "'Inter', sans-serif" }}>
-            {/* Hero Header */}
+            {/* Hero Header (Synced with PatientProfile style) */}
             <div style={{
-                background: 'linear-gradient(135deg, #0f172a, #1e3a5f)',
-                borderRadius: '20px', padding: '28px 32px', marginBottom: '28px', color: '#fff',
+                background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1e293b 100%)',
+                borderRadius: '22px', padding: '28px 32px', marginBottom: '28px', color: '#fff',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px',
+                boxShadow: '0 10px 30px rgba(15, 23, 42, 0.15)'
             }}>
-                <div>
-                    <h1 style={{ margin: 0, fontSize: '1.7rem', fontWeight: 800 }}>
-                        👋 Hello, {profile?.first_name || profile?.username || 'Patient'}
-                    </h1>
-                    <p style={{ margin: '6px 0 0', color: '#94a3b8', fontSize: '0.95rem' }}>
-                        {profile?.email} {profile?.contact_no ? `· ${profile.contact_no}` : ''}
-                    </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ 
+                        width: '70px', height: '70px', borderRadius: '18px', 
+                        background: 'linear-gradient(135deg, #6366f1, #a855f7)', 
+                        flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                        fontSize: '2rem', fontWeight: 800, color: '#fff', 
+                        boxShadow: '0 8px 20px rgba(99, 102, 241, 0.4)' 
+                    }}>
+                        {(profile?.first_name || profile?.username || 'P')[0].toUpperCase()}
+                    </div>
+                    <div>
+                        <h1 style={{ margin: 0, fontSize: '1.7rem', fontWeight: 800 }}>
+                            👋 Hello, {profile?.first_name || profile?.username || 'Patient'}
+                        </h1>
+                        <p style={{ margin: '4px 0 0', color: '#94a3b8', fontSize: '0.95rem', opacity: 0.9 }}>
+                            {profile?.contact_no || 'Mobile registered'}
+                        </p>
+                    </div>
                 </div>
-                <a href="/users/profile/" style={{
-                    background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)',
-                    borderRadius: '10px', padding: '10px 20px', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem',
-                }}>
+                <Link to="/patient/profile" style={{
+                    background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)',
+                    borderRadius: '12px', padding: '10px 24px', textDecoration: 'none', 
+                    fontWeight: 700, fontSize: '0.9rem', backdropFilter: 'blur(10px)',
+                    transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', gap: '8px'
+                }}
+                onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+                >
                     ✏️ Edit Profile
-                </a>
+                </Link>
             </div>
 
             {/* Real-time Toast Notification */}
@@ -183,7 +198,6 @@ const PatientDashboard = ({ context }) => {
                 <StatCard icon="📅" label="Total Appointments" value={stats.total_appointments || 0} accent="#eff6ff" />
                 <StatCard icon="⏳" label="Upcoming" value={stats.upcoming || 0} accent="#f0fdf4" />
                 <StatCard icon="✅" label="Completed" value={stats.completed || 0} accent="#dcfce7" />
-                <StatCard icon="💊" label="Prescriptions" value={stats.total_prescriptions || 0} accent="#faf5ff" />
             </div>
 
             {/* Tab Navigation */}
@@ -265,14 +279,7 @@ const PatientDashboard = ({ context }) => {
                                     <div style={{ fontSize: '0.82rem', color: '#64748b', maxWidth: '200px', wordBreak: 'break-word' }}>
                                         {appt.patient_problem || 'General Consultation'}
                                     </div>
-                                    {appt.status === 'Completed' && (
-                                        <button
-                                            onClick={() => { setExpandedPrescription(appt.id); setActiveTab('prescriptions'); }}
-                                            style={{ background: '#eff6ff', color: '#2563eb', border: 'none', borderRadius: '8px', padding: '7px 14px', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem' }}
-                                        >
-                                            View Rx →
-                                        </button>
-                                    )}
+
                                 </div>
                             ))}
                         </div>
@@ -280,116 +287,7 @@ const PatientDashboard = ({ context }) => {
                 </div>
             )}
 
-            {/* ── Prescriptions Tab ── */}
-            {activeTab === 'prescriptions' && (
-                <div>
-                    {prescriptions.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f8fafc', borderRadius: '14px' }}>
-                            <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>💊</div>
-                            <p style={{ color: '#64748b' }}>No prescriptions yet.</p>
-                        </div>
-                    ) : (
-                        <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
-                            {prescriptions.map(rx => (
-                                <div key={rx.id} style={{
-                                    background: '#fff', borderRadius: '16px', overflow: 'hidden',
-                                    boxShadow: '0 4px 16px rgba(0,0,0,0.07)', border: '1px solid #f1f5f9',
-                                }}>
-                                    {/* Rx Header */}
-                                    <div style={{ background: 'linear-gradient(135deg, #0f172a, #1e3a5f)', padding: '16px 20px', color: '#fff' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div>
-                                                <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>Dr. {rx.doctor_name}</div>
-                                                <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '2px' }}>{rx.appointment?.date}</div>
-                                            </div>
-                                            <span style={{ fontSize: '1.5rem' }}>📋</span>
-                                        </div>
-                                    </div>
-                                    <div style={{ padding: '18px 20px' }}>
-                                        {rx.symptoms && (
-                                            <div style={{ marginBottom: '10px' }}>
-                                                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '3px' }}>Symptoms</div>
-                                                <div style={{ fontSize: '0.9rem', color: '#334155' }}>{rx.symptoms}</div>
-                                            </div>
-                                        )}
-                                        <div style={{ marginBottom: '10px' }}>
-                                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '3px' }}>Diagnosis</div>
-                                            <div style={{ fontSize: '0.9rem', color: '#334155', fontWeight: 600 }}>{rx.diagnosis || '—'}</div>
-                                        </div>
-                                        {rx.medicines?.length > 0 && (
-                                            <div style={{ marginBottom: '10px' }}>
-                                                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' }}>Medicines</div>
-                                                {rx.medicines.map((med, i) => (
-                                                    <div key={i} style={{
-                                                        background: '#f8fafc', borderRadius: '8px', padding: '8px 12px', marginBottom: '5px',
-                                                        display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem',
-                                                    }}>
-                                                        <span style={{ fontWeight: 600, color: '#1e293b' }}>{med.name}</span>
-                                                        <span style={{ color: '#64748b' }}>{med.dosage} · {med.duration}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                        {rx.instructions && (
-                                            <div style={{ background: '#faf5ff', borderRadius: '8px', padding: '10px 12px', borderLeft: '3px solid #8b5cf6' }}>
-                                                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#7c3aed', marginBottom: '3px' }}>INSTRUCTIONS</div>
-                                                <div style={{ fontSize: '0.85rem', color: '#4a044e' }}>{rx.instructions}</div>
-                                            </div>
-                                        )}
-                                        <div style={{ marginTop: '14px', fontSize: '0.75rem', color: '#94a3b8', textAlign: 'right' }}>
-                                            Issued: {new Date(rx.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
 
-            {/* ── Medical Records Tab ── */}
-            {activeTab === 'records' && (
-                <div>
-                    {medical_records.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f8fafc', borderRadius: '14px' }}>
-                            <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>📁</div>
-                            <p style={{ color: '#64748b' }}>No medical records uploaded yet.</p>
-                        </div>
-                    ) : (
-                        <div style={{ background: '#fff', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                                <thead>
-                                    <tr style={{ background: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
-                                        {['Title', 'Type', 'Uploaded By', 'Date', 'Action'].map(col => (
-                                            <th key={col} style={{ padding: '14px 16px', textAlign: 'left', fontWeight: 700, color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{col}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {medical_records.map((rec, idx) => (
-                                        <tr key={rec.id} style={{ borderBottom: idx < medical_records.length - 1 ? '1px solid #f8fafc' : 'none' }}>
-                                            <td style={{ padding: '13px 16px', fontWeight: 600, color: '#1e293b' }}>{rec.title}</td>
-                                            <td style={{ padding: '13px 16px' }}>
-                                                <span style={{ background: '#eff6ff', color: '#2563eb', borderRadius: '6px', padding: '3px 8px', fontSize: '0.78rem', fontWeight: 600 }}>{rec.record_type}</span>
-                                            </td>
-                                            <td style={{ padding: '13px 16px', color: '#64748b' }}>Dr. {rec.doctor_name || 'Self'}</td>
-                                            <td style={{ padding: '13px 16px', color: '#64748b' }}>{new Date(rec.uploaded_at).toLocaleDateString('en-IN')}</td>
-                                            <td style={{ padding: '13px 16px' }}>
-                                                <a href={rec.file} target="_blank" rel="noreferrer" style={{
-                                                    background: '#dcfce7', color: '#16a34a', borderRadius: '7px',
-                                                    padding: '6px 12px', textDecoration: 'none', fontWeight: 600, fontSize: '0.82rem',
-                                                }}>
-                                                    ⬇ Download
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-            )}
         </div>
     );
 };

@@ -4,26 +4,45 @@ import { Link, useLocation } from 'react-router-dom';
 
 const DoctorList = () => {
     const [doctors, setDoctors] = useState([]);
+    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentLocation, setCurrentLocation] = useState('');
     
-    useEffect(() => {
+    const fetchDoctors = () => {
+        setLoading(true);
+        setError(null);
         axios.get('/api/doctors/')
             .then(res => {
-                setDoctors(res.data.doctors || []);
+                const doctorData = Array.isArray(res.data) ? res.data : (res.data.results ? res.data.results : (res.data.doctors || []));
+                setDoctors(doctorData);
                 setCurrentLocation(res.data.current_location || '');
                 setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch doctors", err);
+                setError("Could not load medical professionals at this time.");
                 setLoading(false);
             });
+    };
+
+    useEffect(() => {
+        fetchDoctors();
     }, []);
 
     if (loading) return (
-        <div style={{ textAlign: 'center', padding: '50px' }}>
-            <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #e2e8f0', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
+        <div style={{ textAlign: 'center', padding: '100px 20px', marginTop: '40px' }}>
+            <div style={{ width: '48px', height: '48px', border: '4px solid #f3f3f3', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
+            <p style={{ color: '#64748b', fontWeight: 500 }}>Finding expert doctors for you...</p>
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+    );
+
+    if (error) return (
+        <div style={{ textAlign: 'center', padding: '100px 20px', marginTop: '40px' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🌐</div>
+            <h2 style={{ color: '#1e293b', marginBottom: '8px' }}>Connectivity Issue</h2>
+            <p style={{ color: '#64748b', marginBottom: '24px' }}>{error}</p>
+            <button onClick={fetchDoctors} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px 32px', cursor: 'pointer', fontWeight: 700 }}>Retry Connection</button>
         </div>
     );
 
@@ -61,16 +80,7 @@ const DoctorList = () => {
                             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "0.6rem", color: "#64748b", fontSize: "0.95rem", flexWrap: "wrap" }}>
                                 <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                                    {doctor.hospital ? (doctor.hospital.length > 20 ? doctor.hospital.substring(0, 20) + '...' : doctor.hospital) : ''}
-                                </span>
-                                <span style={{ color: "#cbd5e1" }}>|</span>
-                                <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                    <span style={{ color: "#fbbf24", fontSize: "1.1rem" }}>⭐</span>
-                                    {doctor.avg_rating ? (
-                                        <>{doctor.avg_rating} <span style={{ fontSize: "0.85rem" }}>({doctor.review_count})</span></>
-                                    ) : (
-                                        <span style={{ fontSize: "0.85rem" }}>No reviews</span>
-                                    )}
+                                    {doctor.hospital ? (typeof doctor.hospital === 'object' ? (doctor.hospital.name.length > 20 ? doctor.hospital.name.substring(0, 20) + '...' : doctor.hospital.name) : (doctor.hospital.length > 20 ? doctor.hospital.substring(0, 20) + '...' : doctor.hospital)) : ''}
                                 </span>
                             </div>
                         </div>
