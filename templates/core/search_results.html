@@ -112,7 +112,7 @@
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                             {{ lab.location|truncatechars:35 }}
                          </div>
-                         <a href="{% url 'book_lab_test' lab.id %}" style="margin-top: auto; display: block; border: 1.5px solid #2563eb; color: #2563eb; border-radius: 12px; padding: 0.75rem; text-align: center; font-weight: 700; font-size: 0.85rem; text-decoration: none;">Book Visit</a>
+                         <a href="{% url 'commerce:book_lab_test' lab.id %}" style="margin-top: auto; display: block; border: 1.5px solid #2563eb; color: #2563eb; border-radius: 12px; padding: 0.75rem; text-align: center; font-weight: 700; font-size: 0.85rem; text-decoration: none;">Book Visit</a>
                     </div>
                     {% endfor %}
                 </div>

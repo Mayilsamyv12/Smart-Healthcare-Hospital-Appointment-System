@@ -40,7 +40,9 @@ def lab_test_list(request):
 
     user_location = request.session.get("user_location")
     if user_location:
-        tests = tests.filter(location__icontains=user_location)
+        location_tests = tests.filter(location__icontains=user_location)
+        if location_tests.exists():
+            tests = location_tests
 
     return render(
         request,

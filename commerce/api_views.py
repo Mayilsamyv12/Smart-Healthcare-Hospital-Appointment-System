@@ -7,6 +7,19 @@ from .models import LabTest, LabAppointment, LabReview
 from .serializers import LabTestSerializer, LabAppointmentSerializer, LabReviewSerializer
 from django.utils import timezone
 from datetime import datetime, time, timedelta
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+class IsAdminOrLab(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        if request.user.role in ("Admin",):
+            return True
+        return (
+            request.user.is_staff
+            and bool(request.session.get('lab_id_verified'))
+            and bool(request.session.get('current_lab_id'))
+        )
 
 class LabTestViewSet(viewsets.ModelViewSet):
     queryset = LabTest.objects.all()
@@ -106,7 +119,8 @@ class LabIDVerifyView(APIView):
             return Response({"error": "Invalid Lab ID."}, status=400)
 
 class LabAdminDashboardView(APIView):
-    permission_classes = [permissions.IsAdminUser]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAdminOrLab]
 
     def get(self, request):
         current_lab_id = request.session.get('current_lab_id')

@@ -93,6 +93,7 @@ const LocationModal = ({ isMandatory, hasLocation, currentLocation, csrfToken, s
                 <div className="modal-body">
                     <form id="reactLocationForm" action={setLocationUrl} method="post">
                         <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
+                        <input type="hidden" name="next" value={window.location.pathname} />
                         <div className="location-input-group">
                             <span className="search-icon"></span>
                             <input type="text" name="location" id="universalLocationInput"

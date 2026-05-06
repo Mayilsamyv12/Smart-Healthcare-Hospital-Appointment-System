@@ -30,6 +30,7 @@ const LabLogin = () => {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
                 },
+                credentials: 'include',
                 body: JSON.stringify({ username, password }),
             });
             const data = await res.json();
@@ -62,6 +63,7 @@ const LabLogin = () => {
                     'Authorization': `Bearer ${token}`,
                     'X-CSRFToken': csrfToken,
                 },
+                credentials: 'include',
                 body: JSON.stringify({ lab_id: labId }),
             });
             const data = await res.json();

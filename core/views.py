@@ -35,6 +35,15 @@ def home(request):
             )[:6]
         except Exception:
             nearby_labs = []
+            
+        if not nearby_hospitals and not nearby_doctors and not nearby_labs:
+            nearby_hospitals = Hospital.objects.all()[:6]
+            nearby_doctors = Doctor.objects.select_related("hospital").all()[:6]
+            try:
+                from commerce.models import LabTest
+                nearby_labs = LabTest.objects.all()[:6]
+            except Exception:
+                nearby_labs = []
     else:
         nearby_hospitals = Hospital.objects.all()[:6]
         nearby_doctors = Doctor.objects.select_related("hospital").all()[:6]
@@ -66,6 +75,15 @@ def api_home(request):
             nearby_labs = LabTest.objects.filter(location__icontains=user_location)[:6]
         except Exception:
             nearby_labs = []
+            
+        if not nearby_hospitals and not nearby_doctors and not nearby_labs:
+            nearby_hospitals = Hospital.objects.all()[:6]
+            nearby_doctors = Doctor.objects.select_related("hospital").all()[:6]
+            try:
+                from commerce.models import LabTest
+                nearby_labs = LabTest.objects.all()[:6]
+            except Exception:
+                nearby_labs = []
     else:
         nearby_hospitals = Hospital.objects.all()[:6]
         nearby_doctors = Doctor.objects.select_related("hospital").all()[:6]
@@ -358,9 +376,14 @@ def search_view(request):
         ).distinct()
 
         if user_location:
-            hospitals = hospitals.filter(location__icontains=user_location)
-            doctors = doctors.filter(hospital__location__icontains=user_location)
-            labs = labs.filter(location__icontains=user_location)
+            location_hospitals = hospitals.filter(location__icontains=user_location)
+            location_doctors = doctors.filter(hospital__location__icontains=user_location)
+            location_labs = labs.filter(location__icontains=user_location)
+            
+            if location_hospitals.exists() or location_doctors.exists() or location_labs.exists():
+                hospitals = location_hospitals
+                doctors = location_doctors
+                labs = location_labs
 
     return render(
         request,
@@ -492,6 +515,7 @@ def help_page(request):
 def set_location(request):
     if request.method == "POST":
         location = request.POST.get("location")
+        next_url = request.POST.get("next")
         if location:
             request.session["user_location"] = location
             messages.success(request, f"Location set to {location}")
@@ -499,6 +523,7 @@ def set_location(request):
             if "user_location" in request.session:
                 del request.session["user_location"]
                 messages.info(request, "Location filter cleared")
+        return redirect(next_url or request.META.get("HTTP_REFERER", "home"))
     return redirect(request.META.get("HTTP_REFERER", "home"))
 
 def api_hospitals(request):
@@ -514,7 +539,9 @@ def api_hospitals(request):
 
     user_location = request.session.get("user_location")
     if user_location:
-         hospitals = hospitals.filter(location__icontains=user_location)
+         location_hospitals = hospitals.filter(location__icontains=user_location)
+         if location_hospitals.exists():
+             hospitals = location_hospitals
     
     data = []
     for h in hospitals:
@@ -547,7 +574,9 @@ def api_doctors(request):
 
     user_location = request.session.get("user_location")
     if user_location:
-         doctors = doctors.filter(hospital__location__icontains=user_location)
+         location_doctors = doctors.filter(hospital__location__icontains=user_location)
+         if location_doctors.exists():
+             doctors = location_doctors
          
     data = []
     for d in doctors:
